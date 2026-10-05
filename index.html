@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Shot Tracker">
+<meta name="theme-color" content="#0b0d10">
+<title>Shot Tracker</title>
+<style>
+:root{--bg:#0b0d10;--fg:#f2f4f7;--mut:#8b94a1;--card:rgba(15,18,22,.82);--acc:#ff7a1a;--ok:#2ecc71;--bad:#ff4d4f;--ring:#ffd23f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:15px -apple-system,system-ui,sans-serif;overflow:hidden;touch-action:manipulation}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{position:relative;width:320px;height:180px;background:#000}
+video,canvas#o{position:absolute;inset:0;width:100%;height:100%}
+#hud{position:absolute;top:calc(env(safe-area-inset-top) + 8px);left:8px;right:8px;display:flex;gap:8px;pointer-events:none;flex-wrap:wrap}
+.c{background:var(--card);border-radius:12px;padding:6px 12px;backdrop-filter:blur(8px);text-align:center;min-width:68px}
+.c b{display:block;font-size:24px;line-height:1.1}.c small{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+#msg{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + 64px);text-align:center;pointer-events:none}
+#msg span{display:inline-block;background:var(--card);border-radius:10px;padding:6px 12px;font-size:13px;max-width:92%}
+#bar{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 8px);display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:0 8px}
+button{background:var(--card);color:var(--fg);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px 14px;font:600 14px inherit;backdrop-filter:blur(8px)}
+button.p{background:var(--acc);border-color:var(--acc);color:#111}button.on{outline:2px solid var(--ring)}
+#panel{position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:8px;width:min(330px,60vw);background:var(--card);border-radius:14px;padding:10px;backdrop-filter:blur(10px);display:none;max-height:calc(100% - 140px);overflow:auto}
+#panel canvas{width:100%;display:block;border-radius:8px;background:#161a20}
+#list{font-size:12px;color:var(--mut);margin-top:6px;line-height:1.5}
+.g{color:var(--ok)}.r{color:var(--bad)}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage"><video id="v" playsinline muted autoplay></video><canvas id="o"></canvas></div></div>
+<div id="hud">
+  <div class="c"><b id="sm" class="g">0</b><small>Raak</small></div>
+  <div class="c"><b id="sx" class="r">0</b><small>Mis</small></div>
+  <div class="c"><b id="sp">–</b><small>FG%</small></div>
+  <div class="c"><b id="s3">0/0</b><small>3-punts</small></div>
+</div>
+<div id="panel"><canvas id="court" width="300" height="290"></canvas><div id="list"></div></div>
+<div id="msg"><span id="say">Tik op Start om de camera te openen.</span></div>
+<div id="bar">
+  <button class="p" id="start">Start</button>
+  <button id="setrim">Ring instellen</button>
+  <button id="map">Kaart</button>
+  <button id="snd" class="on">Geluid</button>
+  <button id="exp">Export</button>
+  <button id="flip">Laatste omdraaien</button>
+  <button id="undo">Ongedaan</button>
+  <button id="reset">Reset</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const v=$('v'),o=$('o'),ctx=o.getContext('2d'),cm=$('court'),cc=cm.getContext('2d');
+const say=t=>$('say').textContent=t;
+let wl,snd=true,model,running=false,stream=null,rim=null,mode=null,taps=[],vw=0,vh=0;
+let shots=[];try{shots=JSON.parse(localStorage.getItem('shots')||'[]')}catch(e){}
+const save=()=>{try{localStorage.setItem('shots',JSON.stringify(shots))}catch(e){}};
+
+/* ---------- layout ---------- */
+function fit(){if(!vw)return;const s=Math.min(innerWidth/vw,innerHeight/vh),st=$('stage');st.style.width=vw*s+'px';st.style.height=vh*s+'px'}
+addEventListener('resize',fit);
+
+/* ---------- camera + model ---------- */
+$('start').onclick=async()=>{
+  try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}
+  if(running){running=false;wl&&wl.release().catch(()=>{});stream&&stream.getTracks().forEach(t=>t.stop());$('start').textContent='Start';say('Gestopt.');return}
+  try{
+    say('Camera starten…');
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}},audio:false});
+    v.srcObject=stream;await v.play();
+    vw=v.videoWidth;vh=v.videoHeight;o.width=vw;o.height=vh;fit();
+    if(!model){say('Model laden (eenmalig, even geduld)…');model=await cocoSsd.load({base:'lite_mobilenet_v2'})}
+    running=true;$('start').textContent='Stop';
+    try{wl=await navigator.wakeLock.request('screen')}catch(e){}
+    loadRim();
+    say(rim?'Ring van vorige keer geladen. Controleer of hij klopt, anders opnieuw instellen.':'Tik op "Ring instellen" en markeer de linker- en rechterrand van de ring.');
+  }catch(e){say('Fout: '+e.message)}
+};
+
+/* ---------- ring kalibratie ---------- */
+$('setrim').onclick=()=>{mode='rim';taps=[];$('setrim').classList.add('on');say('Tik op de LINKERrand van de ring.')};
+o.addEventListener('pointerdown',e=>{
+  if(mode!=='rim')return;
+  const r=o.getBoundingClientRect();taps.push({x:(e.clientX-r.left)/r.width*vw,y:(e.clientY-r.top)/r.height*vh});
+  if(taps.length===1)say('Tik nu op de RECHTERrand van de ring.');
+  else{const[a,b]=taps;rim={x:(a.x+b.x)/2,y:(a.y+b.y)/2,w:Math.max(8,Math.abs(b.x-a.x))};mode=null;$('setrim').classList.remove('on');saveRim();say('Ring ingesteld. Schiet maar!')}
+});
+
+function saveRim(){try{localStorage.setItem('rim',JSON.stringify({x:rim.x/vw,y:rim.y/vh,w:rim.w/vw}))}catch(e){}}
+function loadRim(){try{const q=JSON.parse(localStorage.getItem('rim')||'null');if(q)rim={x:q.x*vw,y:q.y*vh,w:q.w*vw}}catch(e){}}
+
+/* ---------- detectielus ---------- */
+const bh=[],ph=[];let st='idle',prev=null,lastSeen=0,aboveT=0,cool=0,shooter=null;
+async function loop(){
+  if(running&&v.readyState>=2){
+    const t=performance.now();
+    let d=[];try{d=await model.detect(v,15,0.2)}catch(e){}
+    const ball=d.filter(x=>x.class==='sports ball'&&(!rim||(x.bbox[2]>rim.w*.28&&x.bbox[2]<rim.w*1.1))).sort((a,b)=>b.score-a.score)[0];
+    const ppl=d.filter(x=>x.class==='person').map(x=>x.bbox);
+    process(t,ball,ppl);draw(ball,ppl);
+  }
+  requestAnimationFrame(loop);
+}
+loop();
+
+function process(t,b,ppl){
+  ph.push({t,p:ppl});while(ph.length&&t-ph[0].t>2500)ph.shift();
+  while(bh.length&&t-bh[0].t>2500)bh.shift();
+  if(!rim||t<cool)return;
+  const R=rim.w;
+  if(b){
+    const c={x:b.bbox[0]+b.bbox[2]/2,y:b.bbox[1]+b.bbox[3]/2,t};
+    if(prev&&t-lastSeen>700)prev=null;
+    bh.push(c);
+    if(st==='idle'&&c.y<rim.y-R*1.2){st='above';aboveT=t;shooter=pick(t,c)}
+    if(st==='above'&&prev&&prev.y<rim.y&&c.y>=rim.y){
+      const k=(rim.y-prev.y)/(c.y-prev.y),x=prev.x+(c.x-prev.x)*k;
+      if(Math.abs(x-rim.x)<R*.5)finish(true);else if(Math.abs(x-rim.x)<R*3)finish(false);
+    }
+    prev=c;lastSeen=t;
+  }else if(st==='above'&&prev&&t-lastSeen>500&&Math.abs(prev.x-rim.x)<R*.6&&prev.y>rim.y-R*1.5){
+    finish(true); // bal verdwijnt in het net
+  }
+  if(st==='above'&&t-aboveT>3500){st='idle';prev=null}
+}
+
+/* schutter = persoon dichtst bij de bal op het moment van het loslaten */
+function pick(t,c){
+  const rel=bh.find(e=>t-e.t<1300)||c;
+  const f=ph.reduce((a,e)=>Math.abs(e.t-rel.t)<Math.abs(a.t-rel.t)?e:a,ph[0]||{t:0,p:[]});
+  let best=null,bd=1e9;
+  for(const b of f.p){const d=Math.abs(b[0]+b[2]/2-rel.x);if(d<bd){bd=d;best=b}}
+  return best;
+}
+
+/* positie op het veld t.o.v. de ring (meters), camera achter de schutter */
+function locate(bx){
+  const f=.73*Math.max(vw,vh),Dr=f*.45/rim.w,Dp=f*1.8/bx[3];
+  const lat=((bx[0]+bx[2]/2)-vw/2)*Dp/f-(rim.x-vw/2)*Dr/f;
+  return{x:lat,y:Math.max(0,Dr-Dp)};
+}
+
+function finish(made){
+  let L=shooter?locate(shooter):null;
+  const dist=L?Math.hypot(L.x,L.y):null;
+  shots.push({m:made,x:L?+L.x.toFixed(2):null,y:L?+L.y.toFixed(2):null,d:dist?+dist.toFixed(1):null,t3:dist!==null&&dist>=6.75});
+  save();render();beep(made);cool=performance.now()+1500;st='idle';prev=null;shooter=null;
+  say(made?'RAAK!':'Mis');
+}
+
+let ac;function beep(m){
+  try{if(navigator.vibrate)navigator.vibrate(m?60:[30,40,30]);
+  if(!snd)return;ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+  const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=m?880:220;o.type='sine';g.gain.value=.15;
+  o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+(m?.18:.3));}catch(e){}
+}
+
+/* ---------- tekenen ---------- */
+function draw(ball,ppl){
+  ctx.clearRect(0,0,vw,vh);ctx.lineWidth=Math.max(2,vw/400);
+  ppl.forEach(b=>{ctx.strokeStyle='rgba(80,160,255,.6)';ctx.strokeRect(...b)});
+  if(rim){
+    ctx.strokeStyle='#ffd23f';ctx.beginPath();ctx.ellipse(rim.x,rim.y,rim.w/2,rim.w/6,0,0,7);ctx.stroke();
+    ctx.setLineDash([8,8]);ctx.strokeStyle='rgba(255,210,63,.35)';ctx.beginPath();ctx.moveTo(0,rim.y-rim.w*1.2);ctx.lineTo(vw,rim.y-rim.w*1.2);ctx.stroke();ctx.setLineDash([]);
+  }
+  taps.forEach(p=>{ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.arc(p.x,p.y,8,0,7);ctx.fill()});
+  ctx.strokeStyle='rgba(255,122,26,.6)';ctx.beginPath();bh.slice(-12).forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+  if(ball){ctx.strokeStyle='#ff7a1a';ctx.lineWidth*=1.5;ctx.strokeRect(...ball.bbox)}
+}
+
+/* ---------- statistieken + veldkaart ---------- */
+function render(){
+  const m=shots.filter(s=>s.m).length,n=shots.length,t=shots.filter(s=>s.t3),t3m=t.filter(s=>s.m).length;
+  $('sm').textContent=m;$('sx').textContent=n-m;$('sp').textContent=n?Math.round(m/n*100)+'%':'–';$('s3').textContent=t3m+'/'+t.length;
+  court();
+  $('list').innerHTML=shots.slice(-8).reverse().map((s,i)=>`<div class="${s.m?'g':'r'}">#${n-i} ${s.m?'Raak':'Mis'}${s.d!=null?' · '+s.d+' m':''}${s.t3?' · 3-punts':''}</div>`).join('');
+}
+function court(){
+  const S=20,X=150,RY=250,w=cm.width,h=cm.height,Y=m=>RY-m*S;
+  cc.clearRect(0,0,w,h);cc.strokeStyle='#4a5461';cc.lineWidth=1.5;
+  cc.strokeRect(X-2.45*S,Y(5.8-1.575),4.9*S,5.8*S); // verfvak
+  cc.beginPath();cc.arc(X,Y(4.225),1.8*S,0,7);cc.stroke(); // vrijworpcirkel
+  const a=Math.asin(1.41/6.75);
+  cc.beginPath();cc.moveTo(X-6.6*S,Y(-1.575));cc.lineTo(X-6.6*S,Y(1.41));cc.arc(X,RY,6.75*S,Math.PI+a,2*Math.PI-a);cc.lineTo(X+6.6*S,Y(-1.575));cc.stroke(); // 3-puntslijn
+  cc.beginPath();cc.moveTo(0,Y(-1.575));cc.lineTo(w,Y(-1.575));cc.stroke();
+  cc.strokeStyle='#ffd23f';cc.beginPath();cc.arc(X,RY,.23*S,0,7);cc.stroke();
+  shots.forEach(s=>{if(s.x==null)return;const px=X+Math.max(-7.4,Math.min(7.4,s.x))*S,py=Y(Math.min(11,s.y));
+    cc.fillStyle=s.m?'#2ecc71':'#ff4d4f';cc.beginPath();cc.arc(px,py,5,0,7);cc.fill()});
+}
+$('map').onclick=()=>{const p=$('panel');p.style.display=p.style.display==='block'?'none':'block';render()};
+$('snd').onclick=e=>{snd=!snd;e.target.classList.toggle('on',snd)};
+$('exp').onclick=()=>{
+  const csv='nr,resultaat,afstand_m,x_m,y_m,driepunter\n'+shots.map((s,i)=>[i+1,s.m?'raak':'mis',s.d??'',s.x??'',s.y??'',s.t3?1:0].join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='schoten-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+};
+$('undo').onclick=()=>{shots.pop();save();render()};
+$('flip').onclick=()=>{const s=shots[shots.length-1];if(s){s.m=!s.m;save();render()}};
+$('reset').onclick=()=>{if(confirm('Alle schoten wissen?')){shots=[];save();render()}};
+render();
+</script>
+</body>
+</html>
