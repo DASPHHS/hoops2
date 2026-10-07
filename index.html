@@ -1,1908 +1,623 @@
 <!doctype html>
 <html lang="nl">
 <head>
-
 <meta charset="utf-8">
-
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1,viewport-fit=cover"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071018">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<title>Hoop – Live Basketball Shot Tracker</title>
+<title>Hoop – Basketball AI test</title>
 
 <style>
-
 :root{
   --bg:#071018;
   --panel:#111c27;
-  --panel2:#192835;
   --text:#f8fafc;
   --muted:#94a3b8;
-
-  --orange:#ff7a00;
   --green:#22c55e;
-  --red:#ef4444;
   --blue:#38bdf8;
   --yellow:#facc15;
-
-  --border:rgba(255,255,255,.10);
+  --orange:#ff7a00;
+  --red:#ef4444;
 }
 
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
-
   background:var(--bg);
   color:var(--text);
-
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Arial,
-    sans-serif;
-}
-
-button,
-input{
-  font:inherit;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
 }
 
 .app{
-  width:min(1200px,100%);
+  width:min(900px,100%);
   margin:auto;
-
-  padding:
-    max(14px,env(safe-area-inset-top))
-    14px
-    max(24px,env(safe-area-inset-bottom));
-}
-
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-
-  margin-bottom:12px;
+  padding:14px;
 }
 
 h1{
-  margin:0;
-
-  font-size:clamp(25px,6vw,40px);
+  margin:0 0 4px;
+  font-size:30px;
 }
 
-.sub{
-  margin-top:3px;
-
+.subtitle{
   color:var(--muted);
-  font-size:13px;
-}
-
-.badge{
-  padding:7px 10px;
-
-  border-radius:999px;
-  border:1px solid rgba(34,197,94,.25);
-
-  background:rgba(34,197,94,.12);
-  color:#86efac;
-
-  font-size:11px;
-  font-weight:800;
-}
-
-
-/* ===========================
-   STATS
-=========================== */
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-
-  gap:8px;
-  margin-bottom:12px;
-}
-
-.stat{
-  padding:12px;
-
-  background:var(--panel);
-
-  border:1px solid var(--border);
-  border-radius:14px;
-}
-
-.stat strong{
-  display:block;
-
-  font-size:clamp(25px,7vw,42px);
-  line-height:1;
-}
-
-.stat span{
-  color:var(--muted);
-
-  font-size:12px;
-}
-
-
-/* ===========================
-   LAYOUT
-=========================== */
-
-.main{
-  display:grid;
-
-  grid-template-columns:
-    minmax(0,2fr)
-    minmax(290px,.9fr);
-
-  gap:12px;
+  margin-bottom:14px;
 }
 
 .card{
-  overflow:hidden;
-
   background:var(--panel);
-
-  border:1px solid var(--border);
   border-radius:18px;
+  border:1px solid rgba(255,255,255,.1);
+  overflow:hidden;
 }
-
-
-/* ===========================
-   VIDEO
-=========================== */
 
 .stage{
   position:relative;
-
-  width:100%;
-
   background:#000;
 }
-
-
-/*
-Selfiepreview wordt gespiegeld.
-
-Tracking blijft intern
-in echte cameracoördinaten.
-*/
 
 .stage.mirrored video,
 .stage.mirrored #overlay{
   transform:scaleX(-1);
 }
 
-
 video{
-  display:block;
-
   width:100%;
-  height:auto;
-
+  display:block;
   background:#000;
+  max-height:70vh;
 }
 
-
-#overlay{
+canvas#overlay{
   position:absolute;
-
   inset:0;
-
   width:100%;
   height:100%;
-
   pointer-events:none;
 }
-
-
-#overlay.selecting{
-  pointer-events:auto;
-
-  touch-action:none;
-}
-
-
-/* ===========================
-   LIVE FEEDBACK
-=========================== */
-
-#liveFeedback{
-  position:absolute;
-
-  left:50%;
-  top:50%;
-
-  transform:
-    translate(-50%,-50%)
-    scale(.88);
-
-  z-index:10;
-
-  min-width:min(82%,440px);
-
-  padding:
-    18px
-    22px;
-
-  border-radius:20px;
-
-  text-align:center;
-
-  font-weight:900;
-
-  opacity:0;
-  pointer-events:none;
-
-  transition:
-    opacity .15s ease,
-    transform .15s ease;
-
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-
-  box-shadow:
-    0 12px 40px
-    rgba(0,0,0,.38);
-}
-
-
-#liveFeedback.show{
-  opacity:1;
-
-  transform:
-    translate(-50%,-50%)
-    scale(1);
-}
-
-
-#liveFeedback.make{
-  background:
-    rgba(21,128,61,.90);
-
-  border:
-    2px solid
-    rgba(134,239,172,.9);
-}
-
-
-#liveFeedback.miss{
-  background:
-    rgba(185,28,28,.90);
-
-  border:
-    2px solid
-    rgba(252,165,165,.9);
-}
-
-
-.feedback-result{
-  font-size:
-    clamp(32px,9vw,62px);
-
-  line-height:1;
-}
-
-
-.feedback-stats{
-  margin-top:9px;
-
-  font-size:
-    clamp(16px,4vw,24px);
-}
-
-
-/* ===========================
-   FOOTER
-=========================== */
-
-.footer{
-  display:flex;
-
-  justify-content:space-between;
-  align-items:center;
-
-  gap:10px;
-
-  padding:
-    10px
-    12px;
-
-  color:var(--muted);
-
-  font-size:12px;
-}
-
-.live{
-  display:flex;
-
-  align-items:center;
-
-  gap:7px;
-}
-
-.dot{
-  width:9px;
-  height:9px;
-
-  flex:0 0 auto;
-
-  border-radius:50%;
-
-  background:#64748b;
-}
-
-.dot.on{
-  background:var(--green);
-
-  box-shadow:
-    0 0 9px
-    rgba(34,197,94,.7);
-}
-
-
-/* ===========================
-   CONTROLS
-=========================== */
 
 .controls{
-  padding:13px;
-}
-
-.controls h2,
-.chart h2{
-  margin:
-    2px
-    0
-    10px;
-
-  font-size:15px;
-}
-
-.section{
-  margin-top:18px;
-}
-
-.grid{
   display:grid;
-
-  gap:8px;
+  gap:9px;
+  margin-top:12px;
 }
 
 .two{
   display:grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
-  gap:8px;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
 }
 
 button{
-  min-height:48px;
-
-  padding:
-    10px
-    12px;
-
-  cursor:pointer;
-
+  min-height:52px;
+  border:0;
+  border-radius:13px;
+  background:#1d2d3b;
   color:white;
-  background:var(--panel2);
-
-  border:
-    1px solid
-    var(--border);
-
-  border-radius:12px;
-
-  font-weight:750;
-
-  touch-action:manipulation;
+  font-size:16px;
+  font-weight:800;
+  padding:10px;
 }
 
 button.primary{
   background:var(--orange);
-
-  border-color:var(--orange);
-
   color:#111;
 }
 
 button.green{
-  color:#86efac;
-
-  background:
-    rgba(34,197,94,.12);
-
-  border-color:
-    rgba(34,197,94,.30);
+  background:#166534;
 }
 
 button.blue{
-  color:#7dd3fc;
-
-  background:
-    rgba(56,189,248,.12);
-
-  border-color:
-    rgba(56,189,248,.28);
-}
-
-button.yellow{
-  color:#fde047;
-
-  background:
-    rgba(250,204,21,.12);
-
-  border-color:
-    rgba(250,204,21,.28);
+  background:#075985;
 }
 
 button.red{
-  color:#fca5a5;
-
-  background:
-    rgba(239,68,68,.12);
-
-  border-color:
-    rgba(239,68,68,.30);
+  background:#991b1b;
 }
 
 button:disabled{
   opacity:.4;
-
-  cursor:not-allowed;
 }
-
-.hint{
-  color:var(--muted);
-
-  font-size:12px;
-  line-height:1.45;
-}
-
-.callout{
-  margin-top:10px;
-
-  padding:10px;
-
-  background:#0b151f;
-
-  border:
-    1px solid
-    var(--border);
-
-  border-radius:12px;
-
-  color:var(--muted);
-
-  font-size:12px;
-  line-height:1.45;
-}
-
-
-/* ===========================
-   STATUS
-=========================== */
 
 .status{
-  display:grid;
-
-  grid-template-columns:
-    1fr auto;
-
-  gap:
-    7px
-    10px;
-
-  margin-top:14px;
-
-  padding-top:12px;
-
-  border-top:
-    1px solid
-    var(--border);
-
-  font-size:12px;
-}
-
-.status span{
-  color:var(--muted);
-}
-
-.ok{
-  color:#86efac;
-}
-
-.warn{
-  color:#fde047;
-}
-
-.no{
-  color:#fca5a5;
-}
-
-.monitor{
-  margin-top:14px;
-
-  padding:10px;
-
-  background:#0b151f;
-
-  border-radius:12px;
-
-  font-size:12px;
-}
-
-.monitor div{
-  display:flex;
-
-  justify-content:space-between;
-
-  gap:10px;
-
-  margin:5px 0;
-}
-
-
-/* ===========================
-   VIDEO TEST CONTROLS
-=========================== */
-
-.seek{
-  display:grid;
-
-  grid-template-columns:
-    auto
-    auto
-    1fr
-    auto;
-
-  align-items:center;
-
-  gap:8px;
-
-  padding:
-    10px
-    12px;
-
-  border-top:
-    1px solid
-    var(--border);
-}
-
-.seek input{
-  width:100%;
-}
-
-
-/* ===========================
-   SHOT CHART
-=========================== */
-
-.chart{
   margin-top:12px;
-
+  background:#0b151f;
+  border-radius:14px;
   padding:12px;
 }
 
-#shotChart{
-  display:block;
+.statusrow{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:4px 0;
+}
 
-  width:100%;
-  max-width:720px;
+.statusrow span{
+  color:var(--muted);
+}
 
-  margin:auto;
-
-  background:#bd7941;
-
+#message{
+  margin-top:12px;
+  padding:12px;
+  min-height:48px;
   border-radius:12px;
+  background:#0b151f;
+  line-height:1.4;
 }
 
-.log{
+.legend{
   display:flex;
-
   flex-wrap:wrap;
-
-  gap:6px;
-
+  gap:12px;
+  color:var(--muted);
+  font-size:13px;
   margin-top:10px;
 }
 
-.chip{
-  padding:
-    5px
-    8px;
+.legend b:nth-child(1){color:var(--green)}
+.legend b:nth-child(2){color:var(--blue)}
+.legend b:nth-child(3){color:var(--yellow)}
 
-  border-radius:999px;
-
-  font-size:11px;
-
-  font-weight:800;
+.progress{
+  height:8px;
+  margin-top:8px;
+  border-radius:99px;
+  overflow:hidden;
+  background:#263746;
 }
 
-.chip.make{
-  background:
-    rgba(34,197,94,.15);
-
-  color:#86efac;
+#progressBar{
+  width:0%;
+  height:100%;
+  background:var(--green);
+  transition:width .15s;
 }
 
-.chip.miss{
-  background:
-    rgba(239,68,68,.14);
-
-  color:#fca5a5;
+@media(max-width:600px){
+  h1{font-size:25px}
+  .two{grid-template-columns:1fr}
 }
-
-.actions{
-  display:flex;
-
-  flex-wrap:wrap;
-
-  gap:8px;
-
-  margin-top:10px;
-}
-
-
-@media(max-width:800px){
-
-  .main{
-    grid-template-columns:1fr;
-  }
-
-  .stats{
-    grid-template-columns:
-      repeat(2,1fr);
-  }
-
-}
-
 </style>
-
-
-<script
-  src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js">
-</script>
-
-<script
-  src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js">
-</script>
-
 </head>
-
 
 <body>
 
 <div class="app">
 
+<h1>🏀 Hoop AI Test</h1>
 
-<header>
+<div class="subtitle">
+Deze pagina test alleen of de nieuwe AI de echte basketbal kan herkennen.
+</div>
 
-  <div>
+<div class="card">
 
-    <h1>
-      🏀 Hoop
-    </h1>
-
-    <div class="sub">
-      Live basketball shot tracker
-    </div>
-
-  </div>
-
-  <div class="badge">
-    REALTIME
-  </div>
-
-</header>
-
-
-<section class="stats">
-
-  <div class="stat">
-
-    <strong id="attempts">
-      0
-    </strong>
-
-    <span>
-      schoten
-    </span>
-
-  </div>
-
-
-  <div class="stat">
-
-    <strong id="makes">
-      0
-    </strong>
-
-    <span>
-      raak
-    </span>
-
-  </div>
-
-
-  <div class="stat">
-
-    <strong id="percentage">
-      0%
-    </strong>
-
-    <span>
-      percentage
-    </span>
-
-  </div>
-
-
-  <div class="stat">
-
-    <strong id="streak">
-      0
-    </strong>
-
-    <span>
-      streak
-    </span>
-
-  </div>
-
-</section>
-
-
-<div class="main">
-
-
-<section class="card">
-
-
-  <div
-    class="stage"
-    id="stage">
-
+  <div class="stage" id="stage">
 
     <video
       id="video"
       muted
-      playsinline>
+      playsinline
+      controls>
     </video>
 
-
-    <canvas
-      id="overlay">
-    </canvas>
-
-
-    <div
-      id="liveFeedback">
-
-      <div
-        id="feedbackResult"
-        class="feedback-result">
-      </div>
-
-      <div
-        id="feedbackStats"
-        class="feedback-stats">
-      </div>
-
-    </div>
-
+    <canvas id="overlay"></canvas>
 
   </div>
-
-
-  <div class="footer">
-
-    <div class="live">
-
-      <div
-        id="liveDot"
-        class="dot">
-      </div>
-
-      <span id="statusText">
-        Kies camera of testvideo
-      </span>
-
-    </div>
-
-    <span id="fpsText"></span>
-
-  </div>
-
-
-  <div
-    id="videoControls"
-    class="seek"
-    hidden>
-
-    <button
-      id="backBtn"
-      type="button">
-      −0,5s
-    </button>
-
-    <button
-      id="playBtn"
-      type="button">
-      ▶
-    </button>
-
-    <input
-      id="seek"
-      type="range"
-      min="0"
-      max="1000"
-      value="0"
-    >
-
-    <span id="videoTime">
-      0:00
-    </span>
-
-  </div>
-
-
-</section>
-
-
-<aside class="card">
-
-<div class="controls">
-
-
-<h2>
-  1. Beeld
-</h2>
-
-
-<div class="two">
-
-  <button
-    id="frontBtn"
-    class="primary"
-    type="button">
-    🤳 Voorcamera
-  </button>
-
-  <button
-    id="rearBtn"
-    class="blue"
-    type="button">
-    📷 Achtercamera
-  </button>
 
 </div>
 
-
-<div
-  class="grid"
-  style="margin-top:8px">
+<div class="controls">
 
   <button
-    id="uploadBtn"
-    type="button">
-    🎬 Testfilmpje
+    id="loadAI"
+    class="primary">
+    1. Laad basketbal-AI
+  </button>
+
+  <div class="progress">
+    <div id="progressBar"></div>
+  </div>
+
+  <div class="two">
+
+    <button
+      id="frontCamera"
+      class="blue"
+      disabled>
+      🤳 Voorcamera
+    </button>
+
+    <button
+      id="rearCamera"
+      class="blue"
+      disabled>
+      📷 Achtercamera
+    </button>
+
+  </div>
+
+  <button
+    id="videoButton"
+    disabled>
+    🎬 Testvideo kiezen
   </button>
 
   <input
     id="fileInput"
     type="file"
     accept="video/*"
-    hidden
-  >
-
-</div>
-
-
-<div class="section">
-
-<h2>
-  2. Ring
-</h2>
-
-
-<div class="grid">
+    hidden>
 
   <button
-    id="findHoopBtn"
-    class="yellow"
-    disabled
-    type="button">
-    🔎 Zoek ring automatisch
-  </button>
-
-  <button
-    id="confirmHoopBtn"
+    id="startButton"
     class="green"
-    disabled
-    type="button">
-    ✓ Gebruik deze ring
+    disabled>
+    ▶ Start detectie
   </button>
 
   <button
-    id="nextHoopBtn"
-    disabled
-    type="button">
-    → Volgende kandidaat
-  </button>
-
-  <button
-    id="manualHoopBtn"
-    disabled
-    type="button">
-    👆 Ring handmatig: 2 tikken
+    id="stopButton"
+    class="red"
+    disabled>
+    ■ Stop detectie
   </button>
 
 </div>
 
-
-<p
-  id="hoopHelp"
-  class="hint">
-  Automatisch zoeken is de makkelijkste optie.
-</p>
-
+<div id="message">
+Druk eerst op <strong>Laad basketbal-AI</strong>.
 </div>
-
-
-<div class="section">
-
-<h2>
-  3. Basketbal
-</h2>
-
-
-<div class="grid">
-
-  <button
-    id="ballBtn"
-    disabled
-    type="button">
-    🏀 Tik op basketbal
-  </button>
-
-  <button
-    id="analyseBtn"
-    class="green"
-    disabled
-    type="button">
-    ▶ Start LIVE tracking
-  </button>
-
-</div>
-
-
-<p class="hint">
-Na het tikken moet direct een groene cirkel rond de gekozen bal staan.
-</p>
-
-</div>
-
-
-<p
-  id="instruction"
-  class="callout">
-  Start eerst een camera of upload een video.
-</p>
-
 
 <div class="status">
 
-  <span>Bron</span>
-
-  <strong
-    id="sourceState"
-    class="no">
-    geen
-  </strong>
-
-
-  <span>Ring</span>
-
-  <strong
-    id="hoopState"
-    class="no">
-    niet ingesteld
-  </strong>
-
-
-  <span>Basketbal</span>
-
-  <strong
-    id="ballState"
-    class="no">
-    niet ingesteld
-  </strong>
-
-
-  <span>AI</span>
-
-  <strong
-    id="aiState"
-    class="warn">
-    niet geladen
-  </strong>
-
-
-  <span>Schutter</span>
-
-  <strong
-    id="playerState"
-    class="no">
-    zoeken
-  </strong>
-
-</div>
-
-
-<div class="monitor">
-
-  <div>
-
-    <span>
-      Baltracking
-    </span>
-
-    <strong id="trackingQuality">
-      —
-    </strong>
-
+  <div class="statusrow">
+    <span>AI</span>
+    <strong id="aiStatus">niet geladen</strong>
   </div>
 
-
-  <div>
-
-    <span>
-      Trackingbron
-    </span>
-
-    <strong id="trackingSource">
-      —
-    </strong>
-
+  <div class="statusrow">
+    <span>Laatste analyse</span>
+    <strong id="speedStatus">—</strong>
   </div>
 
-
-  <div>
-
-    <span>
-      Shot detector
-    </span>
-
-    <strong id="shotPhase">
-      WACHT
-    </strong>
-
+  <div class="statusrow">
+    <span>Basketbal</span>
+    <strong id="ballStatus">—</strong>
   </div>
 
-
-  <div>
-
-    <span>
-      Beslissing
-    </span>
-
-    <strong id="decision">
-      —
-    </strong>
-
+  <div class="statusrow">
+    <span>Score AI</span>
+    <strong id="confidenceStatus">—</strong>
   </div>
 
 </div>
 
-
-<div class="section">
-
-<h2>
-  Correctie
-</h2>
-
-
-<div class="two">
-
-  <button
-    id="manualMake"
-    class="green"
-    type="button">
-    + RAAK
-  </button>
-
-  <button
-    id="manualMiss"
-    class="red"
-    type="button">
-    + MIS
-  </button>
-
+<div class="legend">
+  <b>■ groen = Basketball</b>
+  <b>■ blauw = Person</b>
+  <b>■ geel = Other Balls</b>
 </div>
 
 </div>
-
-
-</div>
-
-</aside>
-
-</div>
-
-
-<section class="card chart">
-
-<h2>
-  Shot chart
-</h2>
-
 
 <canvas
-  id="shotChart"
-  width="700"
-  height="500">
-</canvas>
-
-
-<div
-  id="shotLog"
-  class="log">
-</div>
-
-
-<div class="actions">
-
-  <button
-    id="undoBtn"
-    type="button">
-    ↶ Laatste verwijderen
-  </button>
-
-  <button
-    id="resetBtn"
-    type="button">
-    Nieuwe sessie
-  </button>
-
-</div>
-
-
-</section>
-
-</div>
-
-
-<canvas
-  id="analysis"
+  id="frameCanvas"
+  width="640"
+  height="360"
   hidden>
 </canvas>
 
 
-<script>
+<script type="module">
 
-(() => {
+import {
+  pipeline,
+  env,
+  RawImage
+} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1";
 
-"use strict";
 
-
-/* =================================================
+/* =====================================================
    ELEMENTS
-================================================= */
+===================================================== */
 
-const $=
-  id=>
-    document.getElementById(
-      id
-    );
+const video =
+  document.getElementById("video");
 
+const stage =
+  document.getElementById("stage");
 
-const video=
-  $("video");
+const overlay =
+  document.getElementById("overlay");
 
+const ctx =
+  overlay.getContext("2d");
 
-const stage=
-  $("stage");
+const frameCanvas =
+  document.getElementById("frameCanvas");
 
-
-const overlay=
-  $("overlay");
-
-
-const octx=
-  overlay.getContext(
-    "2d"
-  );
-
-
-const analysis=
-  $("analysis");
-
-
-const actx=
-  analysis.getContext(
+const frameCtx =
+  frameCanvas.getContext(
     "2d",
-    {
-      willReadFrequently:true
-    }
+    {willReadFrequently:true}
   );
 
+const loadAIButton =
+  document.getElementById("loadAI");
 
-const shotChart=
-  $("shotChart");
+const frontCameraButton =
+  document.getElementById("frontCamera");
+
+const rearCameraButton =
+  document.getElementById("rearCamera");
+
+const videoButton =
+  document.getElementById("videoButton");
+
+const fileInput =
+  document.getElementById("fileInput");
+
+const startButton =
+  document.getElementById("startButton");
+
+const stopButton =
+  document.getElementById("stopButton");
+
+const message =
+  document.getElementById("message");
+
+const aiStatus =
+  document.getElementById("aiStatus");
+
+const speedStatus =
+  document.getElementById("speedStatus");
+
+const ballStatus =
+  document.getElementById("ballStatus");
+
+const confidenceStatus =
+  document.getElementById("confidenceStatus");
+
+const progressBar =
+  document.getElementById("progressBar");
 
 
-const cctx=
-  shotChart.getContext(
-    "2d"
-  );
-
-
-let AW=360;
-let AH=203;
-
-
-/* =================================================
+/* =====================================================
    STATE
-================================================= */
+===================================================== */
 
-const state={
+let detector = null;
 
-  source:null,
-  facing:null,
+let stream = null;
 
-  mirrored:false,
+let detectionRunning = false;
 
-  stream:null,
-  objectURL:null,
+let inferenceBusy = false;
 
-  running:false,
-  analysing:false,
+let mirrored = false;
 
-  model:null,
-
-  aiBusy:false,
-  lastAIWall:-Infinity,
-
-  persons:[],
-  aiBalls:[],
-
-  hoop:null,
-
-  hoopCandidates:[],
-  hoopCandidateIndex:0,
-
-  mode:"none",
-
-  manualHoopPoints:[],
-
-  ballProfile:null,
-  ballSeed:null,
-
-  track:null,
-  ball:null,
-
-  history:[],
-
-  expectedDiameter:null,
-
-  lastBallSeen:-Infinity,
-
-  currentOwner:null,
-
-  possessionStarted:null,
-
-  lastPossession:null,
-
-  shotPhase:"idle",
-
-  shot:null,
-
-  requireNewPossession:false,
-
-  cooldownUntil:0,
-
-  shots:[],
-
-  seeking:false,
-
-  fpsCount:0,
-
-  fpsLast:
-    performance.now(),
-
-  lastGlobalSearchWall:
-    -Infinity,
-
-  feedbackTimer:null
-
-};
+let currentObjectURL = null;
 
 
-const buffers={
+/* =====================================================
+   TRANSFORMERS SETTINGS
+===================================================== */
 
-  mask:null,
-
-  visited:null,
-
-  queue:null
-
-};
+env.allowLocalModels = false;
 
 
-/* =================================================
-   BASIC
-================================================= */
+/* =====================================================
+   HELPERS
+===================================================== */
 
-const clamp=(
-  value,
-  minimum,
-  maximum
-)=>
-
-  Math.max(
-    minimum,
-    Math.min(
-      maximum,
-      value
-    )
-  );
+function setMessage(text){
+  message.innerHTML = text;
+}
 
 
-const distance=(
-  a,
-  b
-)=>
+function enableSourceButtons(){
 
-  Math.hypot(
-    a.x-b.x,
-    a.y-b.y
-  );
-
-
-function mediaTime(){
-
-  if(
-    state.source==="file"
-  ){
-
-    return(
-      video.currentTime*
-      1000
-    );
-
-  }
-
-
-  return performance.now();
+  frontCameraButton.disabled = false;
+  rearCameraButton.disabled = false;
+  videoButton.disabled = false;
 
 }
 
 
-function setStatus(text){
+function prepareOverlay(){
 
-  $("statusText")
-    .textContent=
-      text;
+  overlay.width =
+    video.videoWidth;
+
+  overlay.height =
+    video.videoHeight;
 
 }
 
 
-function setMirrored(value){
+function clearOverlay(){
 
-  state.mirrored=
-    Boolean(value);
-
-
-  stage.classList.toggle(
-    "mirrored",
-    state.mirrored
+  ctx.clearRect(
+    0,
+    0,
+    overlay.width,
+    overlay.height
   );
 
 }
 
 
-/* =================================================
-   UI
-================================================= */
+function stopCurrentSource(){
 
-function setShotPhase(
-  phase
-){
+  detectionRunning = false;
 
-  state.shotPhase=
-    phase;
+  if(stream){
 
-
-  const labels={
-
-    idle:
-      "WACHT",
-
-    candidate:
-      "CONTROLEREN",
-
-    flight:
-      "SCHOT",
-
-    cooldown:
-      "HERSTEL"
-
-  };
-
-
-  $("shotPhase")
-    .textContent=
-      labels[phase] ||
-      phase;
-
-}
-
-
-function updateUI(){
-
-  let source=
-    "geen";
-
-
-  if(
-    state.source==="file"
-  ){
-
-    source=
-      "video";
-
-  }
-
-
-  if(
-    state.source==="camera"
-  ){
-
-    source=
-      state.facing==="user"
-      ? "voorcamera"
-      : "achtercamera";
-
-  }
-
-
-  $("sourceState")
-    .textContent=
-      source;
-
-
-  $("sourceState")
-    .className=
-      state.source
-      ? "ok"
-      : "no";
-
-
-  $("hoopState")
-    .textContent=
-      state.hoop
-      ? "✓ ingesteld"
-      : "niet ingesteld";
-
-
-  $("hoopState")
-    .className=
-      state.hoop
-      ? "ok"
-      : "no";
-
-
-  $("ballState")
-    .textContent=
-      state.ballProfile
-      ? "✓ geleerd"
-      : "niet ingesteld";
-
-
-  $("ballState")
-    .className=
-      state.ballProfile
-      ? "ok"
-      : "no";
-
-
-  $("aiState")
-    .textContent=
-      state.model
-      ? "✓ actief"
-      : "laden / niet actief";
-
-
-  $("aiState")
-    .className=
-      state.model
-      ? "ok"
-      : "warn";
-
-
-  const ready=
-    Boolean(
-      state.source
-    );
-
-
-  $("findHoopBtn")
-    .disabled=
-      !ready;
-
-
-  $("manualHoopBtn")
-    .disabled=
-      !ready;
-
-
-  $("ballBtn")
-    .disabled=
-      !(
-        ready &&
-        state.hoop
-      );
-
-
-  $("analyseBtn")
-    .disabled=
-      !(
-        ready &&
-        state.hoop &&
-        state.ballProfile
-      );
-
-}
-
-
-/* =================================================
-   LIVE FEEDBACK
-================================================= */
-
-function showShotFeedback(
-  result
-){
-
-  const attempts=
-    state.shots.length;
-
-
-  const makes=
-    state.shots.filter(
-      shot=>
-        shot.result==="make"
-    ).length;
-
-
-  const percentage=
-    attempts
-    ? Math.round(
-        makes/
-        attempts*
-        100
-      )
-    : 0;
-
-
-  const panel=
-    $("liveFeedback");
-
-
-  panel.classList.remove(
-    "make",
-    "miss",
-    "show"
-  );
-
-
-  panel.classList.add(
-    result==="make"
-    ? "make"
-    : "miss"
-  );
-
-
-  $("feedbackResult")
-    .textContent=
-      result==="make"
-      ? "✅ RAAK"
-      : "❌ MIS";
-
-
-  $("feedbackStats")
-    .textContent=
-      makes+
-      " / "+
-      attempts+
-      "  ·  "+
-      percentage+
-      "%";
-
-
-  /*
-    Force layout zodat animatie
-    iedere keer opnieuw afspeelt.
-  */
-
-  void panel.offsetWidth;
-
-
-  panel.classList.add(
-    "show"
-  );
-
-
-  if(
-    state.feedbackTimer
-  ){
-
-    clearTimeout(
-      state.feedbackTimer
-    );
-
-  }
-
-
-  state.feedbackTimer=
-    setTimeout(
-      ()=>{
-
-        panel.classList.remove(
-          "show"
-        );
-
-      },
-      1350
-    );
-
-}
-
-
-/* =================================================
-   SOURCE
-================================================= */
-
-function stopSource(){
-
-  state.running=false;
-
-  state.analysing=false;
-
-
-  if(
-    state.stream
-  ){
-
-    state.stream
+    stream
       .getTracks()
-      .forEach(
-        track=>
-          track.stop()
-      );
+      .forEach(track => track.stop());
 
-
-    state.stream=null;
+    stream = null;
 
   }
 
-
-  if(
-    state.objectURL
-  ){
+  if(currentObjectURL){
 
     URL.revokeObjectURL(
-      state.objectURL
+      currentObjectURL
     );
 
-
-    state.objectURL=null;
+    currentObjectURL = null;
 
   }
-
 
   video.pause();
 
+  video.srcObject = null;
 
-  video.srcObject=null;
+  video.removeAttribute("src");
 
-
-  video.removeAttribute(
-    "src"
-  );
+  clearOverlay();
 
 }
 
 
 function waitForVideo(){
 
-  return new Promise(
-    (
-      resolve,
-      reject
-    )=>{
+  return new Promise(resolve => {
 
-      if(
-        video.readyState>=2 &&
-        video.videoWidth
-      ){
+    if(
+      video.videoWidth &&
+      video.videoHeight
+    ){
+      resolve();
+      return;
+    }
 
-        resolve();
-        return;
+    video.addEventListener(
+      "loadedmetadata",
+      () => resolve(),
+      {once:true}
+    );
 
-      }
+  });
 
-
-      const ok=()=>{
-
-        cleanup();
-        resolve();
-
-      };
+}
 
 
-      const fail=()=>{
+/* =====================================================
+   LOAD AI
+===================================================== */
 
-        cleanup();
+loadAIButton.addEventListener(
+  "click",
+  async () => {
 
-        reject(
-          new Error(
-            "Video kon niet worden geladen."
-          )
+    loadAIButton.disabled = true;
+
+    aiStatus.textContent =
+      "laden…";
+
+    setMessage(
+      "Het nieuwe AI-model wordt geladen. " +
+      "De eerste keer kan dit even duren. Laat deze pagina openstaan."
+    );
+
+
+    try{
+
+      detector =
+        await pipeline(
+          "object-detection",
+
+          "onnx-community/dfine_s_obj365-ONNX",
+
+          {
+            progress_callback: progress => {
+
+              if(
+                typeof progress.progress === "number"
+              ){
+
+                progressBar.style.width =
+                  Math.round(
+                    progress.progress
+                  ) + "%";
+
+              }
+
+            }
+          }
         );
 
-      };
+
+      progressBar.style.width =
+        "100%";
 
 
-      const cleanup=()=>{
-
-        video.removeEventListener(
-          "loadeddata",
-          ok
-        );
+      aiStatus.textContent =
+        "✓ klaar";
 
 
-        video.removeEventListener(
-          "error",
-          fail
-        );
-
-      };
+      enableSourceButtons();
 
 
-      video.addEventListener(
-        "loadeddata",
-        ok,
-        {
-          once:true
-        }
-      );
-
-
-      video.addEventListener(
-        "error",
-        fail,
-        {
-          once:true
-        }
+      setMessage(
+        "<strong>AI klaar.</strong> " +
+        "Kies nu bij voorkeur eerst jouw testvideo."
       );
 
     }
-  );
 
-}
+    catch(error){
 
-
-function prepareCanvases(){
-
-  overlay.width=
-    video.videoWidth;
+      console.error(error);
 
 
-  overlay.height=
-    video.videoHeight;
+      aiStatus.textContent =
+        "fout";
 
 
-  /*
-    360 breed is een compromis:
-    voldoende detail voor bal,
-    maar nog bruikbaar op iPhone.
-  */
-
-  AW=360;
+      loadAIButton.disabled = false;
 
 
-  AH=
-    Math.max(
-      180,
-      Math.round(
-        AW*
-        video.videoHeight/
-        video.videoWidth
-      )
-    );
+      setMessage(
+        "<strong>AI kon niet laden.</strong><br>" +
+        error.message
+      );
+
+    }
+
+  }
+);
 
 
-  analysis.width=
-    AW;
+/* =====================================================
+   CAMERA
+===================================================== */
 
+async function startCamera(facing){
 
-  analysis.height=
-    AH;
-
-
-  const size=
-    AW*
-    AH;
-
-
-  buffers.mask=
-    new Uint8Array(
-      size
-    );
-
-
-  buffers.visited=
-    new Uint8Array(
-      size
-    );
-
-
-  buffers.queue=
-    new Int32Array(
-      size
-    );
-
-}
-
-
-async function startCamera(
-  facing
-){
-
-  stopSource();
-
-  resetCalibration();
-
-  resetTracking(
-    false
-  );
+  stopCurrentSource();
 
 
   try{
 
-    state.facing=
-      facing;
+    mirrored =
+      facing === "user";
 
 
-    setMirrored(
-      facing==="user"
+    stage.classList.toggle(
+      "mirrored",
+      mirrored
     );
 
 
-    setStatus(
-      "Camera openen…"
-    );
-
-
-    const stream=
+    stream =
       await navigator.mediaDevices
         .getUserMedia({
 
@@ -1915,15 +630,15 @@ async function startCamera(
             },
 
             width:{
-              ideal:1920
+              ideal:1280
             },
 
             height:{
-              ideal:1080
+              ideal:720
             },
 
             frameRate:{
-              ideal:60,
+              ideal:30,
               max:60
             }
 
@@ -1932,24 +647,10 @@ async function startCamera(
         });
 
 
-    state.stream=
+    video.controls = false;
+
+    video.srcObject =
       stream;
-
-
-    state.source=
-      "camera";
-
-
-    video.srcObject=
-      stream;
-
-
-    video.muted=
-      true;
-
-
-    video.playsInline=
-      true;
 
 
     await video.play();
@@ -1957,67 +658,25 @@ async function startCamera(
     await waitForVideo();
 
 
-    /*
-      Camera is live op normale snelheid.
-    */
-
-    video.playbackRate=
-      1;
+    prepareOverlay();
 
 
-    prepareCanvases();
+    startButton.disabled = false;
 
 
-    state.running=
-      true;
-
-
-    state.analysing=
-      false;
-
-
-    $("videoControls")
-      .hidden=
-        true;
-
-
-    $("liveDot")
-      .classList
-      .add(
-        "on"
-      );
-
-
-    setStatus(
-      "Camera LIVE · stel ring en bal in"
-    );
-
-
-    $("instruction")
-      .textContent=
-        "Zet de telefoon stil neer. Stel eerst de ring in en tik daarna op de basketbal.";
-
-
-    updateUI();
-
-    loadAI();
-
-
-    requestAnimationFrame(
-      loop
+    setMessage(
+      "Camera actief. Zorg dat persoon en bal duidelijk zichtbaar zijn en druk op <strong>Start detectie</strong>."
     );
 
   }
 
   catch(error){
 
-    console.error(
-      error
-    );
+    console.error(error);
 
 
-    setStatus(
-      "Camera fout: "+
+    setMessage(
+      "<strong>Camera kon niet starten.</strong><br>" +
       error.message
     );
 
@@ -2026,7096 +685,621 @@ async function startCamera(
 }
 
 
-async function loadVideoFile(
-  file
-){
-
-  stopSource();
-
-  resetCalibration();
-
-  resetTracking(
-    false
-  );
+frontCameraButton.addEventListener(
+  "click",
+  () => startCamera("user")
+);
 
 
-  setMirrored(
-    false
-  );
+rearCameraButton.addEventListener(
+  "click",
+  () => startCamera("environment")
+);
 
 
-  try{
+/* =====================================================
+   VIDEO FILE
+===================================================== */
 
-    state.source=
-      "file";
-
-
-    state.facing=
-      null;
-
-
-    state.objectURL=
-      URL.createObjectURL(
-        file
-      );
+videoButton.addEventListener(
+  "click",
+  () => fileInput.click()
+);
 
 
-    video.src=
-      state.objectURL;
+fileInput.addEventListener(
+  "change",
+  async event => {
+
+    const file =
+      event.target.files?.[0];
 
 
-    video.muted=
-      true;
+    if(!file){
+      return;
+    }
 
 
-    video.playsInline=
-      true;
+    stopCurrentSource();
 
 
-    video.load();
+    mirrored = false;
+
+    stage.classList.remove(
+      "mirrored"
+    );
+
+
+    currentObjectURL =
+      URL.createObjectURL(file);
+
+
+    video.controls = true;
+
+    video.src =
+      currentObjectURL;
+
+
+    video.muted = true;
+
+    video.playsInline = true;
 
 
     await waitForVideo();
 
 
-    video.currentTime=
-      0;
+    prepareOverlay();
+
+
+    video.currentTime = 0;
+
+
+    startButton.disabled = false;
+
+
+    setMessage(
+      "Video geladen. Druk op <strong>Start detectie</strong>. " +
+      "De video blijft op normale snelheid lopen."
+    );
+
+  }
+);
+
+
+/* =====================================================
+   FRAME PREPARATION
+===================================================== */
+
+function copyCurrentFrame(){
+
+  const sourceWidth =
+    video.videoWidth;
+
+  const sourceHeight =
+    video.videoHeight;
+
+
+  /*
+    We geven de AI maximaal 640 pixels breed.
+
+    Dit vermindert rekenwerk op een telefoon
+    zonder het beeld extreem klein te maken.
+  */
+
+  const width =
+    Math.min(
+      640,
+      sourceWidth
+    );
+
+
+  const height =
+    Math.round(
+      width *
+      sourceHeight /
+      sourceWidth
+    );
+
+
+  frameCanvas.width =
+    width;
+
+
+  frameCanvas.height =
+    height;
+
+
+  frameCtx.drawImage(
+    video,
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  return {
+    width,
+    height
+  };
+
+}
+
+
+/* =====================================================
+   DRAW DETECTIONS
+===================================================== */
+
+function drawDetection(
+  detection,
+  frameWidth,
+  frameHeight
+){
+
+  const label =
+    String(
+      detection.label || ""
+    );
+
+
+  const normalizedLabel =
+    label.toLowerCase();
+
+
+  let color = null;
+
+
+  if(
+    normalizedLabel === "basketball"
+  ){
+
+    color =
+      "#22c55e";
+
+  }
+
+  else if(
+    normalizedLabel === "person"
+  ){
+
+    color =
+      "#38bdf8";
+
+  }
+
+  else if(
+    normalizedLabel === "other balls"
+  ){
+
+    color =
+      "#facc15";
+
+  }
+
+  else{
+
+    return;
+
+  }
+
+
+  const box =
+    detection.box;
+
+
+  const scaleX =
+    overlay.width /
+    frameWidth;
+
+
+  const scaleY =
+    overlay.height /
+    frameHeight;
+
+
+  const x =
+    box.xmin *
+    scaleX;
+
+
+  const y =
+    box.ymin *
+    scaleY;
+
+
+  const width =
+    (
+      box.xmax -
+      box.xmin
+    ) *
+    scaleX;
+
+
+  const height =
+    (
+      box.ymax -
+      box.ymin
+    ) *
+    scaleY;
+
+
+  ctx.strokeStyle =
+    color;
+
+
+  ctx.lineWidth =
+    normalizedLabel === "basketball"
+    ? 6
+    : 3;
+
+
+  ctx.strokeRect(
+    x,
+    y,
+    width,
+    height
+  );
+
+
+  const percentage =
+    Math.round(
+      detection.score * 100
+    );
+
+
+  const text =
+    label.toUpperCase() +
+    " " +
+    percentage +
+    "%";
+
+
+  ctx.font =
+    "bold 18px Arial";
+
+
+  const textWidth =
+    ctx.measureText(text).width;
+
+
+  ctx.fillStyle =
+    color;
+
+
+  ctx.fillRect(
+    x,
+    Math.max(0,y-27),
+    textWidth+12,
+    27
+  );
+
+
+  ctx.fillStyle =
+    "#071018";
+
+
+  ctx.fillText(
+    text,
+    x+6,
+    Math.max(19,y-7)
+  );
+
+}
+
+
+/* =====================================================
+   AI LOOP
+===================================================== */
+
+async function runDetection(){
+
+  if(
+    !detectionRunning ||
+    !detector
+  ){
+    return;
+  }
+
+
+  if(
+    inferenceBusy ||
+    video.readyState < 2
+  ){
+
+    requestAnimationFrame(
+      runDetection
+    );
+
+    return;
+  }
+
+
+  inferenceBusy = true;
+
+
+  try{
+
+    const {
+      width,
+      height
+    } =
+      copyCurrentFrame();
+
+
+    const rawImage =
+      RawImage.fromCanvas(
+        frameCanvas
+      );
+
+
+    const start =
+      performance.now();
 
 
     /*
-      BELANGRIJK:
-      testvideo draait vanaf nu 1×.
+      Lage threshold is bewust gekozen.
+
+      Een snel bewegende basketbal
+      is klein en onscherp.
     */
 
-    video.playbackRate=
-      1;
-
-
-    video.pause();
-
-
-    prepareCanvases();
-
-
-    state.running=
-      true;
-
-
-    state.analysing=
-      false;
-
-
-    $("videoControls")
-      .hidden=
-        false;
-
-
-    $("liveDot")
-      .classList
-      .add(
-        "on"
+    const detections =
+      await detector(
+        rawImage,
+        {
+          threshold:0.10
+        }
       );
 
 
-    setStatus(
-      "Testvideo geladen · analyse straks realtime"
-    );
+    const elapsed =
+      Math.round(
+        performance.now() -
+        start
+      );
 
 
-    $("instruction")
-      .textContent=
-        "Pauzeer op een duidelijk beeld. Stel ring en bal in en zet de video daarna nét vóór het schot.";
+    speedStatus.textContent =
+      elapsed + " ms";
 
 
-    updateUI();
-
-    loadAI();
+    clearOverlay();
 
 
-    requestAnimationFrame(
-      loop
-    );
+    const basketballs =
+      detections.filter(
+        detection =>
+          String(
+            detection.label
+          ).toLowerCase()
+          ===
+          "basketball"
+      );
+
+
+    const otherBalls =
+      detections.filter(
+        detection =>
+          String(
+            detection.label
+          ).toLowerCase()
+          ===
+          "other balls"
+      );
+
+
+    /*
+      Alleen relevante objecten tekenen.
+    */
+
+    for(
+      const detection of detections
+    ){
+
+      drawDetection(
+        detection,
+        width,
+        height
+      );
+
+    }
+
+
+    if(
+      basketballs.length
+    ){
+
+      const best =
+        basketballs.sort(
+          (a,b) =>
+            b.score-a.score
+        )[0];
+
+
+      ballStatus.textContent =
+        "✓ GEVONDEN";
+
+
+      ballStatus.style.color =
+        "#86efac";
+
+
+      confidenceStatus.textContent =
+        Math.round(
+          best.score*100
+        ) + "%";
+
+
+      setMessage(
+        "<strong style='color:#86efac'>🏀 Basketbal gevonden.</strong> " +
+        "Kijk of het groene vak ook tijdens de vlucht op de echte bal blijft."
+      );
+
+    }
+
+    else if(
+      otherBalls.length
+    ){
+
+      const best =
+        otherBalls.sort(
+          (a,b) =>
+            b.score-a.score
+        )[0];
+
+
+      ballStatus.textContent =
+        "bal gezien, type onzeker";
+
+
+      ballStatus.style.color =
+        "#fde047";
+
+
+      confidenceStatus.textContent =
+        Math.round(
+          best.score*100
+        ) + "%";
+
+
+      setMessage(
+        "De AI ziet wel een bal, maar noemt hem <strong>Other Balls</strong>. " +
+        "Dat is belangrijke testinformatie."
+      );
+
+    }
+
+    else{
+
+      ballStatus.textContent =
+        "niet gevonden";
+
+
+      ballStatus.style.color =
+        "#fca5a5";
+
+
+      confidenceStatus.textContent =
+        "—";
+
+    }
 
   }
 
   catch(error){
 
-    console.error(
-      error
-    );
+    console.error(error);
 
 
-    setStatus(
-      "Videofout: "+
+    setMessage(
+      "<strong>Detectiefout:</strong> " +
       error.message
-    );
-
-  }
-
-}
-
-
-/* =================================================
-   OBJECT AI
-================================================= */
-
-async function loadAI(){
-
-  if(
-    state.model
-  ){
-
-    updateUI();
-
-    return;
-
-  }
-
-
-  try{
-
-    $("aiState")
-      .textContent=
-        "laden…";
-
-
-    await tf.setBackend(
-      "webgl"
-    );
-
-
-    await tf.ready();
-
-
-    state.model=
-      await cocoSsd.load({
-
-        base:
-          "lite_mobilenet_v2"
-
-      });
-
-
-    updateUI();
-
-  }
-
-  catch(error){
-
-    console.warn(
-      error
-    );
-
-
-    $("aiState")
-      .textContent=
-        "lokale tracker";
-
-  }
-
-}
-
-
-async function detectObjects(
-  now
-){
-
-  if(
-
-    !state.model
-
-    ||
-
-    state.aiBusy
-
-    ||
-
-    performance.now()-
-    state.lastAIWall<
-    220
-
-  ){
-
-    return;
-
-  }
-
-
-  state.aiBusy=
-    true;
-
-
-  state.lastAIWall=
-    performance.now();
-
-
-  try{
-
-    const predictions=
-      await state.model.detect(
-        video,
-        20,
-        .15
-      );
-
-
-    const sx=
-      AW/
-      video.videoWidth;
-
-
-    const sy=
-      AH/
-      video.videoHeight;
-
-
-    state.persons=
-      predictions
-
-      .filter(
-        detection=>
-          detection.class==="person" &&
-          detection.score>.27
-      )
-
-      .map(
-        detection=>({
-
-          x:
-            detection.bbox[0]*
-            sx,
-
-          y:
-            detection.bbox[1]*
-            sy,
-
-          w:
-            detection.bbox[2]*
-            sx,
-
-          h:
-            detection.bbox[3]*
-            sy,
-
-          score:
-            detection.score,
-
-          t:now
-
-        })
-      );
-
-
-    state.aiBalls=
-      predictions
-
-      .filter(
-        detection=>
-          detection.class==="sports ball" &&
-          detection.score>.10
-      )
-
-      .map(
-        detection=>({
-
-          x:
-            (
-              detection.bbox[0]+
-              detection.bbox[2]/
-              2
-            )*
-            sx,
-
-          y:
-            (
-              detection.bbox[1]+
-              detection.bbox[3]/
-              2
-            )*
-            sy,
-
-          w:
-            detection.bbox[2]*
-            sx,
-
-          h:
-            detection.bbox[3]*
-            sy,
-
-          score:
-            detection.score,
-
-          confidence:
-            detection.score,
-
-          source:
-            "AI",
-
-          t:now
-
-        })
-      );
-
-  }
-
-  catch(error){
-
-    console.warn(
-      error
     );
 
   }
 
   finally{
 
-    state.aiBusy=
-      false;
+    inferenceBusy = false;
+
+  }
+
+
+  /*
+    Niet kunstmatig vertragen.
+
+    Nieuwe analyse start zodra de vorige klaar is.
+    Video/camera zelf blijft realtime lopen.
+  */
+
+  if(
+    detectionRunning
+  ){
+
+    setTimeout(
+      runDetection,
+      10
+    );
 
   }
 
 }
 
 
-/* =================================================
-   POINTER
-================================================= */
+/* =====================================================
+   START / STOP
+===================================================== */
 
-function pointerPosition(
-  event
-){
-
-  const rect=
-    overlay.getBoundingClientRect();
-
-
-  let x=
-    (
-      event.clientX-
-      rect.left
-    )*
-    overlay.width/
-    rect.width;
-
-
-  const y=
-    (
-      event.clientY-
-      rect.top
-    )*
-    overlay.height/
-    rect.height;
-
-
-  if(
-    state.mirrored
-  ){
-
-    x=
-      overlay.width-
-      x;
-
-  }
-
-
-  return{
-    x,
-    y
-  };
-
-}
-
-
-function toAnalysis(
-  point
-){
-
-  return{
-
-    x:
-      point.x/
-      overlay.width*
-      AW,
-
-    y:
-      point.y/
-      overlay.height*
-      AH
-
-  };
-
-}
-
-
-/* =================================================
-   COLOR HELPERS
-================================================= */
-
-function rgbToHSV(
-  r,
-  g,
-  b
-){
-
-  r/=255;
-  g/=255;
-  b/=255;
-
-
-  const max=
-    Math.max(
-      r,g,b
-    );
-
-
-  const min=
-    Math.min(
-      r,g,b
-    );
-
-
-  const d=
-    max-min;
-
-
-  let h=0;
-
-
-  if(
-    d!==0
-  ){
+startButton.addEventListener(
+  "click",
+  async () => {
 
     if(
-      max===r
+      !detector
     ){
-
-      h=
-        60*
-        (
-          (
-            (g-b)/d
-          )%6
-        );
-
+      return;
     }
 
-    else if(
-      max===g
-    ){
 
-      h=
-        60*
-        (
-          (b-r)/d+
-          2
-        );
+    detectionRunning = true;
 
-    }
 
-    else{
+    startButton.disabled =
+      true;
 
-      h=
-        60*
-        (
-          (r-g)/d+
-          4
-        );
 
-    }
-
-  }
-
-
-  if(
-    h<0
-  ){
-
-    h+=360;
-
-  }
-
-
-  return{
-
-    h,
-
-    s:
-      max===0
-      ? 0
-      : d/max,
-
-    v:max
-
-  };
-
-}
-
-
-function hueDistance(
-  a,
-  b
-){
-
-  const d=
-    Math.abs(
-      a-b
-    );
-
-
-  return Math.min(
-    d,
-    360-d
-  );
-
-}
-
-
-/* =================================================
-   AUTO HOOP
-================================================= */
-
-function isHoopColour(
-  r,
-  g,
-  b
-){
-
-  const hsv=
-    rgbToHSV(
-      r,g,b
-    );
-
-
-  return(
-
-    (
-      (
-        hsv.h<50 ||
-        hsv.h>345
-      )
-
-      &&
-
-      hsv.s>.28
-
-      &&
-
-      hsv.v>.18
-    )
-
-    ||
-
-    (
-      r>65
-
-      &&
-
-      r>
-      g*1.10
-
-      &&
-
-      r>
-      b*1.15
-    )
-
-  );
-
-}
-
-
-function findHoopCandidates(){
-
-  if(
-    video.readyState<2
-  ){
-
-    return;
-
-  }
-
-
-  if(
-    state.source==="camera"
-  ){
-
-    video.pause();
-
-  }
-
-
-  actx.drawImage(
-    video,
-    0,0,
-    AW,AH
-  );
-
-
-  const image=
-    actx.getImageData(
-      0,0,
-      AW,AH
-    );
-
-
-  const size=
-    AW*
-    AH;
-
-
-  const mask=
-    new Uint8Array(
-      size
-    );
-
-
-  const visited=
-    new Uint8Array(
-      size
-    );
-
-
-  const queue=
-    new Int32Array(
-      size
-    );
-
-
-  for(
-    let index=0;
-    index<size;
-    index++
-  ){
-
-    const dataIndex=
-      index*
-      4;
-
-
-    if(
-      isHoopColour(
-
-        image.data[
-          dataIndex
-        ],
-
-        image.data[
-          dataIndex+1
-        ],
-
-        image.data[
-          dataIndex+2
-        ]
-
-      )
-    ){
-
-      mask[index]=1;
-
-    }
-
-  }
-
-
-  const results=[];
-
-
-  for(
-    let y=0;
-    y<AH;
-    y++
-  ){
-
-    for(
-      let x=0;
-      x<AW;
-      x++
-    ){
-
-      const start=
-        y*
-        AW+
-        x;
-
-
-      if(
-        !mask[start] ||
-        visited[start]
-      ){
-
-        continue;
-
-      }
-
-
-      let queueStart=0;
-      let queueEnd=0;
-
-
-      queue[
-        queueEnd++
-      ]=
-        start;
-
-
-      visited[
-        start
-      ]=1;
-
-
-      let area=0;
-
-      let minX=x;
-      let maxX=x;
-
-      let minY=y;
-      let maxY=y;
-
-
-      while(
-        queueStart<
-        queueEnd
-      ){
-
-        const index=
-          queue[
-            queueStart++
-          ];
-
-
-        const cy=
-          Math.floor(
-            index/
-            AW
-          );
-
-
-        const cx=
-          index-
-          cy*
-          AW;
-
-
-        area++;
-
-
-        minX=
-          Math.min(
-            minX,
-            cx
-          );
-
-
-        maxX=
-          Math.max(
-            maxX,
-            cx
-          );
-
-
-        minY=
-          Math.min(
-            minY,
-            cy
-          );
-
-
-        maxY=
-          Math.max(
-            maxY,
-            cy
-          );
-
-
-        const neighbours=[
-          index-1,
-          index+1,
-          index-AW,
-          index+AW
-        ];
-
-
-        for(
-          const neighbour of
-          neighbours
-        ){
-
-          if(
-
-            neighbour<0
-
-            ||
-
-            neighbour>=size
-
-            ||
-
-            visited[
-              neighbour
-            ]
-
-            ||
-
-            !mask[
-              neighbour
-            ]
-
-          ){
-
-            continue;
-
-          }
-
-
-          const ny=
-            Math.floor(
-              neighbour/
-              AW
-            );
-
-
-          const nx=
-            neighbour-
-            ny*
-            AW;
-
-
-          if(
-            Math.abs(
-              nx-cx
-            )>1
-          ){
-
-            continue;
-
-          }
-
-
-          visited[
-            neighbour
-          ]=1;
-
-
-          queue[
-            queueEnd++
-          ]=
-            neighbour;
-
-        }
-
-      }
-
-
-      if(
-        area<6
-      ){
-
-        continue;
-
-      }
-
-
-      const width=
-        maxX-
-        minX+
-        1;
-
-
-      const height=
-        maxY-
-        minY+
-        1;
-
-
-      if(
-        width<6 ||
-        height<2
-      ){
-
-        continue;
-
-      }
-
-
-      const aspect=
-        width/
-        height;
-
-
-      if(
-        aspect<1.2 ||
-        aspect>11
-      ){
-
-        continue;
-
-      }
-
-
-      if(
-
-        width>
-        AW*.4
-
-        ||
-
-        height>
-        AH*.28
-
-      ){
-
-        continue;
-
-      }
-
-
-      const fill=
-        area/
-        (
-          width*
-          height
-        );
-
-
-      if(
-        fill<.06 ||
-        fill>.9
-      ){
-
-        continue;
-
-      }
-
-
-      const score=
-
-        Math.log(
-          area+1
-        )
-
-        +
-
-        Math.max(
-          0,
-          4-
-          Math.abs(
-            aspect-
-            3
-          )
-        );
-
-
-      results.push({
-
-        x:
-          clamp(
-            minX-
-            width*.20,
-            0,
-            AW
-          )/
-          AW,
-
-        y:
-          clamp(
-            minY-
-            height*.6,
-            0,
-            AH
-          )/
-          AH,
-
-        w:
-          clamp(
-            width*1.4,
-            2,
-            AW
-          )/
-          AW,
-
-        h:
-          clamp(
-            height*2.2,
-            3,
-            AH
-          )/
-          AH,
-
-        score
-
-      });
-
-    }
-
-  }
-
-
-  results.sort(
-    (
-      a,
-      b
-    )=>
-      b.score-
-      a.score
-  );
-
-
-  state.hoopCandidates=
-    results.slice(
-      0,
-      6
-    );
-
-
-  state.hoopCandidateIndex=
-    0;
-
-
-  if(
-    !state.hoopCandidates.length
-  ){
-
-    $("hoopHelp")
-      .textContent=
-        "Geen overtuigende ring gevonden. Gebruik handmatig.";
-
-
-    $("confirmHoopBtn")
-      .disabled=
-        true;
-
-
-    $("nextHoopBtn")
-      .disabled=
-        true;
-
-
-    setStatus(
-      "Ring niet automatisch gevonden"
-    );
-
-
-    drawOverlay();
-
-    return;
-
-  }
-
-
-  $("confirmHoopBtn")
-    .disabled=
+    stopButton.disabled =
       false;
 
 
-  $("nextHoopBtn")
-    .disabled=
-      state.hoopCandidates.length<
-      2;
-
-
-  $("hoopHelp")
-    .textContent=
-      "Geel kader = kandidaat. Controleer of hij om de ring zit.";
-
-
-  setStatus(
-    "Ringkandidaat gevonden"
-  );
-
-
-  drawOverlay();
-
-}
-
-
-function currentHoopCandidate(){
-
-  return(
-    state.hoopCandidates[
-      state.hoopCandidateIndex
-    ]
-
-    ||
-
-    null
-  );
-
-}
-
-
-function nextHoopCandidate(){
-
-  if(
-    !state.hoopCandidates.length
-  ){
-
-    return;
-
-  }
-
-
-  state.hoopCandidateIndex=
-    (
-      state.hoopCandidateIndex+
-      1
-    )
-    %
-    state.hoopCandidates.length;
-
-
-  drawOverlay();
-
-}
-
-
-function confirmHoop(){
-
-  const candidate=
-    currentHoopCandidate();
-
-
-  if(
-    !candidate
-  ){
-
-    return;
-
-  }
-
-
-  state.hoop={
-    ...candidate
-  };
-
-
-  state.hoopCandidates=[];
-
-
-  $("confirmHoopBtn")
-    .disabled=
-      true;
-
-
-  $("nextHoopBtn")
-    .disabled=
-      true;
-
-
-  $("hoopHelp")
-    .textContent=
-      "✓ Ring bevestigd.";
-
-
-  setStatus(
-    "✓ Ring ingesteld"
-  );
-
-
-  $("instruction")
-    .textContent=
-      "Tik nu op de basketbal.";
-
-
-  if(
-    state.source==="camera"
-  ){
-
-    video.play()
-      .catch(
-        ()=>{}
-      );
-
-  }
-
-
-  updateUI();
-
-}
-
-
-/* =================================================
-   MANUAL HOOP
-================================================= */
-
-function startManualHoop(){
-
-  if(
-    state.source==="camera"
-  ){
-
-    video.pause();
-
-  }
-
-
-  state.hoop=null;
-
-  state.hoopCandidates=[];
-
-  state.manualHoopPoints=[];
-
-
-  state.mode=
-    "manualHoop";
-
-
-  overlay.classList.add(
-    "selecting"
-  );
-
-
-  $("confirmHoopBtn")
-    .disabled=
-      true;
-
-
-  $("nextHoopBtn")
-    .disabled=
-      true;
-
-
-  $("instruction")
-    .textContent=
-      "Tik één keer op de LINKERRAND van de ring.";
-
-
-  setStatus(
-    "Ring handmatig: tik links"
-  );
-
-
-  drawOverlay();
-
-}
-
-
-function addManualHoopPoint(
-  point
-){
-
-  state.manualHoopPoints.push(
-    point
-  );
-
-
-  if(
-    state.manualHoopPoints.length===
-    1
-  ){
-
-    $("instruction")
-      .textContent=
-        "Tik nu op de RECHTERRAND van dezelfde ring.";
-
-
-    setStatus(
-      "Ring handmatig: tik rechts"
-    );
-
-
-    drawOverlay();
-
-    return;
-
-  }
-
-
-  const first=
-    state.manualHoopPoints[
-      0
-    ];
-
-
-  const second=
-    state.manualHoopPoints[
-      1
-    ];
-
-
-  const left=
-    Math.min(
-      first.x,
-      second.x
-    );
-
-
-  const right=
-    Math.max(
-      first.x,
-      second.x
-    );
-
-
-  const width=
-    Math.max(
-      12,
-      right-
-      left
-    );
-
-
-  const centerY=
-    (
-      first.y+
-      second.y
-    )/
-    2;
-
-
-  const height=
-    Math.max(
-      7,
-      width*.28
-    );
-
-
-  state.hoop={
-
-    x:
-      clamp(
-        left-
-        width*.04,
-        0,
-        overlay.width
-      )/
-      overlay.width,
-
-    y:
-      clamp(
-        centerY-
-        height/2,
-        0,
-        overlay.height
-      )/
-      overlay.height,
-
-    w:
-      clamp(
-        width*1.08,
-        5,
-        overlay.width
-      )/
-      overlay.width,
-
-    h:
-      height/
-      overlay.height
-
-  };
-
-
-  state.mode=
-    "none";
-
-
-  state.manualHoopPoints=[];
-
-
-  overlay.classList.remove(
-    "selecting"
-  );
-
-
-  setStatus(
-    "✓ Ring handmatig ingesteld"
-  );
-
-
-  $("instruction")
-    .textContent=
-      "Tik nu op de basketbal.";
-
-
-  if(
-    state.source==="camera"
-  ){
-
-    video.play()
-      .catch(
-        ()=>{}
-      );
-
-  }
-
-
-  updateUI();
-
-}
-
-
-/* =================================================
-   BALL SELECTION
-================================================= */
-
-function startBallSelection(){
-
-  if(
-    state.source==="camera"
-  ){
-
-    video.pause();
-
-  }
-
-
-  state.mode=
-    "ball";
-
-
-  overlay.classList.add(
-    "selecting"
-  );
-
-
-  $("instruction")
-    .textContent=
-      "Tik ongeveer in het midden van de basketbal.";
-
-
-  setStatus(
-    "Tik op de basketbal"
-  );
-
-}
-
-
-function averageRegion(
-  cx,
-  cy,
-  innerRadius,
-  outerRadius
-){
-
-  const image=
-    actx.getImageData(
-      0,0,
-      AW,AH
-    );
-
-
-  let r=0;
-  let g=0;
-  let b=0;
-  let count=0;
-
-
-  const minX=
-    clamp(
-      Math.floor(
-        cx-
-        outerRadius
-      ),
-      0,
-      AW-1
-    );
-
-
-  const maxX=
-    clamp(
-      Math.ceil(
-        cx+
-        outerRadius
-      ),
-      0,
-      AW-1
-    );
-
-
-  const minY=
-    clamp(
-      Math.floor(
-        cy-
-        outerRadius
-      ),
-      0,
-      AH-1
-    );
-
-
-  const maxY=
-    clamp(
-      Math.ceil(
-        cy+
-        outerRadius
-      ),
-      0,
-      AH-1
-    );
-
-
-  for(
-    let y=minY;
-    y<=maxY;
-    y++
-  ){
-
-    for(
-      let x=minX;
-      x<=maxX;
-      x++
-    ){
-
-      const d=
-        Math.hypot(
-          x-cx,
-          y-cy
-        );
-
-
-      if(
-        d<
-        innerRadius
-
-        ||
-
-        d>
-        outerRadius
-      ){
-
-        continue;
-
-      }
-
-
-      const index=
-        (
-          y*
-          AW+
-          x
-        )*
-        4;
-
-
-      r+=
-        image.data[
-          index
-        ];
-
-
-      g+=
-        image.data[
-          index+1
-        ];
-
-
-      b+=
-        image.data[
-          index+2
-        ];
-
-
-      count++;
-
-    }
-
-  }
-
-
-  if(
-    !count
-  ){
-
-    return{
-      r:0,
-      g:0,
-      b:0
-    };
-
-  }
-
-
-  return{
-
-    r:
-      r/count,
-
-    g:
-      g/count,
-
-    b:
-      b/count
-
-  };
-
-}
-
-
-function estimateBallFromTap(
-  point
-){
-
-  /*
-    Als COCO toevallig de bal heeft,
-    gebruik deze informatie.
-  */
-
-  for(
-    const aiBall of
-    state.aiBalls
-  ){
-
-    const d=
-      distance(
-        aiBall,
-        point
-      );
-
-
-    if(
-      d<
-      Math.max(
-        15,
-        Math.max(
-          aiBall.w,
-          aiBall.h
-        )*
-        2.5
-      )
-    ){
-
-      return{
-
-        x:
-          aiBall.x,
-
-        y:
-          aiBall.y,
-
-        radius:
-          clamp(
-            Math.max(
-              aiBall.w,
-              aiBall.h
-            )/
-            2,
-            3,
-            18
-          ),
-
-        source:
-          "AI+TAP"
-
-      };
-
-    }
-
-  }
-
-
-  /*
-    Anders zoeken we rondom de tik
-    naar de meest contrasterende ronde regio.
-  */
-
-  let best=null;
-
-  let bestScore=
-    -Infinity;
-
-
-  for(
-    let offsetY=-4;
-    offsetY<=4;
-    offsetY+=2
-  ){
-
-    for(
-      let offsetX=-4;
-      offsetX<=4;
-      offsetX+=2
-    ){
-
-      const cx=
-        clamp(
-          point.x+
-          offsetX,
-          2,
-          AW-3
-        );
-
-
-      const cy=
-        clamp(
-          point.y+
-          offsetY,
-          2,
-          AH-3
-        );
-
-
-      for(
-        let radius=3;
-        radius<=16;
-        radius++
-      ){
-
-        const inner=
-          averageRegion(
-            cx,
-            cy,
-            0,
-            radius*.72
-          );
-
-
-        const outer=
-          averageRegion(
-            cx,
-            cy,
-            radius*1.12,
-            radius*1.65
-          );
-
-
-        const contrast=
-          Math.sqrt(
-
-            (
-              inner.r-
-              outer.r
-            )**2
-
-            +
-
-            (
-              inner.g-
-              outer.g
-            )**2
-
-            +
-
-            (
-              inner.b-
-              outer.b
-            )**2
-
-          )/
-          441.67;
-
-
-        const sizePenalty=
-          radius*
-          .006;
-
-
-        const centerPenalty=
-          Math.hypot(
-            offsetX,
-            offsetY
-          )*
-          .008;
-
-
-        const score=
-          contrast-
-          sizePenalty-
-          centerPenalty;
-
-
-        if(
-          score>
-          bestScore
-        ){
-
-          bestScore=
-            score;
-
-
-          best={
-
-            x:cx,
-            y:cy,
-
-            radius,
-
-            source:
-              "TAP"
-
-          };
-
-        }
-
-      }
-
-    }
-
-  }
-
-
-  return(
-    best
-
-    ||
-
-    {
-
-      x:
-        point.x,
-
-      y:
-        point.y,
-
-      radius:6,
-
-      source:
-        "TAP"
-
-    }
-  );
-
-}
-
-
-function samplesFromDisk(
-  cx,
-  cy,
-  minRadius,
-  maxRadius
-){
-
-  const image=
-    actx.getImageData(
-      0,0,
-      AW,AH
-    );
-
-
-  const samples=[];
-
-
-  const x0=
-    clamp(
-      Math.floor(
-        cx-
-        maxRadius
-      ),
-      0,
-      AW-1
-    );
-
-
-  const x1=
-    clamp(
-      Math.ceil(
-        cx+
-        maxRadius
-      ),
-      0,
-      AW-1
-    );
-
-
-  const y0=
-    clamp(
-      Math.floor(
-        cy-
-        maxRadius
-      ),
-      0,
-      AH-1
-    );
-
-
-  const y1=
-    clamp(
-      Math.ceil(
-        cy+
-        maxRadius
-      ),
-      0,
-      AH-1
-    );
-
-
-  for(
-    let y=y0;
-    y<=y1;
-    y++
-  ){
-
-    for(
-      let x=x0;
-      x<=x1;
-      x++
-    ){
-
-      const d=
-        Math.hypot(
-          x-cx,
-          y-cy
-        );
-
-
-      if(
-        d<
-        minRadius
-
-        ||
-
-        d>
-        maxRadius
-      ){
-
-        continue;
-
-      }
-
-
-      const index=
-        (
-          y*
-          AW+
-          x
-        )*
-        4;
-
-
-      const r=
-        image.data[
-          index
-        ];
-
-
-      const g=
-        image.data[
-          index+1
-        ];
-
-
-      const b=
-        image.data[
-          index+2
-        ];
-
-
-      const hsv=
-        rgbToHSV(
-          r,
-          g,
-          b
-        );
-
-
-      samples.push({
-
-        r:
-          r/255,
-
-        g:
-          g/255,
-
-        b:
-          b/255,
-
-        h:
-          hsv.h,
-
-        s:
-          hsv.s,
-
-        v:
-          hsv.v
-
-      });
-
-    }
-
-  }
-
-
-  return samples;
-
-}
-
-
-function buildRepresentatives(
-  samples,
-  maximum=10
-){
-
-  if(
-    !samples.length
-  ){
-
-    return [];
-
-  }
-
-
-  const sorted=
-    [...samples]
-      .sort(
-        (
-          a,
-          b
-        )=>
-          a.v-
-          b.v
-      );
-
-
-  const result=[];
-
-
-  const groups=
-    Math.min(
-      5,
-      sorted.length
-    );
-
-
-  for(
-    let group=0;
-    group<groups;
-    group++
-  ){
-
-    const start=
-      Math.floor(
-        group*
-        sorted.length/
-        groups
-      );
-
-
-    const end=
-      Math.floor(
-        (
-          group+1
-        )*
-        sorted.length/
-        groups
-      );
-
-
-    const bucket=
-      sorted.slice(
-        start,
-        end
-      );
-
-
-    if(
-      bucket.length
-    ){
-
-      result.push(
-        bucket[
-          Math.floor(
-            bucket.length/
-            2
-          )
-        ]
-      );
-
-    }
-
-  }
-
-
-  while(
-    result.length<
-    maximum
-  ){
-
-    let best=null;
-
-    let bestDistance=
-      -1;
-
-
-    for(
-      const sample of
-      samples
-    ){
-
-      let nearest=
-        Infinity;
-
-
-      for(
-        const ref of
-        result
-      ){
-
-        const d=
-          Math.sqrt(
-
-            (
-              sample.r-
-              ref.r
-            )**2
-
-            +
-
-            (
-              sample.g-
-              ref.g
-            )**2
-
-            +
-
-            (
-              sample.b-
-              ref.b
-            )**2
-
-          );
-
-
-        nearest=
-          Math.min(
-            nearest,
-            d
-          );
-
-      }
-
-
-      if(
-        nearest>
-        bestDistance
-      ){
-
-        bestDistance=
-          nearest;
-
-        best=
-          sample;
-
-      }
-
-    }
-
-
-    if(
-      !best ||
-      bestDistance<
-      .035
-    ){
-
-      break;
-
-    }
-
-
-    result.push(
-      best
-    );
-
-  }
-
-
-  return result.slice(
-    0,
-    maximum
-  );
-
-}
-
-
-function learnBallFromTap(
-  overlayPoint
-){
-
-  actx.drawImage(
-    video,
-    0,0,
-    AW,AH
-  );
-
-
-  const tapped=
-    toAnalysis(
-      overlayPoint
-    );
-
-
-  const estimated=
-    estimateBallFromTap(
-      tapped
-    );
-
-
-  const radius=
-    clamp(
-      estimated.radius,
-      3,
-      18
-    );
-
-
-  const ballSamples=
-    samplesFromDisk(
-
-      estimated.x,
-
-      estimated.y,
-
-      0,
-
-      radius*.82
-
-    );
-
-
-  const backgroundSamples=
-    samplesFromDisk(
-
-      estimated.x,
-
-      estimated.y,
-
-      radius*1.18,
-
-      radius*1.85
-
-    );
-
-
-  if(
-    ballSamples.length<
-    8
-  ){
-
-    setStatus(
-      "Bal kon niet goed worden gelezen. Tik opnieuw."
-    );
-
-    return;
-
-  }
-
-
-  state.ballProfile={
-
-    ball:
-      buildRepresentatives(
-        ballSamples,
-        12
-      ),
-
-    background:
-      buildRepresentatives(
-        backgroundSamples,
-        8
-      )
-
-  };
-
-
-  state.ballSeed={
-
-    x:
-      estimated.x,
-
-    y:
-      estimated.y,
-
-    radius,
-
-    t:
-      mediaTime()
-
-  };
-
-
-  state.expectedDiameter=
-    radius*
-    2;
-
-
-  state.track={
-
-    x:
-      estimated.x,
-
-    y:
-      estimated.y,
-
-    vx:0,
-    vy:0,
-
-    t:
-      mediaTime(),
-
-    confidence:1
-
-  };
-
-
-  state.ball={
-
-    x:
-      estimated.x,
-
-    y:
-      estimated.y,
-
-    w:
-      radius*
-      2,
-
-    h:
-      radius*
-      2,
-
-    real:true,
-
-    confidence:1,
-
-    source:
-      estimated.source
-
-  };
-
-
-  state.lastBallSeen=
-    mediaTime();
-
-
-  state.mode=
-    "none";
-
-
-  overlay.classList.remove(
-    "selecting"
-  );
-
-
-  setStatus(
-    "✓ Basketbal vastgelegd"
-  );
-
-
-  $("instruction")
-    .textContent=
-      "Controleer de groene cirkel. Zit die goed? Druk dan op Start LIVE tracking.";
-
-
-  $("trackingQuality")
-    .textContent=
-      "GESELECTEERD";
-
-
-  $("trackingQuality")
-    .className=
-      "ok";
-
-
-  $("trackingSource")
-    .textContent=
-      estimated.source;
-
-
-  if(
-    state.source==="camera"
-  ){
-
-    video.play()
-      .catch(
-        ()=>{}
-      );
-
-  }
-
-
-  updateUI();
-
-  drawOverlay();
-
-}
-
-
-/* =================================================
-   POINTER EVENTS
-================================================= */
-
-overlay.addEventListener(
-  "pointerdown",
-  event=>{
-
-    if(
-      state.mode==="none"
-    ){
-
-      return;
-
-    }
-
-
-    event.preventDefault();
-
-
-    const point=
-      pointerPosition(
-        event
-      );
-
-
-    if(
-      state.mode==="manualHoop"
-    ){
-
-      addManualHoopPoint(
-        point
-      );
-
-      return;
-
-    }
-
-
-    if(
-      state.mode==="ball"
-    ){
-
-      learnBallFromTap(
-        point
-      );
-
-    }
-
-  }
-);
-
-
-/* =================================================
-   BALL PROFILE SCORE
-================================================= */
-
-function sampleSimilarity(
-  r,
-  g,
-  b,
-  ref
-){
-
-  const nr=
-    r/255;
-
-
-  const ng=
-    g/255;
-
-
-  const nb=
-    b/255;
-
-
-  const hsv=
-    rgbToHSV(
-      r,g,b
-    );
-
-
-  const rgbDistance=
-    Math.sqrt(
-
-      (
-        nr-
-        ref.r
-      )**2
-
-      +
-
-      (
-        ng-
-        ref.g
-      )**2
-
-      +
-
-      (
-        nb-
-        ref.b
-      )**2
-
-    );
-
-
-  let score=
-    1-
-    rgbDistance/
-    1.25;
-
-
-  if(
-    hsv.s>.15 &&
-    ref.s>.15
-  ){
-
-    score-=
-
-      hueDistance(
-        hsv.h,
-        ref.h
-      )/
-      180*
-      .25;
-
-  }
-
-
-  return clamp(
-    score,
-    0,
-    1
-  );
-
-}
-
-
-function pixelBallScore(
-  r,
-  g,
-  b
-){
-
-  if(
-    !state.ballProfile
-  ){
-
-    return 0;
-
-  }
-
-
-  let ballScore=0;
-
-
-  for(
-    const ref of
-    state.ballProfile.ball
-  ){
-
-    ballScore=
-      Math.max(
-        ballScore,
-        sampleSimilarity(
-          r,g,b,ref
-        )
-      );
-
-  }
-
-
-  let backgroundScore=0;
-
-
-  for(
-    const ref of
-    state.ballProfile.background
-  ){
-
-    backgroundScore=
-      Math.max(
-        backgroundScore,
-        sampleSimilarity(
-          r,g,b,ref
-        )
-      );
-
-  }
-
-
-  return clamp(
-
-    ballScore-
-
-    backgroundScore*
-    .48
-
-    +
-
-    .18,
-
-    0,
-
-    1
-
-  );
-
-}
-
-
-/* =================================================
-   BALL TRACKING
-================================================= */
-
-function predictBall(
-  now
-){
-
-  if(
-
-    !state.track
-
-    ||
-
-    now-
-    state.track.t>
-    750
-
-  ){
-
-    return null;
-
-  }
-
-
-  const dt=
-    clamp(
-      (
-        now-
-        state.track.t
-      )/
-      1000,
-      0,
-      .35
-    );
-
-
-  return{
-
-    x:
-      state.track.x+
-      state.track.vx*
-      dt,
-
-    y:
-      state.track.y+
-      state.track.vy*
-      dt
-
-  };
-
-}
-
-
-function componentSearch(
-  image,
-  x0,
-  y0,
-  x1,
-  y1,
-  predicted,
-  requirePerson
-){
-
-  buffers.mask.fill(
-    0
-  );
-
-
-  buffers.visited.fill(
-    0
-  );
-
-
-  const data=
-    image.data;
-
-
-  for(
-    let y=y0;
-    y<=y1;
-    y++
-  ){
-
-    for(
-      let x=x0;
-      x<=x1;
-      x++
-    ){
-
-      const index=
-        y*
-        AW+
-        x;
-
-
-      const dataIndex=
-        index*
-        4;
-
-
-      if(
-        pixelBallScore(
-
-          data[
-            dataIndex
-          ],
-
-          data[
-            dataIndex+1
-          ],
-
-          data[
-            dataIndex+2
-          ]
-
-        )>
-        .42
-      ){
-
-        buffers.mask[
-          index
-        ]=1;
-
-      }
-
-    }
-
-  }
-
-
-  let best=null;
-
-  let bestScore=
-    -Infinity;
-
-
-  for(
-    let y=y0;
-    y<=y1;
-    y++
-  ){
-
-    for(
-      let x=x0;
-      x<=x1;
-      x++
-    ){
-
-      const start=
-        y*
-        AW+
-        x;
-
-
-      if(
-
-        !buffers.mask[
-          start
-        ]
-
-        ||
-
-        buffers.visited[
-          start
-        ]
-
-      ){
-
-        continue;
-
-      }
-
-
-      let queueStart=0;
-
-      let queueEnd=0;
-
-
-      buffers.queue[
-        queueEnd++
-      ]=
-        start;
-
-
-      buffers.visited[
-        start
-      ]=1;
-
-
-      let area=0;
-
-      let sumX=0;
-      let sumY=0;
-
-
-      let minX=x;
-      let maxX=x;
-
-      let minY=y;
-      let maxY=y;
-
-
-      while(
-        queueStart<
-        queueEnd
-      ){
-
-        const index=
-          buffers.queue[
-            queueStart++
-          ];
-
-
-        const cy=
-          Math.floor(
-            index/
-            AW
-          );
-
-
-        const cx=
-          index-
-          cy*
-          AW;
-
-
-        area++;
-
-        sumX+=cx;
-        sumY+=cy;
-
-
-        minX=
-          Math.min(
-            minX,
-            cx
-          );
-
-
-        maxX=
-          Math.max(
-            maxX,
-            cx
-          );
-
-
-        minY=
-          Math.min(
-            minY,
-            cy
-          );
-
-
-        maxY=
-          Math.max(
-            maxY,
-            cy
-          );
-
-
-        const neighbours=[
-          index-1,
-          index+1,
-          index-AW,
-          index+AW
-        ];
-
-
-        for(
-          const neighbour of
-          neighbours
-        ){
-
-          if(
-
-            neighbour<0
-
-            ||
-
-            neighbour>=
-            AW*
-            AH
-
-            ||
-
-            buffers.visited[
-              neighbour
-            ]
-
-            ||
-
-            !buffers.mask[
-              neighbour
-            ]
-
-          ){
-
-            continue;
-
-          }
-
-
-          const ny=
-            Math.floor(
-              neighbour/
-              AW
-            );
-
-
-          const nx=
-            neighbour-
-            ny*
-            AW;
-
-
-          if(
-
-            nx<x0
-
-            ||
-
-            nx>x1
-
-            ||
-
-            ny<y0
-
-            ||
-
-            ny>y1
-
-          ){
-
-            continue;
-
-          }
-
-
-          buffers.visited[
-            neighbour
-          ]=1;
-
-
-          buffers.queue[
-            queueEnd++
-          ]=
-            neighbour;
-
-        }
-
-      }
-
-
-      if(
-        area<2 ||
-        area>1700
-      ){
-
-        continue;
-
-      }
-
-
-      const width=
-        maxX-
-        minX+
-        1;
-
-
-      const height=
-        maxY-
-        minY+
-        1;
-
-
-      const aspect=
-        width/
-        height;
-
-
-      if(
-        aspect<.20 ||
-        aspect>5
-      ){
-
-        continue;
-
-      }
-
-
-      const cx=
-        sumX/
-        area;
-
-
-      const cy=
-        sumY/
-        area;
-
-
-      const diameter=
-        Math.max(
-          width,
-          height
-        );
-
-
-      let score=
-        Math.log(
-          area+1
-        );
-
-
-      if(
-        predicted
-      ){
-
-        score-=
-
-          distance(
-            {
-              x:cx,
-              y:cy
-            },
-            predicted
-          )/
-          10;
-
-      }
-
-
-      if(
-        state.expectedDiameter
-      ){
-
-        const ratio=
-          Math.max(
-
-            diameter/
-            state.expectedDiameter,
-
-            state.expectedDiameter/
-            Math.max(
-              1,
-              diameter
-            )
-
-          );
-
-
-        score-=
-
-          Math.log(
-            ratio
-          )*
-          1.4;
-
-      }
-
-
-      if(
-        requirePerson
-      ){
-
-        let closest=
-          Infinity;
-
-
-        for(
-          const person of
-          state.persons
-        ){
-
-          closest=
-            Math.min(
-
-              closest,
-
-              distance(
-
-                {
-                  x:cx,
-                  y:cy
-                },
-
-                {
-                  x:
-                    person.x+
-                    person.w*.5,
-
-                  y:
-                    person.y+
-                    person.h*.42
-                }
-
-              )
-
-            );
-
-        }
-
-
-        if(
-
-          closest===
-          Infinity
-
-          ||
-
-          closest>
-          AH*.38
-
-        ){
-
-          continue;
-
-        }
-
-
-        score+=
-
-          (
-            1-
-            clamp(
-              closest/
-              (AH*.38),
-              0,
-              1
-            )
-          )*
-          2;
-
-      }
-
-
-      if(
-        score>
-        bestScore
-      ){
-
-        bestScore=
-          score;
-
-
-        best={
-
-          x:cx,
-          y:cy,
-
-          w:
-            width,
-
-          h:
-            height,
-
-          confidence:.72,
-
-          source:
-            requirePerson
-            ? "REACQUIRE"
-            : "PROFILE"
-
-        };
-
-      }
-
-    }
-
-  }
-
-
-  return best;
-
-}
-
-
-function colourCandidate(
-  now
-){
-
-  if(
-    !state.ballProfile
-  ){
-
-    return null;
-
-  }
-
-
-  const predicted=
-    predictBall(
-      now
-    );
-
-
-  if(
-
-    !predicted
-
-    ||
-
-    now-
-    state.lastBallSeen>
-    700
-
-  ){
-
-    return null;
-
-  }
-
-
-  const image=
-    actx.getImageData(
-      0,0,
-      AW,AH
-    );
-
-
-  const speed=
-    state.track
-    ? Math.hypot(
-        state.track.vx,
-        state.track.vy
-      )
-    : 0;
-
-
-  const radius=
-    clamp(
-
-      Math.max(
-        30,
-        state.expectedDiameter*
-        4
-      )
-
-      +
-
-      speed*.06,
-
-      35,
-
-      130
-
-    );
-
-
-  const x0=
-    clamp(
-      Math.floor(
-        predicted.x-
-        radius
-      ),
-      0,
-      AW-1
-    );
-
-
-  const x1=
-    clamp(
-      Math.ceil(
-        predicted.x+
-        radius
-      ),
-      0,
-      AW-1
-    );
-
-
-  const y0=
-    clamp(
-      Math.floor(
-        predicted.y-
-        radius
-      ),
-      0,
-      AH-1
-    );
-
-
-  const y1=
-    clamp(
-      Math.ceil(
-        predicted.y+
-        radius
-      ),
-      0,
-      AH-1
-    );
-
-
-  return componentSearch(
-
-    image,
-
-    x0,
-    y0,
-    x1,
-    y1,
-
-    predicted,
-
-    false
-
-  );
-
-}
-
-
-function globalReacquire(
-  now
-){
-
-  if(
-
-    !state.ballProfile
-
-    ||
-
-    !state.persons.length
-
-  ){
-
-    return null;
-
-  }
-
-
-  if(
-
-    performance.now()-
-    state.lastGlobalSearchWall<
-    300
-
-  ){
-
-    return null;
-
-  }
-
-
-  state.lastGlobalSearchWall=
-    performance.now();
-
-
-  const image=
-    actx.getImageData(
-      0,0,
-      AW,AH
-    );
-
-
-  return componentSearch(
-
-    image,
-
-    0,
-    0,
-    AW-1,
-    AH-1,
-
-    null,
-
-    true
-
-  );
-
-}
-
-
-function aiCandidate(
-  now
-){
-
-  const valid=
-    state.aiBalls.filter(
-      ball=>
-        now-
-        ball.t<
-        900
-    );
-
-
-  if(
-    !valid.length
-  ){
-
-    return null;
-
-  }
-
-
-  const predicted=
-    predictBall(
-      now
-    );
-
-
-  if(
-    predicted
-  ){
-
-    valid.sort(
-      (
-        a,
-        b
-      )=>
-
-        distance(
-          a,
-          predicted
-        )
-
-        -
-
-        distance(
-          b,
-          predicted
-        )
-    );
-
-
-    const best=
-      valid[
-        0
-      ];
-
-
-    if(
-
-      distance(
-        best,
-        predicted
-      )
-
-      <
-
-      AW*.18
-
-    ){
-
-      return best;
-
-    }
-
-
-    return null;
-
-  }
-
-
-  return valid[0];
-
-}
-
-
-function chooseBall(
-  profile,
-  ai,
-  reacquire,
-  now
-){
-
-  if(
-
-    profile
-
-    &&
-
-    ai
-
-    &&
-
-    distance(
-      profile,
-      ai
-    )<
-    AW*.08
-
-  ){
-
-    return{
-
-      x:
-        profile.x*.7+
-        ai.x*.3,
-
-      y:
-        profile.y*.7+
-        ai.y*.3,
-
-      w:
-        Math.max(
-          profile.w,
-          ai.w
-        ),
-
-      h:
-        Math.max(
-          profile.h,
-          ai.h
-        ),
-
-      confidence:.95,
-
-      source:
-        "FUSED"
-
-    };
-
-  }
-
-
-  const predicted=
-    predictBall(
-      now
-    );
-
-
-  const options=
-    [
-      profile,
-      ai,
-      reacquire
-    ]
-    .filter(
-      Boolean
-    );
-
-
-  if(
-    !options.length
-  ){
-
-    return null;
-
-  }
-
-
-  if(
-    predicted
-  ){
-
-    options.sort(
-      (
-        a,
-        b
-      )=>
-
-        distance(
-          a,
-          predicted
-        )
-
-        -
-
-        distance(
-          b,
-          predicted
-        )
-    );
-
-  }
-
-
-  return options[0];
-
-}
-
-
-function updateBall(
-  measurement,
-  now
-){
-
-  if(
-    !measurement
-  ){
-
-    if(
-
-      state.track
-
-      &&
-
-      now-
-      state.track.t<
-      180
-
-    ){
-
-      const dt=
-        (
-          now-
-          state.track.t
-        )/
-        1000;
-
-
-      state.ball={
-
-        x:
-          state.track.x+
-          state.track.vx*
-          dt,
-
-        y:
-          state.track.y+
-          state.track.vy*
-          dt,
-
-        w:
-          state.expectedDiameter ||
-          8,
-
-        h:
-          state.expectedDiameter ||
-          8,
-
-        real:false,
-
-        confidence:.15,
-
-        source:
-          "PRED"
-
-      };
-
-    }
-
-    else{
-
-      state.ball=null;
-
-    }
-
-
-    updateTrackingUI();
-
-    return false;
-
-  }
-
-
-  if(
-
-    !state.track
-
-    ||
-
-    now-
-    state.track.t>
-    800
-
-  ){
-
-    state.track={
-
-      x:
-        measurement.x,
-
-      y:
-        measurement.y,
-
-      vx:0,
-      vy:0,
-
-      t:now,
-
-      confidence:
-        measurement.confidence ||
-        .5
-
-    };
-
-  }
-
-  else{
-
-    const dt=
-      clamp(
-        (
-          now-
-          state.track.t
-        )/
-        1000,
-        .012,
-        .25
-      );
-
-
-    const predictedX=
-      state.track.x+
-      state.track.vx*
-      dt;
-
-
-    const predictedY=
-      state.track.y+
-      state.track.vy*
-      dt;
-
-
-    const residualX=
-      measurement.x-
-      predictedX;
-
-
-    const residualY=
-      measurement.y-
-      predictedY;
-
-
-    const alpha=.70;
-    const beta=.16;
-
-
-    state.track.x=
-      predictedX+
-      alpha*
-      residualX;
-
-
-    state.track.y=
-      predictedY+
-      alpha*
-      residualY;
-
-
-    state.track.vx+=
-      beta*
-      residualX/
-      dt;
-
-
-    state.track.vy+=
-      beta*
-      residualY/
-      dt;
-
-
-    state.track.t=
-      now;
-
-  }
-
-
-  state.ball={
-
-    x:
-      state.track.x,
-
-    y:
-      state.track.y,
-
-    w:
-      measurement.w ||
-      state.expectedDiameter,
-
-    h:
-      measurement.h ||
-      state.expectedDiameter,
-
-    real:true,
-
-    confidence:
-      measurement.confidence ||
-      .65,
-
-    source:
-      measurement.source
-
-  };
-
-
-  const diameter=
-    Math.max(
-      state.ball.w,
-      state.ball.h
-    );
-
-
-  if(
-
-    diameter>2
-
-    &&
-
-    diameter<
-    state.expectedDiameter*
-    2.5
-
-  ){
-
-    state.expectedDiameter=
-
-      state.expectedDiameter*
-      .96
-
-      +
-
-      diameter*
-      .04;
-
-  }
-
-
-  state.lastBallSeen=
-    now;
-
-
-  state.history.push({
-
-    x:
-      state.ball.x,
-
-    y:
-      state.ball.y,
-
-    t:now
-
-  });
-
-
-  while(
-
-    state.history.length>
-    50
-
-    ||
-
-    (
-      state.history.length
-
-      &&
-
-      now-
-      state.history[0].t>
-      1800
-    )
-
-  ){
-
-    state.history.shift();
-
-  }
-
-
-  updateTrackingUI();
-
-  return true;
-
-}
-
-
-function updateTrackingUI(){
-
-  if(
-    !state.ball
-  ){
-
-    $("trackingQuality")
-      .textContent=
-        "KWIJT";
-
-
-    $("trackingQuality")
-      .className=
-        "no";
-
-
-    $("trackingSource")
-      .textContent=
-        "—";
-
-
-    return;
-
-  }
-
-
-  $("trackingQuality")
-    .textContent=
-      state.ball.real
-      ? "GOED"
-      : "VOORSPELD";
-
-
-  $("trackingQuality")
-    .className=
-      state.ball.real
-      ? "ok"
-      : "warn";
-
-
-  $("trackingSource")
-    .textContent=
-      state.ball.source ||
-      "—";
-
-}
-
-
-/* =================================================
-   VELOCITY
-================================================= */
-
-function ballVelocity(){
-
-  if(
-    state.history.length<
-    3
-  ){
-
-    return{
-      vx:0,
-      vy:0,
-      speed:0
-    };
-
-  }
-
-
-  const newest=
-    state.history[
-      state.history.length-
-      1
-    ];
-
-
-  let older=
-    state.history[
-      0
-    ];
-
-
-  for(
-    let index=
-      state.history.length-
-      2;
-
-    index>=0;
-
-    index--
-  ){
-
-    if(
-
-      newest.t-
-
-      state.history[
-        index
-      ].t
-
-      >=
-
-      90
-
-    ){
-
-      older=
-        state.history[
-          index
-        ];
-
-
-      break;
-
-    }
-
-  }
-
-
-  const dt=
-    Math.max(
-      .05,
-      (
-        newest.t-
-        older.t
-      )/
-      1000
-    );
-
-
-  const vx=
-    (
-      newest.x-
-      older.x
-    )/
-    dt;
-
-
-  const vy=
-    (
-      newest.y-
-      older.y
-    )/
-    dt;
-
-
-  return{
-
-    vx,
-    vy,
-
-    speed:
-      Math.hypot(
-        vx,
-        vy
-      )
-
-  };
-
-}
-
-
-/* =================================================
-   POSSESSION
-================================================= */
-
-function personCenter(
-  person
-){
-
-  return{
-
-    x:
-      person.x+
-      person.w/
-      2,
-
-    y:
-      person.y+
-      person.h/
-      2
-
-  };
-
-}
-
-
-function samePerson(
-  a,
-  b
-){
-
-  if(
-    !a ||
-    !b
-  ){
-
-    return false;
-
-  }
-
-
-  return(
-
-    distance(
-      personCenter(
-        a
-      ),
-      personCenter(
-        b
-      )
-    )
-
-    <
-
-    Math.max(
-      a.w,
-      b.w,
-      15
-    )*
-    1.4
-
-  );
-
-}
-
-
-function findOwner(
-  ball
-){
-
-  if(
-    !ball
-  ){
-
-    return null;
-
-  }
-
-
-  let best=null;
-
-  let bestDistance=
-    Infinity;
-
-
-  for(
-    const person of
-    state.persons
-  ){
-
-    const target={
-
-      x:
-        person.x+
-        person.w*.5,
-
-      y:
-        person.y+
-        person.h*.4
-
-    };
-
-
-    const d=
-      distance(
-        ball,
-        target
-      );
-
-
-    const inside=
-
-      ball.x>=
-      person.x-
-      person.w*.22
-
-      &&
-
-      ball.x<=
-      person.x+
-      person.w*1.22
-
-      &&
-
-      ball.y>=
-      person.y-
-      person.h*.15
-
-      &&
-
-      ball.y<=
-      person.y+
-      person.h*.84;
-
-
-    if(
-
-      (
-        inside
-
-        ||
-
-        d<
-        person.h*.48
-      )
-
-      &&
-
-      d<
-      bestDistance
-
-    ){
-
-      best=
-        person;
-
-
-      bestDistance=
-        d;
-
-    }
-
-  }
-
-
-  return best;
-
-}
-
-
-function updatePossession(
-  now
-){
-
-  const owner=
-    findOwner(
-      state.ball
-    );
-
-
-  if(
-    owner
-  ){
-
-    if(
-
-      !state.currentOwner
-
-      ||
-
-      !samePerson(
-        owner,
-        state.currentOwner
-      )
-
-    ){
-
-      state.possessionStarted=
-        now;
-
-    }
-
-
-    state.currentOwner=
-      owner;
-
-
-    state.lastPossession={
-
-      ...owner,
-
-      t:now
-
-    };
-
-
-    $("playerState")
-      .textContent=
-        "✓ balbezit";
-
-
-    $("playerState")
-      .className=
-        "ok";
-
-
     /*
-      Na een schot is nieuw balbezit
-      nodig voordat een volgende
-      poging kan starten.
+      Video blijft 1×.
     */
 
-    if(
-
-      state.requireNewPossession
-
-      &&
-
-      now>=
-      state.cooldownUntil
-
-    ){
-
-      state.requireNewPossession=
-        false;
-
-
-      setShotPhase(
-        "idle"
-      );
-
-    }
-
-  }
-
-  else{
-
-    state.currentOwner=
-      null;
-
-  }
-
-
-  return owner;
-
-}
-
-
-/* =================================================
-   HOOP GEOMETRY
-================================================= */
-
-function getHoop(){
-
-  if(
-    !state.hoop
-  ){
-
-    return null;
-
-  }
-
-
-  return{
-
-    x:
-      state.hoop.x*
-      AW,
-
-    y:
-      state.hoop.y*
-      AH,
-
-    w:
-      state.hoop.w*
-      AW,
-
-    h:
-      state.hoop.h*
-      AH
-
-  };
-
-}
-
-
-function hoopCenter(){
-
-  const hoop=
-    getHoop();
-
-
-  if(
-    !hoop
-  ){
-
-    return null;
-
-  }
-
-
-  return{
-
-    x:
-      hoop.x+
-      hoop.w/
-      2,
-
-    y:
-      hoop.y+
-      hoop.h/
-      2
-
-  };
-
-}
-
-
-/* =================================================
-   SHOT DETECTOR
-================================================= */
-
-function vectorCos(
-  vx,
-  vy,
-  tx,
-  ty
-){
-
-  const first=
-    Math.hypot(
-      vx,
-      vy
-    );
-
-
-  const second=
-    Math.hypot(
-      tx,
-      ty
-    );
-
-
-  if(
-    first<1 ||
-    second<1
-  ){
-
-    return 0;
-
-  }
-
-
-  return(
-
-    vx*
-    tx
-
-    +
-
-    vy*
-    ty
-
-  )/
-  (
-    first*
-    second
-  );
-
-}
-
-
-function maybeStartShot(
-  owner,
-  now
-){
-
-  if(
-
-    state.shotPhase!=="idle"
-
-    ||
-
-    state.requireNewPossession
-
-    ||
-
-    owner
-
-    ||
-
-    !state.lastPossession
-
-    ||
-
-    !state.ball
-
-  ){
-
-    return;
-
-  }
-
-
-  if(
-
-    now-
-    state.lastPossession.t>
-    500
-
-  ){
-
-    return;
-
-  }
-
-
-  if(
-
-    state.possessionStarted===
-    null
-
-    ||
-
-    state.lastPossession.t-
-    state.possessionStarted<
-    120
-
-  ){
-
-    return;
-
-  }
-
-
-  const shooter=
-    state.lastPossession;
-
-
-  const velocity=
-    ballVelocity();
-
-
-  const hoop=
-    hoopCenter();
-
-
-  if(
-    !hoop
-  ){
-
-    return;
-
-  }
-
-
-  /*
-    Dribbel laag bij de benen:
-    geen schot.
-  */
-
-  if(
-
-    state.ball.y>
-
-    shooter.y+
-    shooter.h*.76
-
-  ){
-
-    return;
-
-  }
-
-
-  /*
-    Bal moet duidelijk stijgen.
-  */
-
-  if(
-
-    velocity.vy>
-
-    -AH*.14
-
-  ){
-
-    return;
-
-  }
-
-
-  if(
-
-    velocity.speed<
-
-    AW*.16
-
-  ){
-
-    return;
-
-  }
-
-
-  const towards=
-    vectorCos(
-
-      velocity.vx,
-      velocity.vy,
-
-      hoop.x-
-      state.ball.x,
-
-      hoop.y-
-      state.ball.y
-
-    );
-
-
-  if(
-    towards<.38
-  ){
-
-    return;
-
-  }
-
-
-  state.shot={
-
-    startedAt:
-      now,
-
-    release:{
-
-      x:
-        state.ball.x,
-
-      y:
-        state.ball.y
-
-    },
-
-    origin:{
-
-      x:
-        shooter.x+
-        shooter.w/
-        2,
-
-      y:
-        shooter.y+
-        shooter.h
-
-    },
-
-    startDistance:
-      distance(
-        state.ball,
-        hoop
-      ),
-
-    minY:
-      state.ball.y,
-
-    above:false,
-
-    approached:false,
-
-    previous:{
-
-      x:
-        state.ball.x,
-
-      y:
-        state.ball.y
-
-    },
-
-    possibleMake:null
-
-  };
-
-
-  setShotPhase(
-    "candidate"
-  );
-
-
-  $("decision")
-    .textContent=
-      "vlucht controleren";
-
-}
-
-
-function cancelShot(
-  reason
-){
-
-  state.shot=
-    null;
-
-
-  setShotPhase(
-    "idle"
-  );
-
-
-  $("decision")
-    .textContent=
-      "geen schot: "+
-      reason;
-
-}
-
-
-function updateCandidate(
-  owner,
-  now
-){
-
-  const shot=
-    state.shot;
-
-
-  if(
-    !shot
-  ){
-
-    return;
-
-  }
-
-
-  const elapsed=
-    now-
-    shot.startedAt;
-
-
-  /*
-    Andere speler krijgt bal vrijwel
-    direct → waarschijnlijk pass.
-  */
-
-  if(
-
-    owner
-
-    &&
-
-    elapsed>
-    100
-
-  ){
-
-    cancelShot(
-      "pass"
-    );
-
-
-    return;
-
-  }
-
-
-  shot.minY=
-    Math.min(
-      shot.minY,
-      state.ball.y
-    );
-
-
-  const hoop=
-    hoopCenter();
-
-
-  const rise=
-    shot.release.y-
-    shot.minY;
-
-
-  const progress=
-    shot.startDistance-
-    distance(
-      state.ball,
-      hoop
-    );
-
-
-  const velocity=
-    ballVelocity();
-
-
-  const towards=
-    vectorCos(
-
-      velocity.vx,
-      velocity.vy,
-
-      hoop.x-
-      state.ball.x,
-
-      hoop.y-
-      state.ball.y
-
-    );
-
-
-  /*
-    Meerdere voorwaarden:
-    pas dan officieel schot.
-  */
-
-  if(
-
-    elapsed>
-    140
-
-    &&
-
-    rise>
-    AH*.021
-
-    &&
-
-    progress>
-    AW*.014
-
-    &&
-
-    towards>
-    .08
-
-  ){
-
-    setShotPhase(
-      "flight"
-    );
-
-
-    $("decision")
-      .textContent=
-        "🏀 SCHOT";
-
-
-    return;
-
-  }
-
-
-  if(
-    elapsed>
-    800
-  ){
-
-    cancelShot(
-      "geen schotbaan"
-    );
-
-  }
-
-}
-
-
-function updateFlight(
-  owner,
-  now
-){
-
-  const shot=
-    state.shot;
-
-
-  const hoop=
-    getHoop();
-
-
-  if(
-
-    !shot
-
-    ||
-
-    !hoop
-
-    ||
-
-    !state.ball
-
-  ){
-
-    return;
-
-  }
-
-
-  const elapsed=
-    now-
-    shot.startedAt;
-
-
-  const plane=
-    hoop.y+
-    hoop.h/
-    2;
-
-
-  const center={
-
-    x:
-      hoop.x+
-      hoop.w/
-      2,
-
-    y:
-      plane
-
-  };
-
-
-  const distanceToRim=
-    distance(
-      state.ball,
-      center
-    );
-
-
-  if(
-
-    distanceToRim<
-
-    Math.max(
-      AW*.15,
-      hoop.w*
-      4.5
-    )
-
-  ){
-
-    shot.approached=
-      true;
-
-  }
-
-
-  /*
-    Passfilter.
-  */
-
-  if(
-
-    owner
-
-    &&
-
-    !shot.approached
-
-    &&
-
-    elapsed<
-    1500
-
-  ){
-
-    cancelShot(
-      "pass ontvangen"
-    );
-
-
-    return;
-
-  }
-
-
-  if(
-
-    state.ball.y<
-
-    plane-
-    hoop.h*.15
-
-  ){
-
-    shot.above=
-      true;
-
-  }
-
-
-  /*
-    Ball crosses ring plane
-    from above to below.
-  */
-
-  if(
-
-    shot.above
-
-    &&
-
-    shot.previous.y<=
-    plane
-
-    &&
-
-    state.ball.y>
-    plane
-
-  ){
-
-    const deltaY=
-      state.ball.y-
-      shot.previous.y;
-
-
-    if(
-      deltaY>0
-    ){
-
-      const fraction=
-        (
-          plane-
-          shot.previous.y
-        )/
-        deltaY;
-
-
-      const crossingX=
-        shot.previous.x+
-        (
-          state.ball.x-
-          shot.previous.x
-        )*
-        fraction;
-
-
-      if(
-
-        crossingX>=
-        hoop.x-
-        hoop.w*.12
-
-        &&
-
-        crossingX<=
-        hoop.x+
-        hoop.w*
-        1.12
-
-      ){
-
-        shot.possibleMake=
-          now;
-
-      }
-
-    }
-
-  }
-
-
-  /*
-    RAAK:
-    na geldige ringkruising
-    verschijnt bal direct daaronder.
-  */
-
-  if(
-    shot.possibleMake
-  ){
-
-    const sinceCross=
-      now-
-      shot.possibleMake;
-
-
-    const inNetCorridor=
-
-      state.ball.x>=
-      hoop.x-
-      hoop.w*.4
-
-      &&
-
-      state.ball.x<=
-      hoop.x+
-      hoop.w*
-      1.4;
-
-
-    const below=
-
-      state.ball.y>
-
-      plane+
-      hoop.h*.55;
-
-
-    if(
-
-      sinceCross<
-      520
-
-      &&
-
-      inNetCorridor
-
-      &&
-
-      below
-
-    ){
-
-      finishShot(
-        "make",
-        shot.origin
-      );
-
-
-      return;
-
-    }
-
-
-    /*
-      Kruising leek goed,
-      maar geen bevestiging.
-    */
-
-    if(
-      sinceCross>
-      550
-    ){
-
-      shot.possibleMake=
-        null;
-
-    }
-
-  }
-
-
-  const velocity=
-    ballVelocity();
-
-
-  /*
-    SNELLE MISS:
-
-    Bal was boven ring,
-    is nu onder ringhoogte,
-    beweegt omlaag,
-    en staat duidelijk buiten ringcorridor.
-  */
-
-  const outsideRim=
-
-    state.ball.x<
-
-    hoop.x-
-    hoop.w*.35
-
-    ||
-
-    state.ball.x>
-
-    hoop.x+
-    hoop.w*
-    1.35;
-
-
-  if(
-
-    shot.above
-
-    &&
-
-    !shot.possibleMake
-
-    &&
-
-    velocity.vy>
-    0
-
-    &&
-
-    state.ball.y>
-
-    plane+
-    hoop.h*
-    1.3
-
-    &&
-
-    outsideRim
-
-  ){
-
-    finishShot(
-      "miss",
-      shot.origin
-    );
-
-
-    return;
-
-  }
-
-
-  /*
-    Misser recht onder/naast basket.
-  */
-
-  if(
-
-    shot.above
-
-    &&
-
-    !shot.possibleMake
-
-    &&
-
-    velocity.vy>
-    0
-
-    &&
-
-    state.ball.y>
-
-    plane+
-    hoop.h*
-    2.5
-
-  ){
-
-    finishShot(
-      "miss",
-      shot.origin
-    );
-
-
-    return;
-
-  }
-
-
-  shot.previous={
-
-    x:
-      state.ball.x,
-
-    y:
-      state.ball.y
-
-  };
-
-
-  /*
-    Alleen noodfallback.
-  */
-
-  if(
-    elapsed>
-    4200
-  ){
-
-    finishShot(
-      "miss",
-      shot.origin
-    );
-
-  }
-
-}
-
-
-function shotEngine(
-  realBall,
-  now
-){
-
-  /*
-    Als tijdens een bevestigd schot
-    tracking tijdelijk wegvalt:
-    laat de state nog even bestaan.
-  */
-
-  if(
-
-    state.shot
-
-    &&
-
-    !realBall
-
-  ){
-
-    const elapsed=
-      now-
-      state.shot.startedAt;
-
-
-    if(
-
-      state.shotPhase==="candidate"
-
-      &&
-
-      now-
-      state.lastBallSeen>
-      650
-
-    ){
-
-      cancelShot(
-        "bal kwijt"
-      );
-
-
-      return;
-
-    }
-
-
-    if(
-
-      state.shotPhase==="flight"
-
-      &&
-
-      elapsed>
-      4200
-
-    ){
-
-      finishShot(
-        "miss",
-        state.shot.origin
-      );
-
-
-      return;
-
-    }
-
-  }
-
-
-  if(
-
-    !realBall
-
-    ||
-
-    !state.ball
-
-    ||
-
-    !state.hoop
-
-  ){
-
-    return;
-
-  }
-
-
-  const owner=
-    updatePossession(
-      now
-    );
-
-
-  if(
-    state.shotPhase==="cooldown"
-  ){
-
-    return;
-
-  }
-
-
-  if(
-    state.shotPhase==="idle"
-  ){
-
-    maybeStartShot(
-      owner,
-      now
-    );
-
-
-    return;
-
-  }
-
-
-  if(
-    state.shotPhase==="candidate"
-  ){
-
-    updateCandidate(
-      owner,
-      now
-    );
-
-
-    return;
-
-  }
-
-
-  if(
-    state.shotPhase==="flight"
-  ){
-
-    updateFlight(
-      owner,
-      now
-    );
-
-  }
-
-}
-
-
-/* =================================================
-   RESULTS
-================================================= */
-
-function approximateShotLocation(
-  origin
-){
-
-  const hoop=
-    getHoop();
-
-
-  if(
-
-    !hoop
-
-    ||
-
-    !origin
-
-  ){
-
-    return{
-      x:.5,
-      y:.8
-    };
-
-  }
-
-
-  const hoopX=
-    hoop.x+
-    hoop.w/
-    2;
-
-
-  const floor=
-    clamp(
-      hoop.y+
-      hoop.h*
-      1.3,
-      0,
-      AH-20
-    );
-
-
-  return{
-
-    x:
-      clamp(
-        .5+
-        (
-          origin.x-
-          hoopX
-        )/
-        (AW*.86),
-        .03,
-        .97
-      ),
-
-    y:
-      clamp(
-        (
-          origin.y-
-          floor
-        )/
-        Math.max(
-          20,
-          AH-floor
-        ),
-        0,
-        1
-      )
-
-  };
-
-}
-
-
-function finishShot(
-  result,
-  origin
-){
-
-  const position=
-    approximateShotLocation(
-      origin
-    );
-
-
-  state.shots.push({
-
-    result,
-
-    x:
-      position.x,
-
-    y:
-      position.y,
-
-    time:
-      new Date()
-      .toISOString()
-
-  });
-
-
-  state.shot=
-    null;
-
-
-  setShotPhase(
-    "cooldown"
-  );
-
-
-  state.cooldownUntil=
-    mediaTime()+
-    400;
-
-
-  /*
-    Rebound = geen nieuw schot.
-    Eerst opnieuw balbezit.
-  */
-
-  state.requireNewPossession=
-    true;
-
-
-  state.currentOwner=
-    null;
-
-
-  state.possessionStarted=
-    null;
-
-
-  $("decision")
-    .textContent=
-      result==="make"
-      ? "✅ RAAK"
-      : "❌ MIS";
-
-
-  updateStats();
-
-
-  /*
-    Realtime studentfeedback.
-  */
-
-  showShotFeedback(
-    result
-  );
-
-}
-
-
-function manualShot(
-  result
-){
-
-  const person=
-    state.lastPossession;
-
-
-  finishShot(
-
-    result,
-
-    person
-
-    ? {
-
-        x:
-          person.x+
-          person.w/
-          2,
-
-        y:
-          person.y+
-          person.h
-
-      }
-
-    : {
-
-        x:
-          AW/
-          2,
-
-        y:
-          AH*
-          .8
-
-      }
-
-  );
-
-}
-
-
-/* =================================================
-   OVERLAY
-================================================= */
-
-function drawBox(
-  box,
-  colour,
-  width=4
-){
-
-  octx.strokeStyle=
-    colour;
-
-
-  octx.lineWidth=
-    width;
-
-
-  octx.strokeRect(
-
-    box.x*
-    overlay.width,
-
-    box.y*
-    overlay.height,
-
-    box.w*
-    overlay.width,
-
-    box.h*
-    overlay.height
-
-  );
-
-}
-
-
-function drawOverlay(){
-
-  octx.clearRect(
-    0,0,
-    overlay.width,
-    overlay.height
-  );
-
-
-  const sx=
-    overlay.width/
-    AW;
-
-
-  const sy=
-    overlay.height/
-    AH;
-
-
-  if(
-    state.hoop
-  ){
-
-    drawBox(
-      state.hoop,
-      "#ff7a00",
-      5
-    );
-
-  }
-
-
-  const candidate=
-    currentHoopCandidate();
-
-
-  if(
-
-    candidate
-
-    &&
-
-    !state.hoop
-
-  ){
-
-    drawBox(
-      candidate,
-      "#fde047",
-      6
-    );
-
-  }
-
-
-  /*
-    Eerste tik handmatige ring.
-  */
-
-  if(
-
-    state.mode==="manualHoop"
-
-    &&
-
-    state.manualHoopPoints.length===
-    1
-
-  ){
-
-    const point=
-      state.manualHoopPoints[
-        0
-      ];
-
-
-    octx.beginPath();
-
-
-    octx.arc(
-      point.x,
-      point.y,
-      12,
-      0,
-      Math.PI*
-      2
-    );
-
-
-    octx.fillStyle=
-      "#38bdf8";
-
-
-    octx.fill();
-
-  }
-
-
-  /*
-    Personen.
-  */
-
-  for(
-    const person of
-    state.persons
-  ){
-
-    octx.strokeStyle=
-      "rgba(56,189,248,.35)";
-
-
-    octx.lineWidth=2;
-
-
-    octx.strokeRect(
-
-      person.x*
-      sx,
-
-      person.y*
-      sy,
-
-      person.w*
-      sx,
-
-      person.h*
-      sy
-
-    );
-
-  }
-
-
-  /*
-    Trajectory.
-  */
-
-  const recent=
-    state.history.slice(
-      -18
-    );
-
-
-  if(
-    recent.length>
-    1
-  ){
-
-    octx.beginPath();
-
-
-    recent.forEach(
-      (
-        point,
-        index
-      )=>{
-
-        const x=
-          point.x*
-          sx;
-
-
-        const y=
-          point.y*
-          sy;
-
-
-        if(
-          index===0
-        ){
-
-          octx.moveTo(
-            x,y
-          );
-
-        }
-
-        else{
-
-          octx.lineTo(
-            x,y
-          );
-
-        }
-
-      }
-    );
-
-
-    octx.strokeStyle=
-      "rgba(34,197,94,.72)";
-
-
-    octx.lineWidth=3;
-
-
-    octx.stroke();
-
-  }
-
-
-  /*
-    Basketbal.
-  */
-
-  if(
-    state.ball
-  ){
-
-    const x=
-      state.ball.x*
-      sx;
-
-
-    const y=
-      state.ball.y*
-      sy;
-
-
-    const radius=
-      Math.max(
-
-        7,
-
-        state.expectedDiameter*
-        sx/
-        2
-
-      );
-
-
-    octx.beginPath();
-
-
-    octx.arc(
-      x,
-      y,
-      radius,
-      0,
-      Math.PI*
-      2
-    );
-
-
-    octx.strokeStyle=
-      state.ball.real
-      ? "#22c55e"
-      : "#facc15";
-
-
-    octx.lineWidth=5;
-
-
-    octx.stroke();
-
-  }
-
-}
-
-
-/* =================================================
-   STATS
-================================================= */
-
-function updateStats(){
-
-  const attempts=
-    state.shots.length;
-
-
-  const makes=
-    state.shots.filter(
-      shot=>
-        shot.result==="make"
-    ).length;
-
-
-  let streak=0;
-
-
-  for(
-    let index=
-      state.shots.length-
+    video.playbackRate =
       1;
 
-    index>=0;
 
-    index--
-  ){
-
-    if(
-
-      state.shots[
-        index
-      ].result===
-      "make"
-
-    ){
-
-      streak++;
-
-    }
-
-    else{
-
-      break;
-
-    }
-
-  }
+    try{
+      await video.play();
+    }catch{}
 
 
-  $("attempts")
-    .textContent=
-      attempts;
-
-
-  $("makes")
-    .textContent=
-      makes;
-
-
-  $("percentage")
-    .textContent=
-      attempts
-
-      ? Math.round(
-          makes/
-          attempts*
-          100
-        )+
-        "%"
-
-      : "0%";
-
-
-  $("streak")
-    .textContent=
-      streak;
-
-
-  $("shotLog")
-    .innerHTML=
-      "";
-
-
-  state.shots
-    .slice(-15)
-    .reverse()
-    .forEach(
-      (
-        shot,
-        index
-      )=>{
-
-        const element=
-          document.createElement(
-            "div"
-          );
-
-
-        element.className=
-
-          "chip "
-
-          +
-
-          (
-            shot.result==="make"
-            ? "make"
-            : "miss"
-          );
-
-
-        element.textContent=
-
-          (
-            shot.result==="make"
-            ? "✓ raak"
-            : "✕ mis"
-          )
-
-          +
-
-          " · #"
-
-          +
-
-          (
-            state.shots.length-
-            index
-          );
-
-
-        $("shotLog")
-          .appendChild(
-            element
-          );
-
-      }
+    setMessage(
+      "<strong>AI detectie actief.</strong> " +
+      "Groen moet de basketbal volgen."
     );
 
 
-  drawShotChart();
-
-}
-
-
-/* =================================================
-   SHOT CHART
-================================================= */
-
-function drawShotChart(){
-
-  const width=
-    shotChart.width;
-
-
-  const height=
-    shotChart.height;
-
-
-  cctx.clearRect(
-    0,0,
-    width,
-    height
-  );
-
-
-  cctx.fillStyle=
-    "#bd7941";
-
-
-  cctx.fillRect(
-    0,0,
-    width,
-    height
-  );
-
-
-  cctx.strokeStyle=
-    "rgba(255,255,255,.8)";
-
-
-  cctx.lineWidth=4;
-
-
-  cctx.strokeRect(
-    12,
-    12,
-    width-24,
-    height-24
-  );
-
-
-  cctx.beginPath();
-
-  cctx.moveTo(
-    width/2-
-    42,
-    38
-  );
-
-  cctx.lineTo(
-    width/2+
-    42,
-    38
-  );
-
-  cctx.stroke();
-
-
-  cctx.beginPath();
-
-  cctx.arc(
-    width/2,
-    60,
-    11,
-    0,
-    Math.PI*
-    2
-  );
-
-  cctx.stroke();
-
-
-  cctx.strokeRect(
-    width/2-
-    92,
-    12,
-    184,
-    180
-  );
-
-
-  cctx.beginPath();
-
-  cctx.arc(
-    width/2,
-    192,
-    62,
-    0,
-    Math.PI
-  );
-
-  cctx.stroke();
-
-
-  cctx.beginPath();
-
-  cctx.arc(
-    width/2,
-    60,
-    290,
-    .14*
-    Math.PI,
-    .86*
-    Math.PI
-  );
-
-  cctx.stroke();
-
-
-  for(
-    const shot of
-    state.shots
-  ){
-
-    const x=
-      25+
-      shot.x*
-      (width-50);
-
-
-    const y=
-      60+
-      shot.y*
-      (height-85);
-
-
-    cctx.beginPath();
-
-
-    cctx.arc(
-      x,
-      y,
-      10,
-      0,
-      Math.PI*
-      2
-    );
-
-
-    cctx.fillStyle=
-      shot.result==="make"
-      ? "#22c55e"
-      : "#ef4444";
-
-
-    cctx.fill();
-
-
-    cctx.strokeStyle=
-      "#fff";
-
-
-    cctx.lineWidth=2;
-
-
-    cctx.stroke();
+    runDetection();
 
   }
+);
 
-}
 
-
-/* =================================================
-   RESET
-================================================= */
-
-function resetTracking(
-  keepSeed=true
-){
-
-  state.track=
-    null;
-
-
-  state.ball=
-    null;
-
-
-  state.history=[];
-
-
-  state.lastBallSeen=
-    -Infinity;
-
-
-  state.currentOwner=
-    null;
-
-
-  state.possessionStarted=
-    null;
-
-
-  state.lastPossession=
-    null;
-
-
-  state.shot=
-    null;
-
-
-  state.requireNewPossession=
-    false;
-
-
-  state.cooldownUntil=
-    0;
-
-
-  setShotPhase(
-    "idle"
-  );
-
-
-  $("trackingQuality")
-    .textContent=
-      "—";
-
-
-  $("trackingSource")
-    .textContent=
-      "—";
-
-
-  $("playerState")
-    .textContent=
-      "zoeken";
-
-
-  $("playerState")
-    .className=
-      "no";
-
-
-  if(
-
-    keepSeed
-
-    &&
-
-    state.ballSeed
-
-    &&
-
-    Math.abs(
-      mediaTime()-
-      state.ballSeed.t
-    )<
-    300
-
-  ){
-
-    state.track={
-
-      x:
-        state.ballSeed.x,
-
-      y:
-        state.ballSeed.y,
-
-      vx:0,
-      vy:0,
-
-      t:
-        mediaTime(),
-
-      confidence:1
-
-    };
-
-
-    state.ball={
-
-      x:
-        state.ballSeed.x,
-
-      y:
-        state.ballSeed.y,
-
-      w:
-        state.ballSeed.radius*
-        2,
-
-      h:
-        state.ballSeed.radius*
-        2,
-
-      real:true,
-
-      confidence:1,
-
-      source:
-        "SEED"
-
-    };
-
-
-    state.lastBallSeen=
-      mediaTime();
-
-  }
-
-}
-
-
-function resetCalibration(){
-
-  state.hoop=
-    null;
-
-
-  state.hoopCandidates=[];
-
-
-  state.hoopCandidateIndex=
-    0;
-
-
-  state.manualHoopPoints=[];
-
-
-  state.ballProfile=
-    null;
-
-
-  state.ballSeed=
-    null;
-
-
-  state.expectedDiameter=
-    null;
-
-
-  state.mode=
-    "none";
-
-
-  overlay.classList.remove(
-    "selecting"
-  );
-
-
-  $("confirmHoopBtn")
-    .disabled=
-      true;
-
-
-  $("nextHoopBtn")
-    .disabled=
-      true;
-
-
-  updateUI();
-
-}
-
-
-/* =================================================
-   LOOP
-================================================= */
-
-function loop(){
-
-  if(
-    !state.running
-  ){
-
-    return;
-
-  }
-
-
-  const now=
-    mediaTime();
-
-
-  if(
-    video.readyState>=2
-  ){
-
-    actx.drawImage(
-      video,
-      0,0,
-      AW,AH
-    );
-
-
-    /*
-      Object-AI draait op lagere frequentie.
-      Hierdoor blijft iPhone responsiever.
-    */
-
-    detectObjects(
-      now
-    );
-
-
-    if(
-      state.analysing
-    ){
-
-      /*
-        Snelle baltracker draait wel
-        iedere rendercyclus.
-      */
-
-      const profile=
-        colourCandidate(
-          now
-        );
-
-
-      const ai=
-        aiCandidate(
-          now
-        );
-
-
-      let reacquire=null;
-
-
-      if(
-
-        !profile
-
-        &&
-
-        !ai
-
-        &&
-
-        (
-          !state.track
-
-          ||
-
-          now-
-          state.lastBallSeen>
-          650
-        )
-
-      ){
-
-        reacquire=
-          globalReacquire(
-            now
-          );
-
-      }
-
-
-      const measurement=
-        chooseBall(
-
-          profile,
-
-          ai,
-
-          reacquire,
-
-          now
-
-        );
-
-
-      const realBall=
-        updateBall(
-          measurement,
-          now
-        );
-
-
-      shotEngine(
-        realBall,
-        now
-      );
-
-    }
-
-
-    drawOverlay();
-
-  }
-
-
-  if(
-    state.source==="file"
-  ){
-
-    updateSeek();
-
-  }
-
-
-  state.fpsCount++;
-
-
-  const currentWall=
-    performance.now();
-
-
-  if(
-
-    currentWall-
-    state.fpsLast>=
-    1000
-
-  ){
-
-    $("fpsText")
-      .textContent=
-        state.fpsCount+
-        " fps";
-
-
-    state.fpsCount=
-      0;
-
-
-    state.fpsLast=
-      currentWall;
-
-  }
-
-
-  requestAnimationFrame(
-    loop
-  );
-
-}
-
-
-/* =================================================
-   VIDEO CONTROLS
-================================================= */
-
-function formatTime(
-  seconds
-){
-
-  if(
-    !Number.isFinite(
-      seconds
-    )
-  ){
-
-    return "0:00";
-
-  }
-
-
-  const minutes=
-    Math.floor(
-      seconds/
-      60
-    );
-
-
-  const secs=
-    Math.floor(
-      seconds%
-      60
-    );
-
-
-  return(
-
-    minutes
-
-    +
-
-    ":"
-
-    +
-
-    String(
-      secs
-    ).padStart(
-      2,
-      "0"
-    )
-
-  );
-
-}
-
-
-function updateSeek(){
-
-  if(
-
-    state.source!=="file"
-
-    ||
-
-    !Number.isFinite(
-      video.duration
-    )
-
-  ){
-
-    return;
-
-  }
-
-
-  if(
-    !state.seeking
-  ){
-
-    $("seek")
-      .value=
-        Math.round(
-          video.currentTime/
-          video.duration*
-          1000
-        );
-
-  }
-
-
-  $("videoTime")
-    .textContent=
-
-      formatTime(
-        video.currentTime
-      )
-
-      +
-
-      " / "
-
-      +
-
-      formatTime(
-        video.duration
-      );
-
-}
-
-
-/* =================================================
-   START LIVE ANALYSIS
-================================================= */
-
-function startAnalysis(){
-
-  resetTracking(
-    true
-  );
-
-
-  state.hoopCandidates=[];
-
-
-  state.analysing=
-    true;
-
-
-  /*
-    Zowel camera als testvideo
-    draaien realtime.
-  */
-
-  video.playbackRate=
-    1;
-
-
-  video.play()
-    .catch(
-      ()=>{}
-    );
-
-
-  if(
-    state.source==="file"
-  ){
-
-    $("playBtn")
-      .textContent=
-        "⏸";
-
-
-    setStatus(
-      "▶ Testvideo wordt realtime geanalyseerd"
-    );
-
-  }
-
-  else{
-
-    setStatus(
-      "🔴 LIVE tracking actief"
-    );
-
-  }
-
-
-  $("analyseBtn")
-    .textContent=
-      "🔴 LIVE tracking actief";
-
-
-  $("analyseBtn")
-    .disabled=
-      true;
-
-}
-
-
-/* =================================================
-   EVENTS
-================================================= */
-
-$("frontBtn")
-.addEventListener(
+stopButton.addEventListener(
   "click",
-  ()=>
-    startCamera(
-      "user"
-    )
-);
+  () => {
 
-
-$("rearBtn")
-.addEventListener(
-  "click",
-  ()=>
-    startCamera(
-      "environment"
-    )
-);
-
-
-$("uploadBtn")
-.addEventListener(
-  "click",
-  ()=>
-    $("fileInput")
-      .click()
-);
-
-
-$("fileInput")
-.addEventListener(
-  "change",
-  event=>{
-
-    const file=
-      event.target.files?.[0];
-
-
-    if(
-      file
-    ){
-
-      loadVideoFile(
-        file
-      );
-
-    }
-
-  }
-);
-
-
-$("findHoopBtn")
-.addEventListener(
-  "click",
-  findHoopCandidates
-);
-
-
-$("confirmHoopBtn")
-.addEventListener(
-  "click",
-  confirmHoop
-);
-
-
-$("nextHoopBtn")
-.addEventListener(
-  "click",
-  nextHoopCandidate
-);
-
-
-$("manualHoopBtn")
-.addEventListener(
-  "click",
-  startManualHoop
-);
-
-
-$("ballBtn")
-.addEventListener(
-  "click",
-  startBallSelection
-);
-
-
-$("analyseBtn")
-.addEventListener(
-  "click",
-  startAnalysis
-);
-
-
-$("manualMake")
-.addEventListener(
-  "click",
-  ()=>
-    manualShot(
-      "make"
-    )
-);
-
-
-$("manualMiss")
-.addEventListener(
-  "click",
-  ()=>
-    manualShot(
-      "miss"
-    )
-);
-
-
-$("undoBtn")
-.addEventListener(
-  "click",
-  ()=>{
-
-    if(
-      state.shots.length
-    ){
-
-      state.shots.pop();
-
-      updateStats();
-
-    }
-
-  }
-);
-
-
-$("resetBtn")
-.addEventListener(
-  "click",
-  ()=>{
-
-    state.shots=[];
-
-
-    resetTracking(
-      true
-    );
-
-
-    updateStats();
-
-
-    $("decision")
-      .textContent=
-        "—";
-
-
-    $("analyseBtn")
-      .textContent=
-        "▶ Start LIVE tracking";
-
-
-    $("analyseBtn")
-      .disabled=
-        !(
-          state.source &&
-          state.hoop &&
-          state.ballProfile
-        );
-
-  }
-);
-
-
-$("playBtn")
-.addEventListener(
-  "click",
-  ()=>{
-
-    if(
-      video.paused
-    ){
-
-      /*
-        Ook handmatig afspelen =
-        normale snelheid.
-      */
-
-      video.playbackRate=
-        1;
-
-
-      video.play();
-
-
-      $("playBtn")
-        .textContent=
-          "⏸";
-
-    }
-
-    else{
-
-      video.pause();
-
-
-      $("playBtn")
-        .textContent=
-          "▶";
-
-    }
-
-  }
-);
-
-
-$("backBtn")
-.addEventListener(
-  "click",
-  ()=>{
-
-    video.pause();
-
-
-    video.currentTime=
-      Math.max(
-        0,
-        video.currentTime-
-        .5
-      );
-
-
-    $("playBtn")
-      .textContent=
-        "▶";
-
-  }
-);
-
-
-$("seek")
-.addEventListener(
-  "pointerdown",
-  ()=>{
-
-    state.seeking=
-      true;
-
-  }
-);
-
-
-$("seek")
-.addEventListener(
-  "input",
-  ()=>{
-
-    if(
-
-      state.source==="file"
-
-      &&
-
-      Number.isFinite(
-        video.duration
-      )
-
-    ){
-
-      video.currentTime=
-
-        Number(
-          $("seek")
-            .value
-        )/
-        1000*
-        video.duration;
-
-    }
-
-  }
-);
-
-
-$("seek")
-.addEventListener(
-  "change",
-  ()=>{
-
-    state.seeking=
+    detectionRunning =
       false;
 
 
-    resetTracking(
-      false
-    );
-
-  }
-);
-
-
-video.addEventListener(
-  "ended",
-  ()=>{
-
-    state.analysing=
+    startButton.disabled =
       false;
 
 
-    $("playBtn")
-      .textContent=
-        "▶";
+    stopButton.disabled =
+      true;
 
 
-    $("analyseBtn")
-      .textContent=
-        "▶ Start LIVE tracking";
-
-
-    $("analyseBtn")
-      .disabled=
-        false;
-
-
-    setStatus(
-      "Video klaar"
+    setMessage(
+      "Detectie gestopt."
     );
 
   }
 );
 
-
-/* =================================================
-   INITIALISE
-================================================= */
-
-drawShotChart();
-
-updateStats();
-
-updateUI();
-
-setShotPhase(
-  "idle"
-);
-
-})();
 </script>
 
 </body>
