@@ -10,10 +10,15 @@
 
 <meta name="theme-color" content="#071018">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta
+  name="apple-mobile-web-app-status-bar-style"
+  content="black-translucent"
+>
 
-<title>Hoop – Live Basketball Tracker</title>
+<title>Hoop – Basketball Shot Tracker</title>
 
 <style>
+
 :root{
   --bg:#071018;
   --panel:#111c27;
@@ -25,7 +30,7 @@
   --red:#ef4444;
   --blue:#38bdf8;
   --yellow:#facc15;
-  --border:rgba(255,255,255,.1);
+  --border:rgba(255,255,255,.10);
 }
 
 *{
@@ -36,26 +41,34 @@ body{
   margin:0;
   background:var(--bg);
   color:var(--text);
+
   font-family:
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
+    Roboto,
     Arial,
     sans-serif;
 }
 
-button,input{
+button,
+input{
   font:inherit;
 }
 
 .app{
   width:min(1150px,100%);
   margin:auto;
+
   padding:
     max(12px,env(safe-area-inset-top))
     12px
-    max(22px,env(safe-area-inset-bottom));
+    max(24px,env(safe-area-inset-bottom));
 }
+
+/* ======================================================
+   HEADER
+====================================================== */
 
 header{
   display:flex;
@@ -67,10 +80,10 @@ header{
 
 h1{
   margin:0;
-  font-size:clamp(26px,7vw,40px);
+  font-size:clamp(27px,7vw,42px);
 }
 
-.sub{
+.subtitle{
   margin-top:3px;
   color:var(--muted);
   font-size:13px;
@@ -78,13 +91,25 @@ h1{
 
 .badge{
   padding:7px 10px;
-  color:#86efac;
-  background:rgba(34,197,94,.12);
-  border:1px solid rgba(34,197,94,.25);
+
   border-radius:999px;
+
+  background:
+    rgba(34,197,94,.12);
+
+  border:
+    1px solid
+    rgba(34,197,94,.28);
+
+  color:#86efac;
+
   font-size:11px;
   font-weight:900;
 }
+
+/* ======================================================
+   STATS
+====================================================== */
 
 .stats{
   display:grid;
@@ -94,15 +119,20 @@ h1{
 }
 
 .stat{
-  padding:11px;
+  padding:12px;
+
   background:var(--panel);
-  border:1px solid var(--border);
+
+  border:
+    1px solid
+    var(--border);
+
   border-radius:14px;
 }
 
 .stat strong{
   display:block;
-  font-size:clamp(26px,7vw,42px);
+  font-size:clamp(26px,7vw,43px);
   line-height:1;
 }
 
@@ -111,28 +141,40 @@ h1{
   font-size:12px;
 }
 
+/* ======================================================
+   LAYOUT
+====================================================== */
+
 .main{
   display:grid;
-  grid-template-columns:minmax(0,2fr) minmax(285px,.85fr);
+
+  grid-template-columns:
+    minmax(0,2fr)
+    minmax(285px,.85fr);
+
   gap:12px;
 }
 
 .card{
   overflow:hidden;
+
   background:var(--panel);
-  border:1px solid var(--border);
+
+  border:
+    1px solid
+    var(--border);
+
   border-radius:18px;
 }
+
+/* ======================================================
+   CAMERA
+====================================================== */
 
 .stage{
   position:relative;
   width:100%;
   background:#000;
-}
-
-.stage.mirrored video,
-.stage.mirrored #overlay{
-  transform:scaleX(-1);
 }
 
 video{
@@ -142,11 +184,23 @@ video{
   background:#000;
 }
 
+/*
+  Selfiebeeld wordt alleen VISUEEL gespiegeld.
+  Interne coördinaten blijven normaal.
+*/
+
+.stage.mirrored video,
+.stage.mirrored #overlay{
+  transform:scaleX(-1);
+}
+
 #overlay{
   position:absolute;
   inset:0;
+
   width:100%;
   height:100%;
+
   pointer-events:none;
 }
 
@@ -155,56 +209,101 @@ video{
   touch-action:none;
 }
 
+/* ======================================================
+   RESULTAAT FEEDBACK
+====================================================== */
+
 .feedback{
   position:absolute;
-  z-index:10;
+  z-index:20;
+
   top:50%;
   left:50%;
-  transform:translate(-50%,-50%) scale(.88);
+
+  transform:
+    translate(-50%,-50%)
+    scale(.88);
+
   opacity:0;
+
   min-width:min(84%,440px);
+
   padding:18px 22px;
+
   border-radius:20px;
+
   text-align:center;
-  font-weight:900;
+
   pointer-events:none;
-  transition:.15s;
-  box-shadow:0 12px 40px rgba(0,0,0,.4);
+
+  font-weight:900;
+
+  transition:
+    opacity .15s ease,
+    transform .15s ease;
+
+  box-shadow:
+    0 12px 40px
+    rgba(0,0,0,.45);
 }
 
 .feedback.show{
   opacity:1;
-  transform:translate(-50%,-50%) scale(1);
+
+  transform:
+    translate(-50%,-50%)
+    scale(1);
 }
 
 .feedback.make{
-  background:rgba(21,128,61,.94);
-  border:2px solid #86efac;
+  background:
+    rgba(21,128,61,.94);
+
+  border:
+    2px solid #86efac;
 }
 
 .feedback.miss{
-  background:rgba(185,28,28,.94);
-  border:2px solid #fca5a5;
+  background:
+    rgba(185,28,28,.94);
+
+  border:
+    2px solid #fca5a5;
 }
 
-.feedbackBig{
-  font-size:clamp(34px,10vw,64px);
+.feedback-big{
+  font-size:
+    clamp(34px,10vw,64px);
+
   line-height:1;
 }
 
-.feedbackSmall{
+.feedback-small{
   margin-top:8px;
-  font-size:clamp(17px,5vw,25px);
+
+  font-size:
+    clamp(17px,5vw,25px);
 }
 
-.footer{
+/* ======================================================
+   FOOTER
+====================================================== */
+
+.video-footer{
   display:flex;
   justify-content:space-between;
+  align-items:center;
   gap:10px;
+
   padding:9px 12px;
+
   color:var(--muted);
   font-size:12px;
 }
+
+/* ======================================================
+   CONTROLS
+====================================================== */
 
 .controls{
   padding:13px;
@@ -232,68 +331,109 @@ h2{
 
 button{
   min-height:50px;
+
   padding:10px;
+
   color:#fff;
   background:var(--panel2);
-  border:1px solid var(--border);
+
+  border:
+    1px solid
+    var(--border);
+
   border-radius:12px;
+
   font-weight:800;
+
   cursor:pointer;
   touch-action:manipulation;
 }
 
 button.primary{
   color:#111;
+
   background:var(--orange);
+
   border-color:var(--orange);
 }
 
 button.green{
   color:#86efac;
-  background:rgba(34,197,94,.12);
-  border-color:rgba(34,197,94,.3);
+
+  background:
+    rgba(34,197,94,.12);
+
+  border-color:
+    rgba(34,197,94,.30);
 }
 
 button.blue{
   color:#7dd3fc;
-  background:rgba(56,189,248,.12);
-  border-color:rgba(56,189,248,.25);
+
+  background:
+    rgba(56,189,248,.12);
+
+  border-color:
+    rgba(56,189,248,.28);
 }
 
 button.yellow{
   color:#fde047;
-  background:rgba(250,204,21,.12);
-  border-color:rgba(250,204,21,.25);
+
+  background:
+    rgba(250,204,21,.12);
+
+  border-color:
+    rgba(250,204,21,.28);
 }
 
 button.red{
   color:#fca5a5;
-  background:rgba(239,68,68,.12);
-  border-color:rgba(239,68,68,.3);
+
+  background:
+    rgba(239,68,68,.12);
+
+  border-color:
+    rgba(239,68,68,.30);
 }
 
 button:disabled{
-  opacity:.4;
+  opacity:.38;
   cursor:not-allowed;
 }
 
+/* ======================================================
+   INFO / STATUS
+====================================================== */
+
 .info{
   margin-top:10px;
-  padding:10px;
+  padding:11px;
+
   color:var(--muted);
+
   background:#0b151f;
+
   border-radius:12px;
+
   font-size:12px;
-  line-height:1.45;
+  line-height:1.5;
 }
 
 .status{
   display:grid;
   grid-template-columns:1fr auto;
+
   gap:7px 10px;
+
   margin-top:14px;
+
   padding-top:12px;
-  border-top:1px solid var(--border);
+
+  border-top:
+    1px solid
+    var(--border);
+
   font-size:12px;
 }
 
@@ -301,124 +441,365 @@ button:disabled{
   color:var(--muted);
 }
 
-.ok{color:#86efac}
-.warn{color:#fde047}
-.no{color:#fca5a5}
+.ok{
+  color:#86efac;
+}
+
+.warn{
+  color:#fde047;
+}
+
+.no{
+  color:#fca5a5;
+}
+
+/* ======================================================
+   VIDEO FILE CONTROLS
+====================================================== */
 
 .seek{
   display:grid;
-  grid-template-columns:auto 1fr auto;
+
+  grid-template-columns:
+    auto
+    1fr
+    auto;
+
   gap:8px;
+
   align-items:center;
+
   padding:9px 12px;
-  border-top:1px solid var(--border);
+
+  border-top:
+    1px solid
+    var(--border);
 }
 
 .seek input{
   width:100%;
 }
 
-.chart{
+/* ======================================================
+   SHOT CHART
+====================================================== */
+
+.chart-card{
   margin-top:12px;
   padding:12px;
 }
 
 #shotChart{
   display:block;
+
   width:100%;
   max-width:700px;
+
   margin:auto;
+
   background:#bd7941;
+
   border-radius:12px;
 }
 
 .log{
   display:flex;
   flex-wrap:wrap;
+
   gap:6px;
+
   margin-top:9px;
 }
 
 .chip{
   padding:5px 8px;
+
   border-radius:999px;
+
   font-size:11px;
   font-weight:900;
 }
 
 .chip.make{
   color:#86efac;
-  background:rgba(34,197,94,.15);
+
+  background:
+    rgba(34,197,94,.15);
 }
 
 .chip.miss{
   color:#fca5a5;
-  background:rgba(239,68,68,.15);
+
+  background:
+    rgba(239,68,68,.15);
 }
 
 @media(max-width:800px){
+
   .main{
     grid-template-columns:1fr;
   }
 
   .stats{
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:
+      repeat(2,1fr);
   }
+
 }
+
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+
+<!-- ====================================================
+     ROBUUSTE OPENCV LOADER
+==================================================== -->
+
+<script>
+
+/*
+  We maken de Promise VOORDAT opencv.js wordt geladen.
+  Daardoor kan OpenCV nooit "te vroeg" klaar zijn.
+*/
+
+window.__opencvReadyPromise =
+  new Promise(
+    (resolve,reject)=>{
+
+      window.__resolveOpenCV =
+        resolve;
+
+      window.__rejectOpenCV =
+        reject;
+
+    }
+  );
+
+
+async function openCvScriptLoaded(){
+
+  try{
+
+    let cvObject =
+      window.cv;
+
+
+    if(!cvObject){
+
+      throw new Error(
+        "OpenCV script geladen maar window.cv ontbreekt."
+      );
+
+    }
+
+
+    /*
+      Nieuwere OpenCV builds geven
+      cv soms als Promise terug.
+    */
+
+    if(
+      typeof cvObject.then ===
+      "function"
+    ){
+
+      cvObject =
+        await cvObject;
+
+      window.cv =
+        cvObject;
+
+    }
+
+
+    /*
+      Sommige builds zijn na script.onload
+      nog een fractie van een seconde bezig
+      met WebAssembly initialiseren.
+    */
+
+    const deadline =
+      Date.now()+
+      30000;
+
+
+    while(
+      !(
+        cvObject &&
+        cvObject.Mat &&
+        cvObject.calcOpticalFlowPyrLK &&
+        cvObject.goodFeaturesToTrack &&
+        cvObject.matchTemplate
+      )
+    ){
+
+      if(
+        Date.now()>
+        deadline
+      ){
+
+        throw new Error(
+          "OpenCV runtime werd niet op tijd actief."
+        );
+
+      }
+
+
+      await new Promise(
+        resolve=>
+          setTimeout(
+            resolve,
+            50
+          )
+      );
+
+
+      cvObject =
+        window.cv;
+
+    }
+
+
+    window.cv =
+      cvObject;
+
+
+    window.__resolveOpenCV(
+      cvObject
+    );
+
+  }
+
+  catch(error){
+
+    console.error(
+      "OpenCV initialisatie fout:",
+      error
+    );
+
+
+    window.__rejectOpenCV(
+      error
+    );
+
+  }
+
+}
+
+
+function openCvScriptFailed(){
+
+  const error =
+    new Error(
+      "opencv.js kon niet worden gedownload."
+    );
+
+
+  console.error(error);
+
+
+  window.__rejectOpenCV(
+    error
+  );
+
+}
+
+</script>
+
 
 <script
   async
-  src="https://docs.opencv.org/4.x/opencv.js">
+  src="https://docs.opencv.org/4.x/opencv.js"
+  onload="openCvScriptLoaded()"
+  onerror="openCvScriptFailed()">
 </script>
 
 </head>
+
 
 <body>
 
 <div class="app">
 
+
 <header>
+
   <div>
-    <h1>🏀 Hoop</h1>
-    <div class="sub">Optical-flow basketball tracker</div>
+
+    <h1>
+      🏀 Hoop
+    </h1>
+
+    <div class="subtitle">
+      Live basketball shot tracker
+    </div>
+
   </div>
 
   <div class="badge">
-    LIVE
+    OPTICAL FLOW
   </div>
+
 </header>
 
 
 <section class="stats">
 
   <div class="stat">
-    <strong id="attempts">0</strong>
-    <span>schoten</span>
+
+    <strong id="attempts">
+      0
+    </strong>
+
+    <span>
+      schoten
+    </span>
+
   </div>
 
-  <div class="stat">
-    <strong id="makes">0</strong>
-    <span>raak</span>
-  </div>
 
   <div class="stat">
-    <strong id="percentage">0%</strong>
-    <span>percentage</span>
+
+    <strong id="makes">
+      0
+    </strong>
+
+    <span>
+      raak
+    </span>
+
   </div>
 
+
   <div class="stat">
-    <strong id="streak">0</strong>
-    <span>streak</span>
+
+    <strong id="percentage">
+      0%
+    </strong>
+
+    <span>
+      percentage
+    </span>
+
+  </div>
+
+
+  <div class="stat">
+
+    <strong id="streak">
+      0
+    </strong>
+
+    <span>
+      streak
+    </span>
+
   </div>
 
 </section>
 
 
 <div class="main">
+
 
 <section class="card">
 
@@ -432,7 +813,10 @@ button:disabled{
       playsinline>
     </video>
 
-    <canvas id="overlay"></canvas>
+    <canvas
+      id="overlay">
+    </canvas>
+
 
     <div
       id="feedback"
@@ -440,12 +824,12 @@ button:disabled{
 
       <div
         id="feedbackBig"
-        class="feedbackBig">
+        class="feedback-big">
       </div>
 
       <div
         id="feedbackSmall"
-        class="feedbackSmall">
+        class="feedback-small">
       </div>
 
     </div>
@@ -453,7 +837,7 @@ button:disabled{
   </div>
 
 
-  <div class="footer">
+  <div class="video-footer">
 
     <span id="statusText">
       OpenCV wordt geladen…
@@ -471,7 +855,9 @@ button:disabled{
     class="seek"
     hidden>
 
-    <button id="playBtn">
+    <button
+      id="playBtn"
+      type="button">
       ▶
     </button>
 
@@ -495,29 +881,38 @@ button:disabled{
 
 <div class="controls">
 
-<h2>1. Beeld</h2>
+
+<h2>
+  1. Kies beeld
+</h2>
+
 
 <div class="two">
 
   <button
     id="frontBtn"
-    class="primary">
+    class="primary"
+    type="button">
     🤳 Voorcamera
   </button>
 
   <button
     id="rearBtn"
-    class="blue">
+    class="blue"
+    type="button">
     📷 Achtercamera
   </button>
 
 </div>
 
+
 <div
   class="grid"
   style="margin-top:8px">
 
-  <button id="uploadBtn">
+  <button
+    id="uploadBtn"
+    type="button">
     🎬 Testvideo
   </button>
 
@@ -532,33 +927,40 @@ button:disabled{
 
 <div class="section">
 
-<h2>2. Ring</h2>
+<h2>
+  2. Ring
+</h2>
+
 
 <div class="grid">
 
   <button
     id="findHoopBtn"
     class="yellow"
-    disabled>
+    disabled
+    type="button">
     🔎 Zoek ring automatisch
   </button>
 
   <button
     id="confirmHoopBtn"
     class="green"
-    disabled>
+    disabled
+    type="button">
     ✓ Dit is de ring
   </button>
 
   <button
     id="nextHoopBtn"
-    disabled>
+    disabled
+    type="button">
     → Andere kandidaat
   </button>
 
   <button
     id="manualHoopBtn"
-    disabled>
+    disabled
+    type="button">
     👆 Ring handmatig
   </button>
 
@@ -569,20 +971,25 @@ button:disabled{
 
 <div class="section">
 
-<h2>3. Basketbal</h2>
+<h2>
+  3. Basketbal
+</h2>
+
 
 <div class="grid">
 
   <button
     id="ballBtn"
     class="green"
-    disabled>
+    disabled
+    type="button">
     🏀 Tik één keer op de bal
   </button>
 
   <button
     id="reselectBallBtn"
-    disabled>
+    disabled
+    type="button">
     ↻ Bal opnieuw kiezen
   </button>
 
@@ -595,8 +1002,8 @@ button:disabled{
   id="instruction"
   class="info">
 
-De bal wordt niet meer op kleur gevolgd.
-De tracker volgt kenmerken en beweging op de echte bal.
+De app volgt de bal niet op kleur.
+Na één tik gebruikt hij beweging en visuele kenmerken van de bal.
 
 </div>
 
@@ -604,35 +1011,42 @@ De tracker volgt kenmerken en beweging op de echte bal.
 <div class="status">
 
   <span>OpenCV</span>
+
   <strong
     id="cvState"
     class="warn">
     laden…
   </strong>
 
+
   <span>Ring</span>
+
   <strong
     id="ringState"
     class="no">
     niet ingesteld
   </strong>
 
+
   <span>Basketbal</span>
+
   <strong
     id="ballState"
     class="no">
     niet ingesteld
   </strong>
 
+
   <span>Tracking</span>
-  <strong
-    id="trackingState">
+
+  <strong id="trackingState">
     —
   </strong>
 
+
   <span>Shot</span>
-  <strong
-    id="shotState">
+
+  <strong id="shotState">
     WACHT
   </strong>
 
@@ -641,25 +1055,31 @@ De tracker volgt kenmerken en beweging op de echte bal.
 
 <div class="section">
 
-<h2>Correctie</h2>
+<h2>
+  Correctie
+</h2>
+
 
 <div class="two">
 
   <button
     id="makeBtn"
-    class="green">
+    class="green"
+    type="button">
     + RAAK
   </button>
 
   <button
     id="missBtn"
-    class="red">
+    class="red"
+    type="button">
     + MIS
   </button>
 
 </div>
 
 </div>
+
 
 </div>
 
@@ -668,9 +1088,12 @@ De tracker volgt kenmerken en beweging op de echte bal.
 </div>
 
 
-<section class="card chart">
+<section class="card chart-card">
 
-<h2>Shot chart</h2>
+<h2>
+  Shot chart
+</h2>
+
 
 <canvas
   id="shotChart"
@@ -678,22 +1101,27 @@ De tracker volgt kenmerken en beweging op de echte bal.
   height="500">
 </canvas>
 
+
 <div
   id="shotLog"
   class="log">
 </div>
 
+
 <div
   class="grid"
   style="margin-top:10px">
 
-  <button id="resetBtn">
+  <button
+    id="resetBtn"
+    type="button">
     Nieuwe sessie
   </button>
 
 </div>
 
 </section>
+
 
 </div>
 
@@ -705,14 +1133,15 @@ De tracker volgt kenmerken en beweging op de echte bal.
 
 
 <script>
+
 (() => {
 
 "use strict";
 
 
-/* =========================================================
+/* ======================================================
    ELEMENTS
-========================================================= */
+====================================================== */
 
 const $ =
   id =>
@@ -756,15 +1185,15 @@ const cctx =
   shotChart.getContext("2d");
 
 
-let PW = 480;
-let PH = 270;
+let PW=480;
+let PH=270;
 
 
-/* =========================================================
+/* ======================================================
    STATE
-========================================================= */
+====================================================== */
 
-const state = {
+const state={
 
   cvReady:false,
 
@@ -777,13 +1206,6 @@ const state = {
 
   loopToken:0,
 
-  model:null,
-  aiBusy:false,
-  lastAIWall:-Infinity,
-
-  persons:[],
-  aiBalls:[],
-
   hoop:null,
   hoopCandidates:[],
   hoopIndex:0,
@@ -795,6 +1217,7 @@ const state = {
   tracking:false,
 
   ball:{
+
     x:0,
     y:0,
 
@@ -808,6 +1231,7 @@ const state = {
     quality:0,
 
     lostMs:0
+
   },
 
   prevGray:null,
@@ -816,13 +1240,13 @@ const state = {
   templates:[],
 
   featureFrame:0,
+
   lastTrackTime:null,
 
   trail:[],
 
-  shooter:null,
-
   shot:null,
+
   shotCooldownUntil:0,
 
   shots:[],
@@ -830,19 +1254,23 @@ const state = {
   feedbackTimer:null,
 
   fpsFrames:0,
-  fpsLast:performance.now()
+
+  fpsLast:
+    performance.now()
+
 };
 
 
-/* =========================================================
+/* ======================================================
    HELPERS
-========================================================= */
+====================================================== */
 
-const clamp = (
+const clamp=(
   value,
   minimum,
   maximum
-) =>
+)=>
+
   Math.max(
     minimum,
     Math.min(
@@ -868,20 +1296,30 @@ function median(values){
     return 0;
   }
 
-  const sorted =
-    [...values]
-      .sort((a,b)=>a-b);
 
-  const middle =
+  const sorted=
+    [...values]
+      .sort(
+        (a,b)=>a-b
+      );
+
+
+  const middle=
     Math.floor(
       sorted.length/2
     );
 
-  if(sorted.length%2){
 
-    return sorted[middle];
+  if(
+    sorted.length%2
+  ){
+
+    return sorted[
+      middle
+    ];
 
   }
+
 
   return(
     sorted[middle-1]+
@@ -893,11 +1331,17 @@ function median(values){
 
 function mediaTime(){
 
-  if(state.source==="file"){
+  if(
+    state.source==="file"
+  ){
 
-    return video.currentTime*1000;
+    return(
+      video.currentTime*
+      1000
+    );
 
   }
+
 
   return performance.now();
 
@@ -914,8 +1358,9 @@ function setStatus(text){
 
 function setMirrored(value){
 
-  state.mirrored =
+  state.mirrored=
     Boolean(value);
+
 
   stage.classList.toggle(
     "mirrored",
@@ -932,128 +1377,177 @@ function directionCos(
   ty
 ){
 
-  const a =
-    Math.hypot(vx,vy);
+  const first=
+    Math.hypot(
+      vx,
+      vy
+    );
 
-  const b =
-    Math.hypot(tx,ty);
+
+  const second=
+    Math.hypot(
+      tx,
+      ty
+    );
+
 
   if(
-    a<1 ||
-    b<1
+    first<1 ||
+    second<1
   ){
+
     return 0;
+
   }
+
 
   return(
     vx*tx+
     vy*ty
   )/
   (
-    a*b
+    first*
+    second
   );
 
 }
 
 
-/* =========================================================
-   OPEN CV
-========================================================= */
+/* ======================================================
+   OPENCV
+====================================================== */
 
 async function waitForOpenCV(){
 
-  for(
-    let attempt=0;
-    attempt<300;
-    attempt++
-  ){
+  try{
 
-    try{
+    const cvObject =
+      await Promise.race([
 
-      if(window.cv){
+        window.__opencvReadyPromise,
 
-        if(
-          typeof window.cv.then ===
-          "function"
-        ){
+        new Promise(
+          (_,reject)=>{
 
-          window.cv =
-            await window.cv;
+            setTimeout(
+              ()=>{
 
-        }
+                reject(
+                  new Error(
+                    "OpenCV laden duurde langer dan 30 seconden."
+                  )
+                );
 
-        if(
-          window.cv &&
-          window.cv.Mat &&
-          window.cv.calcOpticalFlowPyrLK
-        ){
+              },
+              30000
+            );
 
-          state.cvReady=true;
+          }
+        )
 
-          $("cvState")
-            .textContent=
-              "✓ actief";
+      ]);
 
-          $("cvState")
-            .className=
-              "ok";
 
-          setStatus(
-            "OpenCV klaar · kies camera of testvideo"
-          );
+    if(
+      !cvObject ||
+      !cvObject.Mat ||
+      !cvObject.calcOpticalFlowPyrLK ||
+      !cvObject.goodFeaturesToTrack
+    ){
 
-          updateUI();
+      throw new Error(
+        "OpenCV is geladen, maar noodzakelijke functies ontbreken."
+      );
 
-          return;
-
-        }
-
-      }
-
-    }catch(error){
-      console.warn(error);
     }
 
-    await new Promise(
-      resolve =>
-        setTimeout(resolve,100)
+
+    window.cv =
+      cvObject;
+
+
+    state.cvReady=
+      true;
+
+
+    $("cvState")
+      .textContent=
+        "✓ actief";
+
+
+    $("cvState")
+      .className=
+        "ok";
+
+
+    setStatus(
+      "OpenCV klaar · kies camera of testvideo"
     );
+
+
+    updateUI();
 
   }
 
-  $("cvState")
-    .textContent=
-      "niet geladen";
+  catch(error){
 
-  $("cvState")
-    .className=
-      "no";
+    console.error(
+      "OpenCV fout:",
+      error
+    );
 
-  setStatus(
-    "OpenCV kon niet laden"
-  );
+
+    state.cvReady=
+      false;
+
+
+    $("cvState")
+      .textContent=
+        "❌ laden mislukt";
+
+
+    $("cvState")
+      .className=
+        "no";
+
+
+    setStatus(
+      "OpenCV kon niet laden · vernieuw de pagina"
+    );
+
+
+    $("instruction")
+      .innerHTML=
+        "<strong>OpenCV kon niet laden.</strong><br>"+
+        "Vernieuw de pagina één keer. "+
+        "Als dit opnieuw gebeurt, stuur mij alleen een screenshot.";
+
+  }
 
 }
 
 
-/* =========================================================
+/* ======================================================
    UI
-========================================================= */
+====================================================== */
 
 function updateUI(){
 
-  const sourceReady =
+  const sourceReady=
     Boolean(
       state.source
     );
+
 
   $("findHoopBtn")
     .disabled=
       !sourceReady;
 
+
   $("manualHoopBtn")
     .disabled=
       !sourceReady;
+
 
   $("ballBtn")
     .disabled=
@@ -1062,6 +1556,7 @@ function updateUI(){
         state.hoop &&
         state.cvReady
       );
+
 
   $("reselectBallBtn")
     .disabled=
@@ -1074,6 +1569,7 @@ function updateUI(){
       ? "✓ ingesteld"
       : "niet ingesteld";
 
+
   $("ringState")
     .className=
       state.hoop
@@ -1084,8 +1580,9 @@ function updateUI(){
   $("ballState")
     .textContent=
       state.ballSelected
-      ? "✓ gekozen"
+      ? "✓ tracking"
       : "niet ingesteld";
+
 
   $("ballState")
     .className=
@@ -1096,9 +1593,9 @@ function updateUI(){
 }
 
 
-/* =========================================================
-   CLEANUP
-========================================================= */
+/* ======================================================
+   OPENCV MEMORY HELPERS
+====================================================== */
 
 function deleteMat(mat){
 
@@ -1108,7 +1605,9 @@ function deleteMat(mat){
       mat.delete();
     }
 
-  }catch{}
+  }
+
+  catch{}
 
 }
 
@@ -1126,62 +1625,87 @@ function clearTemplates(){
 
   }
 
+
   state.templates=[];
 
 }
 
+
+/* ======================================================
+   RESET BALL
+====================================================== */
 
 function resetBallTracking(){
 
   state.tracking=false;
   state.ballSelected=false;
 
+
   deleteMat(
     state.prevGray
   );
+
 
   deleteMat(
     state.prevPts
   );
 
+
   state.prevGray=null;
   state.prevPts=null;
 
+
   clearTemplates();
 
+
   state.trail=[];
+
   state.shot=null;
 
+
   state.ball={
+
     x:0,
     y:0,
+
     radius:10,
+
     vx:0,
     vy:0,
+
     real:false,
+
     quality:0,
+
     lostMs:0
+
   };
+
 
   $("ballState")
     .textContent=
       "niet ingesteld";
 
+
   $("ballState")
     .className=
       "no";
+
 
   $("trackingState")
     .textContent=
       "—";
 
+
   $("trackingState")
     .className=
       "";
 
+
   $("shotState")
     .textContent=
       "WACHT";
+
 
   $("reselectBallBtn")
     .disabled=
@@ -1190,15 +1714,17 @@ function resetBallTracking(){
 }
 
 
-/* =========================================================
+/* ======================================================
    SOURCE
-========================================================= */
+====================================================== */
 
 function stopSource(){
 
   state.loopToken++;
 
+
   resetBallTracking();
+
 
   if(state.stream){
 
@@ -1208,9 +1734,11 @@ function stopSource(){
         track=>track.stop()
       );
 
+
     state.stream=null;
 
   }
+
 
   if(state.objectURL){
 
@@ -1218,9 +1746,11 @@ function stopSource(){
       state.objectURL
     );
 
+
     state.objectURL=null;
 
   }
+
 
   video.pause();
 
@@ -1232,6 +1762,10 @@ function stopSource(){
 
 }
 
+
+/* ======================================================
+   VIDEO READY
+====================================================== */
 
 function waitForVideo(){
 
@@ -1245,20 +1779,25 @@ function waitForVideo(){
       ){
 
         resolve();
+
         return;
 
       }
 
+
       const success=()=>{
 
         cleanup();
+
         resolve();
 
       };
 
+
       const failure=()=>{
 
         cleanup();
+
 
         reject(
           new Error(
@@ -1268,12 +1807,14 @@ function waitForVideo(){
 
       };
 
+
       const cleanup=()=>{
 
         video.removeEventListener(
           "loadeddata",
           success
         );
+
 
         video.removeEventListener(
           "error",
@@ -1282,16 +1823,22 @@ function waitForVideo(){
 
       };
 
+
       video.addEventListener(
         "loadeddata",
         success,
-        {once:true}
+        {
+          once:true
+        }
       );
+
 
       video.addEventListener(
         "error",
         failure,
-        {once:true}
+        {
+          once:true
+        }
       );
 
     }
@@ -1300,23 +1847,34 @@ function waitForVideo(){
 }
 
 
+/* ======================================================
+   CANVASES
+====================================================== */
+
 function prepareCanvases(){
 
   overlay.width=
     video.videoWidth;
 
+
   overlay.height=
     video.videoHeight;
 
 
-  PW =
+  /*
+    480 pixels analysebreedte.
+    Op oudere iPhones kan dit later
+    eventueel naar 400.
+  */
+
+  PW=
     Math.min(
       480,
       video.videoWidth
     );
 
 
-  PH =
+  PH=
     Math.round(
       PW*
       video.videoHeight/
@@ -1324,11 +1882,19 @@ function prepareCanvases(){
     );
 
 
-  processCanvas.width=PW;
-  processCanvas.height=PH;
+  processCanvas.width=
+    PW;
+
+
+  processCanvas.height=
+    PH;
 
 }
 
+
+/* ======================================================
+   CAMERA
+====================================================== */
 
 async function startCamera(facing){
 
@@ -1336,18 +1902,26 @@ async function startCamera(facing){
 
   resetRing();
 
+
   try{
 
-    state.source="camera";
-    state.facing=facing;
+    state.source=
+      "camera";
+
+
+    state.facing=
+      facing;
+
 
     setMirrored(
       facing==="user"
     );
 
+
     setStatus(
       "Camera openen…"
     );
+
 
     const stream =
       await navigator.mediaDevices
@@ -1378,32 +1952,48 @@ async function startCamera(facing){
 
         });
 
-    state.stream=stream;
 
-    video.srcObject=stream;
-    video.muted=true;
-    video.playsInline=true;
+    state.stream=
+      stream;
+
+
+    video.srcObject=
+      stream;
+
+
+    video.muted=
+      true;
+
+
+    video.playsInline=
+      true;
+
 
     await video.play();
 
+
     await waitForVideo();
+
 
     prepareCanvases();
 
+
     $("videoControls")
-      .hidden=true;
+      .hidden=
+        true;
+
 
     setStatus(
       "Camera actief · stel eerst de ring in"
     );
 
+
     $("instruction")
       .textContent=
-        "Stel eerst de ring in. Daarna tik je één keer op de echte basketbal.";
+        "Stel eerst de ring in. Daarna tik je één keer op de basketbal.";
+
 
     updateUI();
-
-    loadCoco();
 
     startLoop();
 
@@ -1412,6 +2002,7 @@ async function startCamera(facing){
   catch(error){
 
     console.error(error);
+
 
     setStatus(
       "Camera fout: "+
@@ -1423,6 +2014,10 @@ async function startCamera(facing){
 }
 
 
+/* ======================================================
+   VIDEO FILE
+====================================================== */
+
 async function loadVideoFile(file){
 
   stopSource();
@@ -1431,44 +2026,67 @@ async function loadVideoFile(file){
 
   setMirrored(false);
 
+
   try{
 
-    state.source="file";
-    state.facing=null;
+    state.source=
+      "file";
 
-    state.objectURL =
-      URL.createObjectURL(file);
+
+    state.facing=
+      null;
+
+
+    state.objectURL=
+      URL.createObjectURL(
+        file
+      );
+
 
     video.src=
       state.objectURL;
 
-    video.muted=true;
-    video.playsInline=true;
+
+    video.muted=
+      true;
+
+
+    video.playsInline=
+      true;
+
 
     video.load();
 
+
     await waitForVideo();
 
+
     video.currentTime=0;
+
     video.playbackRate=1;
+
     video.pause();
+
 
     prepareCanvases();
 
+
     $("videoControls")
-      .hidden=false;
+      .hidden=
+        false;
+
 
     setStatus(
       "Video geladen · zet hem vlak vóór het schot"
     );
 
+
     $("instruction")
       .textContent=
-        "Zoek een frame waarop de leerling de bal vasthoudt. Stel de ring in en tik daarna op de bal.";
+        "Zet de video op een frame waarop de leerling de bal vasthoudt. Stel de ring in en tik daarna op de bal.";
+
 
     updateUI();
-
-    loadCoco();
 
     startLoop();
 
@@ -1477,6 +2095,7 @@ async function loadVideoFile(file){
   catch(error){
 
     console.error(error);
+
 
     setStatus(
       "Video fout: "+
@@ -1488,166 +2107,15 @@ async function loadVideoFile(file){
 }
 
 
-/* =========================================================
-   COCO = ALLEEN HULP
-========================================================= */
-
-async function loadCoco(){
-
-  if(state.model){
-    return;
-  }
-
-  try{
-
-    await tf.setBackend(
-      "webgl"
-    );
-
-    await tf.ready();
-
-    state.model =
-      await cocoSsd.load({
-        base:"lite_mobilenet_v2"
-      });
-
-  }
-
-  catch(error){
-
-    console.warn(
-      "COCO niet beschikbaar",
-      error
-    );
-
-  }
-
-}
-
-
-async function detectAI(){
-
-  if(
-    !state.model ||
-    state.aiBusy ||
-    video.readyState<2 ||
-    performance.now()-
-      state.lastAIWall<
-      650
-  ){
-    return;
-  }
-
-  state.aiBusy=true;
-  state.lastAIWall=
-    performance.now();
-
-  try{
-
-    const detections =
-      await state.model.detect(
-        video,
-        20,
-        .12
-      );
-
-    const sx =
-      PW/
-      video.videoWidth;
-
-    const sy =
-      PH/
-      video.videoHeight;
-
-
-    state.persons =
-      detections
-        .filter(
-          detection =>
-            detection.class==="person" &&
-            detection.score>.25
-        )
-        .map(
-          detection=>({
-
-            x:
-              detection.bbox[0]*sx,
-
-            y:
-              detection.bbox[1]*sy,
-
-            w:
-              detection.bbox[2]*sx,
-
-            h:
-              detection.bbox[3]*sy,
-
-            score:
-              detection.score
-
-          })
-        );
-
-
-    state.aiBalls =
-      detections
-        .filter(
-          detection =>
-            detection.class==="sports ball" &&
-            detection.score>.05
-        )
-        .map(
-          detection=>({
-
-            x:
-              (
-                detection.bbox[0]+
-                detection.bbox[2]/2
-              )*sx,
-
-            y:
-              (
-                detection.bbox[1]+
-                detection.bbox[3]/2
-              )*sy,
-
-            w:
-              detection.bbox[2]*sx,
-
-            h:
-              detection.bbox[3]*sy,
-
-            confidence:
-              detection.score
-
-          })
-        );
-
-  }
-
-  catch(error){
-
-    console.warn(error);
-
-  }
-
-  finally{
-
-    state.aiBusy=false;
-
-  }
-
-}
-
-
-/* =========================================================
-   FRAME → GRAYSCALE
-========================================================= */
+/* ======================================================
+   FRAME → GRAY
+====================================================== */
 
 function captureGray(){
 
-  const cv =
+  const cv=
     window.cv;
+
 
   pctx.drawImage(
     video,
@@ -1657,13 +2125,16 @@ function captureGray(){
     PH
   );
 
-  const rgba =
+
+  const rgba=
     cv.imread(
       processCanvas
     );
 
-  const gray =
+
+  const gray=
     new cv.Mat();
+
 
   cv.cvtColor(
     rgba,
@@ -1671,23 +2142,26 @@ function captureGray(){
     cv.COLOR_RGBA2GRAY
   );
 
+
   rgba.delete();
+
 
   return gray;
 
 }
 
 
-/* =========================================================
+/* ======================================================
    POINTER
-========================================================= */
+====================================================== */
 
 function pointerPosition(event){
 
-  const rect =
+  const rect=
     overlay.getBoundingClientRect();
 
-  let x =
+
+  let x=
     (
       event.clientX-
       rect.left
@@ -1695,7 +2169,8 @@ function pointerPosition(event){
     overlay.width/
     rect.width;
 
-  const y =
+
+  const y=
     (
       event.clientY-
       rect.top
@@ -1703,13 +2178,15 @@ function pointerPosition(event){
     overlay.height/
     rect.height;
 
+
   if(state.mirrored){
 
-    x =
+    x=
       overlay.width-
       x;
 
   }
+
 
   return{
     x,
@@ -1738,33 +2215,47 @@ function overlayToProcessing(point){
 }
 
 
-/* =========================================================
-   RING
-========================================================= */
+/* ======================================================
+   RING RESET
+====================================================== */
 
 function resetRing(){
 
   state.hoop=null;
+
   state.hoopCandidates=[];
+
   state.hoopIndex=0;
 
   state.manualHoopPoints=[];
-  state.selectMode="none";
+
+  state.selectMode=
+    "none";
+
 
   overlay.classList.remove(
     "selecting"
   );
 
+
   $("confirmHoopBtn")
-    .disabled=true;
+    .disabled=
+      true;
+
 
   $("nextHoopBtn")
-    .disabled=true;
+    .disabled=
+      true;
+
 
   updateUI();
 
 }
 
+
+/* ======================================================
+   HSV
+====================================================== */
 
 function rgbToHSV(r,g,b){
 
@@ -1772,57 +2263,83 @@ function rgbToHSV(r,g,b){
   g/=255;
   b/=255;
 
+
   const max=
-    Math.max(r,g,b);
+    Math.max(
+      r,g,b
+    );
+
 
   const min=
-    Math.min(r,g,b);
+    Math.min(
+      r,g,b
+    );
 
-  const d=
+
+  const difference=
     max-min;
 
-  let h=0;
 
-  if(d!==0){
+  let hue=0;
+
+
+  if(difference!==0){
 
     if(max===r){
 
-      h=
+      hue=
         60*
-        (((g-b)/d)%6);
+        (
+          (
+            (g-b)/
+            difference
+          )%6
+        );
 
     }
 
     else if(max===g){
 
-      h=
+      hue=
         60*
-        ((b-r)/d+2);
+        (
+          (b-r)/
+          difference+
+          2
+        );
 
     }
 
     else{
 
-      h=
+      hue=
         60*
-        ((r-g)/d+4);
+        (
+          (r-g)/
+          difference+
+          4
+        );
 
     }
 
   }
 
-  if(h<0){
-    h+=360;
+
+  if(hue<0){
+
+    hue+=360;
+
   }
+
 
   return{
 
-    h,
+    h:hue,
 
     s:
       max===0
       ? 0
-      : d/max,
+      : difference/max,
 
     v:max
 
@@ -1831,10 +2348,17 @@ function rgbToHSV(r,g,b){
 }
 
 
+/* ======================================================
+   RING COLOR
+====================================================== */
+
 function isHoopColour(r,g,b){
 
-  const hsv =
-    rgbToHSV(r,g,b);
+  const hsv=
+    rgbToHSV(
+      r,g,b
+    );
+
 
   return(
 
@@ -1843,18 +2367,30 @@ function isHoopColour(r,g,b){
         hsv.h<52 ||
         hsv.h>345
       )
+
       &&
+
       hsv.s>.28
+
       &&
+
       hsv.v>.18
     )
 
     ||
 
     (
-      r>65 &&
-      r>g*1.08 &&
-      r>b*1.12
+      r>65
+
+      &&
+
+      r>
+      g*1.08
+
+      &&
+
+      r>
+      b*1.12
     )
 
   );
@@ -1862,15 +2398,26 @@ function isHoopColour(r,g,b){
 }
 
 
+/* ======================================================
+   AUTO RING
+====================================================== */
+
 function findHoopAutomatically(){
 
-  if(video.readyState<2){
+  if(
+    video.readyState<2
+  ){
     return;
   }
 
-  if(state.source==="file"){
-    video.pause();
-  }
+
+  /*
+    Beeld stilzetten zodat de gebruiker
+    rustig kan bevestigen.
+  */
+
+  video.pause();
+
 
   pctx.drawImage(
     video,
@@ -1878,47 +2425,67 @@ function findHoopAutomatically(){
     PW,PH
   );
 
-  const image =
+
+  const image=
     pctx.getImageData(
       0,0,
       PW,PH
     );
 
-  const size =
+
+  const size=
     PW*PH;
 
-  const mask =
-    new Uint8Array(size);
 
-  const visited =
-    new Uint8Array(size);
+  const mask=
+    new Uint8Array(
+      size
+    );
 
-  const queue =
-    new Int32Array(size);
+
+  const visited=
+    new Uint8Array(
+      size
+    );
+
+
+  const queue=
+    new Int32Array(
+      size
+    );
 
 
   for(
-    let i=0;
-    i<size;
-    i++
+    let index=0;
+    index<size;
+    index++
   ){
 
     const dataIndex=
-      i*4;
+      index*4;
+
 
     if(
       isHoopColour(
 
-        image.data[dataIndex],
+        image.data[
+          dataIndex
+        ],
 
-        image.data[dataIndex+1],
+        image.data[
+          dataIndex+1
+        ],
 
-        image.data[dataIndex+2]
+        image.data[
+          dataIndex+2
+        ]
 
       )
     ){
 
-      mask[i]=1;
+      mask[
+        index
+      ]=1;
 
     }
 
@@ -1940,23 +2507,37 @@ function findHoopAutomatically(){
       x++
     ){
 
-      const start =
+      const start=
         y*PW+x;
+
 
       if(
         !mask[start] ||
         visited[start]
       ){
+
         continue;
+
       }
 
-      let qs=0;
-      let qe=0;
 
-      queue[qe++]=start;
-      visited[start]=1;
+      let queueStart=0;
+      let queueEnd=0;
+
+
+      queue[
+        queueEnd++
+      ]=
+        start;
+
+
+      visited[
+        start
+      ]=1;
+
 
       let area=0;
+
 
       let minX=x;
       let maxX=x;
@@ -1965,33 +2546,57 @@ function findHoopAutomatically(){
       let maxY=y;
 
 
-      while(qs<qe){
+      while(
+        queueStart<
+        queueEnd
+      ){
 
-        const index =
-          queue[qs++];
+        const index=
+          queue[
+            queueStart++
+          ];
 
-        const cy =
+
+        const cy=
           Math.floor(
             index/PW
           );
 
-        const cx =
+
+        const cx=
           index-
           cy*PW;
 
+
         area++;
 
+
         minX=
-          Math.min(minX,cx);
+          Math.min(
+            minX,
+            cx
+          );
+
 
         maxX=
-          Math.max(maxX,cx);
+          Math.max(
+            maxX,
+            cx
+          );
+
 
         minY=
-          Math.min(minY,cy);
+          Math.min(
+            minY,
+            cy
+          );
+
 
         maxY=
-          Math.max(maxY,cy);
+          Math.max(
+            maxY,
+            cy
+          );
 
 
         const neighbours=[
@@ -2013,27 +2618,42 @@ function findHoopAutomatically(){
             visited[neighbour] ||
             !mask[neighbour]
           ){
+
             continue;
+
           }
 
-          const ny =
+
+          const ny=
             Math.floor(
               neighbour/PW
             );
 
-          const nx =
+
+          const nx=
             neighbour-
             ny*PW;
 
+
           if(
-            Math.abs(nx-cx)>1
+            Math.abs(
+              nx-cx
+            )>1
           ){
+
             continue;
+
           }
 
-          visited[neighbour]=1;
 
-          queue[qe++]=
+          visited[
+            neighbour
+          ]=1;
+
+
+          queue[
+            queueEnd++
+          ]=
             neighbour;
 
         }
@@ -2042,42 +2662,64 @@ function findHoopAutomatically(){
 
 
       if(area<6){
+
         continue;
+
       }
 
+
       const width=
-        maxX-minX+1;
+        maxX-
+        minX+
+        1;
+
 
       const height=
-        maxY-minY+1;
+        maxY-
+        minY+
+        1;
+
 
       if(
         width<6 ||
         height<2
       ){
+
         continue;
+
       }
 
+
       const aspect=
-        width/height;
+        width/
+        height;
+
 
       if(
         aspect<1.2 ||
         aspect>11
       ){
+
         continue;
+
       }
+
 
       if(
         width>PW*.4 ||
         height>PH*.3
       ){
+
         continue;
+
       }
 
-      const score =
 
-        Math.log(area+1)
+      const score=
+
+        Math.log(
+          area+1
+        )
 
         +
 
@@ -2085,7 +2727,8 @@ function findHoopAutomatically(){
           0,
           4-
           Math.abs(
-            aspect-3.2
+            aspect-
+            3.2
           )
         );
 
@@ -2094,31 +2737,37 @@ function findHoopAutomatically(){
 
         x:
           clamp(
-            minX-width*.18,
+            minX-
+            width*.18,
             0,
             PW
-          )/PW,
+          )/
+          PW,
 
         y:
           clamp(
-            minY-height*.5,
+            minY-
+            height*.5,
             0,
             PH
-          )/PH,
+          )/
+          PH,
 
         w:
           clamp(
             width*1.36,
             4,
             PW
-          )/PW,
+          )/
+          PW,
 
         h:
           clamp(
             height*2,
             4,
             PH
-          )/PH,
+          )/
+          PH,
 
         score
 
@@ -2131,12 +2780,17 @@ function findHoopAutomatically(){
 
   results.sort(
     (a,b)=>
-      b.score-a.score
+      b.score-
+      a.score
   );
 
 
-  state.hoopCandidates =
-    results.slice(0,6);
+  state.hoopCandidates=
+    results.slice(
+      0,
+      6
+    );
+
 
   state.hoopIndex=0;
 
@@ -2149,11 +2803,16 @@ function findHoopAutomatically(){
       "Ring niet gevonden · gebruik handmatig"
     );
 
+
     $("confirmHoopBtn")
-      .disabled=true;
+      .disabled=
+        true;
+
 
     $("nextHoopBtn")
-      .disabled=true;
+      .disabled=
+        true;
+
 
     return;
 
@@ -2161,11 +2820,15 @@ function findHoopAutomatically(){
 
 
   $("confirmHoopBtn")
-    .disabled=false;
+    .disabled=
+      false;
+
 
   $("nextHoopBtn")
     .disabled=
-      state.hoopCandidates.length<2;
+      state.hoopCandidates.length<
+      2;
+
 
   setStatus(
     "Geel kader: is dit de ring?"
@@ -2174,12 +2837,22 @@ function findHoopAutomatically(){
 }
 
 
+/* ======================================================
+   RING CANDIDATE
+====================================================== */
+
 function currentHoopCandidate(){
 
   return(
+
     state.hoopCandidates[
       state.hoopIndex
-    ] || null
+    ]
+
+    ||
+
+    null
+
   );
 
 }
@@ -2190,74 +2863,128 @@ function nextHoopCandidate(){
   if(
     !state.hoopCandidates.length
   ){
+
     return;
+
   }
 
-  state.hoopIndex =
+
+  state.hoopIndex=
     (
-      state.hoopIndex+1
-    )%
+      state.hoopIndex+
+      1
+    )
+    %
     state.hoopCandidates.length;
 
 }
 
 
+/* ======================================================
+   CONFIRM RING
+====================================================== */
+
 function confirmHoop(){
 
-  const candidate =
+  const candidate=
     currentHoopCandidate();
 
+
   if(!candidate){
+
     return;
+
   }
+
 
   state.hoop={
     ...candidate
   };
 
+
   state.hoopCandidates=[];
 
+
   $("confirmHoopBtn")
-    .disabled=true;
+    .disabled=
+      true;
+
 
   $("nextHoopBtn")
-    .disabled=true;
+    .disabled=
+      true;
+
 
   setStatus(
     "✓ Ring ingesteld"
   );
 
+
   $("instruction")
     .textContent=
-      "Tik nu één keer op de basketbal. Vanaf dat moment volgt de app de echte bal via optical flow.";
+      "Tik nu één keer op de basketbal.";
+
+
+  /*
+    Camera weer laten lopen.
+    Testvideo blijft gepauzeerd zodat
+    de bal makkelijk geselecteerd kan worden.
+  */
+
+  if(
+    state.source==="camera"
+  ){
+
+    video.play()
+      .catch(()=>{});
+
+  }
+
 
   updateUI();
 
 }
 
 
+/* ======================================================
+   MANUAL RING
+====================================================== */
+
 function startManualHoop(){
 
+  video.pause();
+
+
   state.hoop=null;
+
   state.hoopCandidates=[];
+
   state.manualHoopPoints=[];
+
 
   state.selectMode=
     "hoop";
+
 
   overlay.classList.add(
     "selecting"
   );
 
+
   $("confirmHoopBtn")
-    .disabled=true;
+    .disabled=
+      true;
+
 
   $("nextHoopBtn")
-    .disabled=true;
+    .disabled=
+      true;
+
 
   $("instruction")
     .textContent=
-      "Tik op de linkerkant van de ring.";
+      "Tik op de LINKERKANT van de ring.";
+
 
   setStatus(
     "Ring: tik links"
@@ -2272,6 +2999,7 @@ function addManualHoopPoint(point){
     point
   );
 
+
   if(
     state.manualHoopPoints.length===
     1
@@ -2279,11 +3007,13 @@ function addManualHoopPoint(point){
 
     $("instruction")
       .textContent=
-        "Tik nu op de rechterkant van dezelfde ring.";
+        "Tik nu op de RECHTERKANT van dezelfde ring.";
+
 
     setStatus(
       "Ring: tik rechts"
     );
+
 
     return;
 
@@ -2292,6 +3022,7 @@ function addManualHoopPoint(point){
 
   const first=
     state.manualHoopPoints[0];
+
 
   const second=
     state.manualHoopPoints[1];
@@ -2303,11 +3034,13 @@ function addManualHoopPoint(point){
       second.x
     );
 
+
   const right=
     Math.max(
       first.x,
       second.x
     );
+
 
   const width=
     Math.max(
@@ -2315,11 +3048,14 @@ function addManualHoopPoint(point){
       right-left
     );
 
+
   const centerY=
     (
       first.y+
       second.y
-    )/2;
+    )/
+    2;
+
 
   const height=
     Math.max(
@@ -2332,7 +3068,8 @@ function addManualHoopPoint(point){
 
     x:
       clamp(
-        left-width*.04,
+        left-
+        width*.04,
         0,
         overlay.width
       )/
@@ -2340,7 +3077,8 @@ function addManualHoopPoint(point){
 
     y:
       clamp(
-        centerY-height/2,
+        centerY-
+        height/2,
         0,
         overlay.height
       )/
@@ -2363,29 +3101,44 @@ function addManualHoopPoint(point){
 
   state.manualHoopPoints=[];
 
+
   state.selectMode=
     "none";
+
 
   overlay.classList.remove(
     "selecting"
   );
 
+
   setStatus(
     "✓ Ring ingesteld"
   );
 
+
   $("instruction")
     .textContent=
       "Tik nu één keer op de basketbal.";
+
+
+  if(
+    state.source==="camera"
+  ){
+
+    video.play()
+      .catch(()=>{});
+
+  }
+
 
   updateUI();
 
 }
 
 
-/* =========================================================
-   BALL FEATURE INITIALISATION
-========================================================= */
+/* ======================================================
+   FEATURE POINTS
+====================================================== */
 
 function createFeaturePoints(
   gray,
@@ -2393,34 +3146,46 @@ function createFeaturePoints(
   radius
 ){
 
-  const cv =
+  const cv=
     window.cv;
 
 
   function attempt(
-    maskRadius,
+    searchRadius,
     quality
   ){
 
-    const mask =
+    const mask=
       cv.Mat.zeros(
         PH,
         PW,
         cv.CV_8UC1
       );
 
+
     cv.circle(
 
       mask,
 
       new cv.Point(
-        Math.round(center.x),
-        Math.round(center.y)
+        Math.round(
+          center.x
+        ),
+        Math.round(
+          center.y
+        )
       ),
 
-      Math.round(maskRadius),
+      Math.round(
+        searchRadius
+      ),
 
-      new cv.Scalar(255),
+      new cv.Scalar(
+        255,
+        255,
+        255,
+        255
+      ),
 
       -1
 
@@ -2434,9 +3199,10 @@ function createFeaturePoints(
     cv.goodFeaturesToTrack(
 
       gray,
+
       points,
 
-      50,
+      60,
 
       quality,
 
@@ -2455,25 +3221,29 @@ function createFeaturePoints(
 
     mask.delete();
 
+
     return points;
 
   }
 
 
-  let points =
+  let points=
     attempt(
-      radius*1.2,
+      radius*1.25,
       .012
     );
 
 
-  if(points.rows<5){
+  if(
+    points.rows<5
+  ){
 
     points.delete();
 
-    points =
+
+    points=
       attempt(
-        radius*1.65,
+        radius*1.7,
         .006
       );
 
@@ -2485,9 +3255,9 @@ function createFeaturePoints(
 }
 
 
-/* =========================================================
-   TEMPLATES
-========================================================= */
+/* ======================================================
+   TEMPLATE
+====================================================== */
 
 function addTemplate(
   gray,
@@ -2495,77 +3265,95 @@ function addTemplate(
   radius
 ){
 
-  const cv=
-    window.cv;
-
-  const half =
+  const half=
     Math.max(
-      6,
+      7,
       Math.round(
-        radius*1.25
+        radius*1.35
       )
     );
 
-  const x =
+
+  const x=
     clamp(
-      Math.round(center.x-half),
+      Math.round(
+        center.x-half
+      ),
       0,
       PW-2
     );
 
-  const y =
+
+  const y=
     clamp(
-      Math.round(center.y-half),
+      Math.round(
+        center.y-half
+      ),
       0,
       PH-2
     );
 
-  const width =
+
+  const width=
     clamp(
       half*2,
       4,
       PW-x
     );
 
-  const height =
+
+  const height=
     clamp(
       half*2,
       4,
       PH-y
     );
 
+
   if(
     width<4 ||
     height<4
   ){
+
     return;
+
   }
 
-  const roi =
+
+  const roi=
     gray.roi(
       new cv.Rect(
-        x,y,
-        width,height
+        x,
+        y,
+        width,
+        height
       )
     );
 
-  const copy =
+
+  const copy=
     roi.clone();
+
 
   roi.delete();
 
+
   state.templates.push({
+
     mat:copy,
+
     radius
+
   });
 
 
   while(
-    state.templates.length>3
+    state.templates.length>4
   ){
 
-    const old =
+    const old=
       state.templates.shift();
+
 
     deleteMat(
       old.mat
@@ -2576,9 +3364,9 @@ function addTemplate(
 }
 
 
-/* =========================================================
+/* ======================================================
    TEMPLATE RECOVERY
-========================================================= */
+====================================================== */
 
 function templateRecovery(
   gray,
@@ -2588,65 +3376,80 @@ function templateRecovery(
   if(
     !state.templates.length
   ){
+
     return null;
+
   }
 
-  const cv=
-    window.cv;
 
-  const speed =
+  const speed=
     Math.hypot(
       state.ball.vx,
       state.ball.vy
     );
 
-  const searchRadius =
+
+  const searchRadius=
     clamp(
-      state.ball.radius*6+
+
+      state.ball.radius*6
+
+      +
+
       speed*.025,
-      45,
+
+      42,
+
       145
+
     );
 
 
-  const x0 =
+  const x0=
     clamp(
       Math.round(
-        predicted.x-searchRadius
+        predicted.x-
+        searchRadius
       ),
       0,
       PW-2
     );
 
-  const y0 =
+
+  const y0=
     clamp(
       Math.round(
-        predicted.y-searchRadius
+        predicted.y-
+        searchRadius
       ),
       0,
       PH-2
     );
 
-  const x1 =
+
+  const x1=
     clamp(
       Math.round(
-        predicted.x+searchRadius
+        predicted.x+
+        searchRadius
       ),
       x0+2,
       PW
     );
 
-  const y1 =
+
+  const y1=
     clamp(
       Math.round(
-        predicted.y+searchRadius
+        predicted.y+
+        searchRadius
       ),
       y0+2,
       PH
     );
 
 
-  const search =
+  const search=
     gray.roi(
       new cv.Rect(
         x0,
@@ -2670,22 +3473,26 @@ function templateRecovery(
       [.78,1,1.22]
     ){
 
-      const resized =
+      const resized=
         new cv.Mat();
 
-      const width =
+
+      const width=
         Math.max(
           4,
           Math.round(
-            stored.mat.cols*scale
+            stored.mat.cols*
+            scale
           )
         );
 
-      const height =
+
+      const height=
         Math.max(
           4,
           Math.round(
-            stored.mat.rows*scale
+            stored.mat.rows*
+            scale
           )
         );
 
@@ -2696,6 +3503,7 @@ function templateRecovery(
       ){
 
         resized.delete();
+
         continue;
 
       }
@@ -2704,6 +3512,7 @@ function templateRecovery(
       cv.resize(
 
         stored.mat,
+
         resized,
 
         new cv.Size(
@@ -2719,14 +3528,16 @@ function templateRecovery(
       );
 
 
-      const result =
+      const result=
         new cv.Mat();
 
 
       cv.matchTemplate(
 
         search,
+
         resized,
+
         result,
 
         cv.TM_CCOEFF_NORMED
@@ -2734,7 +3545,7 @@ function templateRecovery(
       );
 
 
-      const minMax =
+      const minMax=
         cv.minMaxLoc(
           result
         );
@@ -2771,6 +3582,7 @@ function templateRecovery(
 
 
       result.delete();
+
       resized.delete();
 
     }
@@ -2783,7 +3595,7 @@ function templateRecovery(
 
   if(
     best &&
-    best.score>.40
+    best.score>.43
   ){
 
     return best;
@@ -2796,205 +3608,102 @@ function templateRecovery(
 }
 
 
-/* =========================================================
-   AI RECOVERY
-========================================================= */
-
-function aiRecovery(
-  predicted
-){
-
-  if(
-    !state.aiBalls.length
-  ){
-    return null;
-  }
-
-
-  let best=null;
-  let bestDistance=Infinity;
-
-
-  for(
-    const ball of
-    state.aiBalls
-  ){
-
-    const d =
-      distance(
-        ball,
-        predicted
-      );
-
-    const gate =
-      Math.max(
-        35,
-        state.ball.radius*5
-      );
-
-    if(
-      d<gate &&
-      d<bestDistance
-    ){
-
-      best=ball;
-      bestDistance=d;
-
-    }
-
-  }
-
-
-  if(!best){
-    return null;
-  }
-
-
-  return{
-
-    x:best.x,
-    y:best.y,
-
-    radius:
-      clamp(
-        Math.max(
-          best.w,
-          best.h
-        )/2,
-        4,
-        25
-      ),
-
-    score:
-      best.confidence
-
-  };
-
-}
-
-
-/* =========================================================
+/* ======================================================
    SELECT BALL
-========================================================= */
+====================================================== */
 
 function startBallSelection(){
 
+  /*
+    Beeld stilzetten zodat je echt
+    midden op de bal kunt tikken.
+  */
+
+  video.pause();
+
+
   resetBallTracking();
+
 
   state.selectMode=
     "ball";
+
 
   overlay.classList.add(
     "selecting"
   );
 
+
   $("instruction")
     .textContent=
-      "Tik in het midden van de echte basketbal.";
+      "Tik precies ongeveer in het midden van de basketbal.";
+
 
   setStatus(
-    "Tik op de bal"
+    "Tik op de basketbal"
   );
 
 }
 
 
+/* ======================================================
+   SELECT BALL FROM TAP
+====================================================== */
+
 function selectBall(point){
 
-  if(!state.cvReady){
+  if(
+    !state.cvReady
+  ){
+
     return;
+
   }
 
 
-  const cv=
-    window.cv;
-
-
-  const processPoint =
+  const processPoint=
     overlayToProcessing(
       point
     );
 
 
-  let center={
-    ...processPoint
+  const center={
+
+    x:
+      processPoint.x,
+
+    y:
+      processPoint.y
+
   };
 
 
-  let radius =
+  /*
+    Startgrootte.
+    De tracker past daarna vanzelf aan.
+  */
+
+  const radius=
     clamp(
-      PW*.017,
-      6,
-      14
+      PW*.020,
+      7,
+      16
     );
 
 
-  /*
-    Als de algemene AI toevallig
-    de bal ziet, mag hij alleen helpen
-    om de eerste klik iets nauwkeuriger
-    te maken.
-  */
-
-  let nearestAI=null;
-  let nearestDistance=Infinity;
-
-
-  for(
-    const ai of
-    state.aiBalls
-  ){
-
-    const d=
-      distance(
-        ai,
-        processPoint
-      );
-
-    if(
-      d<
-      35 &&
-      d<
-      nearestDistance
-    ){
-
-      nearestAI=ai;
-      nearestDistance=d;
-
-    }
-
-  }
-
-
-  if(nearestAI){
-
-    center={
-      x:nearestAI.x,
-      y:nearestAI.y
-    };
-
-    radius=
-      clamp(
-        Math.max(
-          nearestAI.w,
-          nearestAI.h
-        )/2,
-        5,
-        22
-      );
-
-  }
-
-
-  const gray =
+  const gray=
     captureGray();
 
 
-  const points =
+  const points=
     createFeaturePoints(
+
       gray,
+
       center,
+
       radius
+
     );
 
 
@@ -3003,11 +3712,14 @@ function selectBall(point){
   ){
 
     points.delete();
+
     gray.delete();
 
+
     setStatus(
-      "Te weinig details op deze plek · tik nogmaals midden op de bal"
+      "Te weinig details gevonden · tik opnieuw midden op de bal"
     );
+
 
     return;
 
@@ -3018,6 +3730,7 @@ function selectBall(point){
     state.prevGray
   );
 
+
   deleteMat(
     state.prevPts
   );
@@ -3025,6 +3738,7 @@ function selectBall(point){
 
   state.prevGray=
     gray.clone();
+
 
   state.prevPts=
     points;
@@ -3051,10 +3765,15 @@ function selectBall(point){
 
   clearTemplates();
 
+
   addTemplate(
+
     gray,
+
     center,
+
     radius
+
   );
 
 
@@ -3062,23 +3781,34 @@ function selectBall(point){
 
 
   state.ballSelected=true;
+
   state.tracking=true;
 
+
   state.featureFrame=0;
+
 
   state.lastTrackTime=
     mediaTime();
 
+
   state.trail=[{
+
     x:center.x,
+
     y:center.y,
-    t:mediaTime(),
+
+    t:
+      mediaTime(),
+
     real:true
+
   }];
 
 
   state.selectMode=
     "none";
+
 
   overlay.classList.remove(
     "selecting"
@@ -3087,7 +3817,8 @@ function selectBall(point){
 
   $("ballState")
     .textContent=
-      "✓ TRACKING";
+      "✓ tracking";
+
 
   $("ballState")
     .className=
@@ -3096,7 +3827,9 @@ function selectBall(point){
 
   $("trackingState")
     .textContent=
-      `${points.rows} kenmerken`;
+      points.rows+
+      " punten";
+
 
   $("trackingState")
     .className=
@@ -3104,33 +3837,29 @@ function selectBall(point){
 
 
   $("reselectBallBtn")
-    .disabled=false;
+    .disabled=
+      false;
 
 
   $("instruction")
     .textContent=
-      "Tracking gestart. Groen = echte meting; geel = korte voorspelling wanneer de bal tijdelijk onscherp is.";
+      "Tracking actief. Groen = gemeten bal, geel = kort voorspelde bal.";
 
 
   setStatus(
-    "🔴 LIVE basketbaltracking"
+    "🔴 LIVE tracking actief"
   );
 
 
   /*
-    Testvideo begint direct op normale snelheid.
+    Na selectie meteen LIVE.
   */
 
-  if(
-    state.source==="file"
-  ){
+  video.playbackRate=1;
 
-    video.playbackRate=1;
 
-    video.play()
-      .catch(()=>{});
-
-  }
+  video.play()
+    .catch(()=>{});
 
 
   updateUI();
@@ -3138,16 +3867,13 @@ function selectBall(point){
 }
 
 
-/* =========================================================
-   OPTICAL FLOW
-========================================================= */
+/* ======================================================
+   POINT MAT
+====================================================== */
 
 function makePointMat(points){
 
-  const cv=
-    window.cv;
-
-  const mat =
+  const mat=
     new cv.Mat(
       points.length,
       1,
@@ -3166,6 +3892,7 @@ function makePointMat(points){
     ]=
       points[i].x;
 
+
     mat.data32F[
       i*2+1
     ]=
@@ -3179,6 +3906,10 @@ function makePointMat(points){
 }
 
 
+/* ======================================================
+   OPTICAL FLOW TRACKER
+====================================================== */
+
 function trackBallFrame(){
 
   if(
@@ -3187,23 +3918,22 @@ function trackBallFrame(){
     !state.cvReady ||
     video.readyState<2
   ){
+
     return;
+
   }
 
 
-  const cv=
-    window.cv;
-
-
-  const now =
+  const now=
     mediaTime();
 
 
-  let dt =
+  let dt=
     (
       now-
       state.lastTrackTime
-    )/1000;
+    )/
+    1000;
 
 
   dt=
@@ -3218,7 +3948,7 @@ function trackBallFrame(){
     now;
 
 
-  const gray =
+  const gray=
     captureGray();
 
 
@@ -3238,14 +3968,16 @@ function trackBallFrame(){
 
 
   let measurement=null;
+
   let inlierCount=0;
-  let medianFB=999;
+
+  let medianForwardBackward=
+    999;
 
 
-  /*
-    1. PRIMAIR:
-    Lucas-Kanade optical flow.
-  */
+  /* --------------------------------------------------
+     OPTICAL FLOW
+  -------------------------------------------------- */
 
   if(
     state.prevGray &&
@@ -3256,14 +3988,16 @@ function trackBallFrame(){
     const nextPts=
       new cv.Mat();
 
+
     const status=
       new cv.Mat();
+
 
     const error=
       new cv.Mat();
 
 
-    const criteria =
+    const criteria=
       new cv.TermCriteria(
 
         cv.TermCriteria_COUNT+
@@ -3279,12 +4013,15 @@ function trackBallFrame(){
     cv.calcOpticalFlowPyrLK(
 
       state.prevGray,
+
       gray,
 
       state.prevPts,
+
       nextPts,
 
       status,
+
       error,
 
       new cv.Size(
@@ -3303,15 +4040,17 @@ function trackBallFrame(){
     );
 
 
-    /*
-      FORWARD-BACKWARD CHECK
-    */
+    /* ------------------------------------------------
+       BACKWARD CHECK
+    ------------------------------------------------ */
 
     const backPts=
       new cv.Mat();
 
+
     const backStatus=
       new cv.Mat();
+
 
     const backError=
       new cv.Mat();
@@ -3320,12 +4059,15 @@ function trackBallFrame(){
     cv.calcOpticalFlowPyrLK(
 
       gray,
+
       state.prevGray,
 
       nextPts,
+
       backPts,
 
       backStatus,
+
       backError,
 
       new cv.Size(
@@ -3357,7 +4099,9 @@ function trackBallFrame(){
         !status.data[i] ||
         !backStatus.data[i]
       ){
+
         continue;
+
       }
 
 
@@ -3366,6 +4110,7 @@ function trackBallFrame(){
           .data32F[
             i*2
           ];
+
 
       const oldY=
         state.prevPts
@@ -3380,6 +4125,7 @@ function trackBallFrame(){
             i*2
           ];
 
+
       const newY=
         nextPts
           .data32F[
@@ -3393,6 +4139,7 @@ function trackBallFrame(){
             i*2
           ];
 
+
       const backY=
         backPts
           .data32F[
@@ -3400,22 +4147,26 @@ function trackBallFrame(){
           ];
 
 
-      const fb =
+      const forwardBackward=
         Math.hypot(
           backX-oldX,
           backY-oldY
         );
 
 
-      const lkError =
-        error.data32F[i];
+      const lkError=
+        error.data32F[
+          i
+        ];
 
 
       if(
-        fb>2.2 ||
-        lkError>45
+        forwardBackward>2.4 ||
+        lkError>50
       ){
+
         continue;
+
       }
 
 
@@ -3427,17 +4178,23 @@ function trackBallFrame(){
         x:newX,
         y:newY,
 
-        dx:newX-oldX,
-        dy:newY-oldY,
+        dx:
+          newX-oldX,
 
-        fb
+        dy:
+          newY-oldY,
+
+        fb:
+          forwardBackward
 
       });
 
     }
 
 
-    if(candidates.length>=2){
+    if(
+      candidates.length>=2
+    ){
 
       const medianDx=
         median(
@@ -3454,6 +4211,11 @@ function trackBallFrame(){
           )
         );
 
+
+      /*
+        Alleen punten die ongeveer dezelfde
+        beweging maken horen bij de bal.
+      */
 
       const inliers=
         candidates.filter(
@@ -3472,20 +4234,22 @@ function trackBallFrame(){
             <
 
             Math.max(
-              2.8,
-              state.ball.radius*.45
+              3,
+              state.ball.radius*.48
             )
 
         );
 
 
-      if(inliers.length>=2){
+      if(
+        inliers.length>=2
+      ){
 
         inlierCount=
           inliers.length;
 
 
-        medianFB=
+        medianForwardBackward=
           median(
             inliers.map(
               point=>point.fb
@@ -3515,26 +4279,33 @@ function trackBallFrame(){
 
 
         /*
-          Hard gate tegen springen naar
-          een muur of ander object.
+          Cruciale anti-sprongcontrole.
         */
 
-        const predictionError =
+        const predictionError=
           distance(
             nextCenter,
             predicted
           );
 
 
-        const allowedError =
+        const allowedError=
           Math.max(
-            15,
-            state.ball.radius*2.5+
+
+            16,
+
+            state.ball.radius*
+            2.8
+
+            +
+
             Math.hypot(
               state.ball.vx,
               state.ball.vy
             )*
-            dt*.55
+            dt*
+            .6
+
           );
 
 
@@ -3553,7 +4324,8 @@ function trackBallFrame(){
 
             score:
               clamp(
-                inliers.length/12,
+                inliers.length/
+                12,
                 .25,
                 1
               ),
@@ -3573,8 +4345,13 @@ function trackBallFrame(){
             makePointMat(
               inliers.map(
                 point=>({
-                  x:point.x,
-                  y:point.y
+
+                  x:
+                    point.x,
+
+                  y:
+                    point.y
+
                 })
               )
             );
@@ -3587,41 +4364,44 @@ function trackBallFrame(){
 
 
     nextPts.delete();
+
     status.delete();
+
     error.delete();
 
     backPts.delete();
+
     backStatus.delete();
+
     backError.delete();
 
   }
 
 
-  /*
-    2. FALLBACK:
-    Template rond voorspelde positie.
-  */
+  /* --------------------------------------------------
+     TEMPLATE RECOVERY
+  -------------------------------------------------- */
 
-  if(!measurement){
+  if(
+    !measurement
+  ){
 
-    const recovered =
+    const recovered=
       templateRecovery(
         gray,
         predicted
       );
 
 
-    if(recovered){
+    if(
+      recovered
+    ){
 
-      /*
-        Template mag ook niet ineens
-        naar een willekeurige plek springen.
-      */
-
-      const gate =
+      const gate=
         Math.max(
           45,
-          state.ball.radius*6
+          state.ball.radius*
+          6
         );
 
 
@@ -3635,8 +4415,11 @@ function trackBallFrame(){
 
         measurement={
 
-          x:recovered.x,
-          y:recovered.y,
+          x:
+            recovered.x,
+
+          y:
+            recovered.y,
 
           score:
             recovered.score,
@@ -3648,8 +4431,14 @@ function trackBallFrame(){
 
 
         state.ball.radius=
-          state.ball.radius*.85+
-          recovered.radius*.15;
+
+          state.ball.radius*
+          .87
+
+          +
+
+          recovered.radius*
+          .13;
 
       }
 
@@ -3658,54 +4447,15 @@ function trackBallFrame(){
   }
 
 
-  /*
-    3. TWEEDE FALLBACK:
-    generieke Sports Ball AI.
+  /* --------------------------------------------------
+     ECHTE METING
+  -------------------------------------------------- */
 
-    Alleen als hij logisch aansluit
-    op onze voorspelde baan.
-  */
+  if(
+    measurement
+  ){
 
-  if(!measurement){
-
-    const recovered =
-      aiRecovery(
-        predicted
-      );
-
-
-    if(recovered){
-
-      measurement={
-
-        x:recovered.x,
-        y:recovered.y,
-
-        score:
-          recovered.score,
-
-        source:
-          "AI"
-
-      };
-
-
-      state.ball.radius=
-        state.ball.radius*.8+
-        recovered.radius*.2;
-
-    }
-
-  }
-
-
-  /*
-    METING GEVONDEN
-  */
-
-  if(measurement){
-
-    const rawVx =
+    const rawVx=
       (
         measurement.x-
         state.ball.x
@@ -3713,7 +4463,7 @@ function trackBallFrame(){
       dt;
 
 
-    const rawVy =
+    const rawVy=
       (
         measurement.y-
         state.ball.y
@@ -3721,26 +4471,35 @@ function trackBallFrame(){
       dt;
 
 
-    state.ball.vx =
-      state.ball.vx*.55+
-      rawVx*.45;
+    /*
+      Snelheid gladstrijken.
+    */
+
+    state.ball.vx=
+
+      state.ball.vx*
+      .55
+
+      +
+
+      rawVx*
+      .45;
 
 
-    state.ball.vy =
-      state.ball.vy*.55+
-      rawVy*.45;
+    state.ball.vy=
 
+      state.ball.vy*
+      .55
 
-    state.ball.x=
-      measurement.x;
+      +
 
-    state.ball.y=
-      measurement.y;
+      rawVy*
+      .45;
 
 
     state.ball.x=
       clamp(
-        state.ball.x,
+        measurement.x,
         0,
         PW
       );
@@ -3748,30 +4507,31 @@ function trackBallFrame(){
 
     state.ball.y=
       clamp(
-        state.ball.y,
+        measurement.y,
         0,
         PH
       );
 
 
-    state.ball.real=true;
+    state.ball.real=
+      true;
+
 
     state.ball.quality=
       measurement.score;
 
-    state.ball.lostMs=0;
 
+    state.ball.lostMs=
+      0;
 
-    /*
-      Periodiek NIEUWE features op
-      de huidige bal zoeken.
-
-      Dit voorkomt dat oude punten
-      langzaam naar achtergrond drijven.
-    */
 
     state.featureFrame++;
 
+
+    /*
+      Periodiek opnieuw kenmerken zoeken
+      op de HUIDIGE balpositie.
+    */
 
     if(
       !state.prevPts ||
@@ -3779,14 +4539,17 @@ function trackBallFrame(){
       state.featureFrame%7===0
     ){
 
-      const newPoints =
+      const newPoints=
         createFeaturePoints(
 
           gray,
 
           {
-            x:state.ball.x,
-            y:state.ball.y
+            x:
+              state.ball.x,
+
+            y:
+              state.ball.y
           },
 
           state.ball.radius
@@ -3818,16 +4581,17 @@ function trackBallFrame(){
 
 
     /*
-      Alleen bij heel betrouwbare flow
-      een nieuw uiterlijk van de
-      draaiende bal bewaren.
+      Alleen bij betrouwbare tracking
+      een nieuwe template onthouden.
+      Zo leert hij verschillende rotaties
+      van dezelfde bal.
     */
 
     if(
       measurement.source==="FLOW" &&
-      inlierCount>=8 &&
-      medianFB<1.3 &&
-      state.featureFrame%22===0
+      inlierCount>=7 &&
+      medianForwardBackward<1.4 &&
+      state.featureFrame%20===0
     ){
 
       addTemplate(
@@ -3835,8 +4599,11 @@ function trackBallFrame(){
         gray,
 
         {
-          x:state.ball.x,
-          y:state.ball.y
+          x:
+            state.ball.x,
+
+          y:
+            state.ball.y
         },
 
         state.ball.radius
@@ -3849,10 +4616,15 @@ function trackBallFrame(){
     $("trackingState")
       .textContent=
 
-        measurement.source+
-        " · "+
-        inlierCount+
-        " pts";
+        measurement.source
+
+        +
+
+        (
+          measurement.source==="FLOW"
+          ? " · "+inlierCount+" pts"
+          : ""
+        );
 
 
     $("trackingState")
@@ -3861,22 +4633,32 @@ function trackBallFrame(){
 
   }
 
-  /*
-    GEEN METING:
-    kort voorspellen, maar NIET
-    een ander object adopteren.
-  */
+
+  /* --------------------------------------------------
+     TIJDELIJK GEEN METING
+  -------------------------------------------------- */
 
   else{
 
     state.ball.x=
-      predicted.x;
+      clamp(
+        predicted.x,
+        0,
+        PW
+      );
+
 
     state.ball.y=
-      predicted.y;
+      clamp(
+        predicted.y,
+        0,
+        PH
+      );
 
 
-    state.ball.real=false;
+    state.ball.real=
+      false;
+
 
     state.ball.lostMs+=
       dt*1000;
@@ -3893,7 +4675,8 @@ function trackBallFrame(){
 
 
     if(
-      state.ball.lostMs>600
+      state.ball.lostMs>
+      700
     ){
 
       $("trackingState")
@@ -3907,7 +4690,7 @@ function trackBallFrame(){
 
 
       setStatus(
-        "Bal kwijt · kies Bal opnieuw"
+        "Bal kwijt · druk op Bal opnieuw kiezen"
       );
 
     }
@@ -3915,9 +4698,9 @@ function trackBallFrame(){
   }
 
 
-  /*
-    Nieuwe prevGray.
-  */
+  /* --------------------------------------------------
+     PREVIOUS FRAME
+  -------------------------------------------------- */
 
   deleteMat(
     state.prevGray
@@ -3931,9 +4714,9 @@ function trackBallFrame(){
   gray.delete();
 
 
-  /*
-    Trajectory.
-  */
+  /* --------------------------------------------------
+     TRAIL
+  -------------------------------------------------- */
 
   state.trail.push({
 
@@ -3960,8 +4743,6 @@ function trackBallFrame(){
   }
 
 
-  updateShooter();
-
   updateShotDetector(
     now
   );
@@ -3969,127 +4750,20 @@ function trackBallFrame(){
 }
 
 
-/* =========================================================
-   SHOOTER
-========================================================= */
-
-function pointToBoxDistance(
-  point,
-  box
-){
-
-  const x =
-    clamp(
-      point.x,
-      box.x,
-      box.x+box.w
-    );
-
-  const y =
-    clamp(
-      point.y,
-      box.y,
-      box.y+box.h
-    );
-
-  return distance(
-    point,
-    {x,y}
-  );
-
-}
-
-
-function updateShooter(){
-
-  if(
-    !state.persons.length ||
-    !state.ballSelected
-  ){
-    return;
-  }
-
-
-  let best=null;
-  let bestDistance=Infinity;
-
-
-  for(
-    const person of
-    state.persons
-  ){
-
-    const expanded={
-
-      x:
-        person.x-
-        person.w*.25,
-
-      y:
-        person.y-
-        person.h*.15,
-
-      w:
-        person.w*1.5,
-
-      h:
-        person.h*1.05
-
-    };
-
-
-    const d =
-      pointToBoxDistance(
-        state.ball,
-        expanded
-      );
-
-
-    if(
-      d<
-      bestDistance
-    ){
-
-      bestDistance=d;
-      best=person;
-
-    }
-
-  }
-
-
-  /*
-    Alleen een persoon koppelen
-    als de bal redelijk in zijn buurt is.
-  */
-
-  if(
-    best &&
-    bestDistance<
-    Math.max(
-      45,
-      best.h*.45
-    )
-  ){
-
-    state.shooter={
-      ...best
-    };
-
-  }
-
-}
-
-
-/* =========================================================
-   HOOP GEOMETRY
-========================================================= */
+/* ======================================================
+   HOOP PROCESSING COORDINATES
+====================================================== */
 
 function getHoopProcessing(){
 
-  if(!state.hoop){
+  if(
+    !state.hoop
+  ){
+
     return null;
+
   }
+
 
   return{
 
@@ -4114,9 +4788,9 @@ function getHoopProcessing(){
 }
 
 
-/* =========================================================
-   SHOT DETECTION
-========================================================= */
+/* ======================================================
+   SHOT DETECTOR
+====================================================== */
 
 function updateShotDetector(now){
 
@@ -4124,11 +4798,23 @@ function updateShotDetector(now){
     !state.hoop ||
     !state.ballSelected
   ){
+
     return;
+
   }
 
 
-  const hoop =
+  if(
+    now<
+    state.shotCooldownUntil
+  ){
+
+    return;
+
+  }
+
+
+  const hoop=
     getHoopProcessing();
 
 
@@ -4145,48 +4831,31 @@ function updateShotDetector(now){
   };
 
 
-  /*
-    Na een resultaat even blokkeren.
-  */
+  /* --------------------------------------------------
+     NIEUW SCHOT ZOEKEN
+  -------------------------------------------------- */
 
   if(
-    now<
-    state.shotCooldownUntil
+    !state.shot
   ){
-
-    return;
-
-  }
-
-
-  /*
-    GEEN ACTIEF SCHOT
-  */
-
-  if(!state.shot){
 
     if(
       !state.ball.real
     ){
+
       return;
+
     }
 
 
-    const speed =
+    const speed=
       Math.hypot(
         state.ball.vx,
         state.ball.vy
       );
 
 
-    /*
-      Een echte release:
-      - voldoende snelheid
-      - duidelijk omhoog
-      - globaal richting basket
-    */
-
-    const toward =
+    const towards=
       directionCos(
 
         state.ball.vx,
@@ -4201,46 +4870,38 @@ function updateShotDetector(now){
       );
 
 
-    let releaseHeightOK=true;
-
-
-    if(state.shooter){
-
-      releaseHeightOK =
-
-        state.ball.y<
-
-        state.shooter.y+
-        state.shooter.h*.72;
-
-    }
-
-    else{
-
-      releaseHeightOK =
-        state.ball.y<
-        PH*.82;
-
-    }
-
+    /*
+      Schot moet:
+      - snel zijn
+      - omhoog gaan
+      - globaal richting ring gaan
+      - onder de ring beginnen
+    */
 
     if(
       speed>
-      PW*.18
+        PW*.16
       &&
       state.ball.vy<
-      -PH*.18
+        -PH*.13
       &&
-      toward>.18
+      towards>.15
       &&
-      releaseHeightOK
+      state.ball.y>
+        hoopCenter.y+
+        hoop.h*.20
+      &&
+      state.ball.y<
+        PH*.82
     ){
 
       state.shot={
 
-        phase:"candidate",
+        phase:
+          "candidate",
 
-        startTime:now,
+        startTime:
+          now,
 
         releaseX:
           state.ball.x,
@@ -4258,20 +4919,19 @@ function updateShotDetector(now){
           ),
 
         previous:{
-          x:state.ball.x,
-          y:state.ball.y,
+
+          x:
+            state.ball.x,
+
+          y:
+            state.ball.y,
+
           t:now
+
         },
 
-        aboveRim:false,
-
-        closest:
-          Infinity,
-
-        shooter:
-          state.shooter
-          ? {...state.shooter}
-          : null
+        aboveRim:
+          false
 
       };
 
@@ -4304,57 +4964,37 @@ function updateShotDetector(now){
     );
 
 
-  const rimCenter={
-
-    x:
-      hoop.x+
-      hoop.w/2,
-
-    y:
-      hoop.y+
-      hoop.h/2
-
-  };
-
-
   const currentDistance=
     distance(
       state.ball,
-      rimCenter
+      hoopCenter
     );
 
 
-  shot.closest=
-    Math.min(
-      shot.closest,
-      currentDistance
-    );
-
-
-  /*
-    KANDIDAAT → SCHOT
-  */
+  /* --------------------------------------------------
+     KANDIDAAT BEVESTIGEN
+  -------------------------------------------------- */
 
   if(
     shot.phase==="candidate"
   ){
 
-    const rise =
+    const rise=
       shot.releaseY-
       shot.minY;
 
 
-    const progress =
+    const progress=
       shot.startDistance-
       currentDistance;
 
 
     if(
-      elapsed>130
+      elapsed>120
       &&
-      rise>PH*.025
+      rise>PH*.02
       &&
-      progress>PW*.012
+      progress>PW*.01
     ){
 
       shot.phase=
@@ -4369,8 +5009,7 @@ function updateShotDetector(now){
 
 
     if(
-      elapsed>700
-      &&
+      elapsed>700 &&
       shot.phase==="candidate"
     ){
 
@@ -4389,11 +5028,11 @@ function updateShotDetector(now){
   }
 
 
-  /*
-    BEVESTIGD SCHOT
-  */
+  /* --------------------------------------------------
+     SCHOT IN VLUCHT
+  -------------------------------------------------- */
 
-  const plane =
+  const plane=
     hoop.y+
     hoop.h/2;
 
@@ -4407,16 +5046,15 @@ function updateShotDetector(now){
     )
   ){
 
-    shot.aboveRim=true;
+    shot.aboveRim=
+      true;
 
   }
 
 
-  /*
-    RAAK:
-    kruist ringvlak van boven
-    naar beneden.
-  */
+  /* --------------------------------------------------
+     RAAK
+  -------------------------------------------------- */
 
   if(
     shot.aboveRim
@@ -4426,22 +5064,24 @@ function updateShotDetector(now){
     state.ball.y>plane
   ){
 
-    const dy=
+    const deltaY=
       state.ball.y-
       shot.previous.y;
 
 
-    if(dy>0){
+    if(
+      deltaY>0
+    ){
 
-      const fraction =
+      const fraction=
         (
           plane-
           shot.previous.y
         )/
-        dy;
+        deltaY;
 
 
-      const crossingX =
+      const crossingX=
 
         shot.previous.x
 
@@ -4457,7 +5097,7 @@ function updateShotDetector(now){
       const tolerance=
         Math.max(
           2,
-          hoop.w*.12
+          hoop.w*.13
         );
 
 
@@ -4474,8 +5114,10 @@ function updateShotDetector(now){
 
         finishShot(
           "make",
-          shot.shooter
+          shot.releaseX,
+          shot.releaseY
         );
+
 
         return;
 
@@ -4486,24 +5128,21 @@ function updateShotDetector(now){
   }
 
 
-  /*
-    MIS:
-    bal is boven basket geweest en
-    komt daarna duidelijk onder ring
-    buiten de ringcorridor.
-  */
+  /* --------------------------------------------------
+     DUIDELIJKE MISS
+  -------------------------------------------------- */
 
-  const outside =
+  const outside=
 
     state.ball.x<
       hoop.x-
-      hoop.w*.38
+      hoop.w*.40
 
     ||
 
     state.ball.x>
       hoop.x+
-      hoop.w*1.38;
+      hoop.w*1.40;
 
 
   if(
@@ -4523,8 +5162,10 @@ function updateShotDetector(now){
 
     finishShot(
       "miss",
-      shot.shooter
+      shot.releaseX,
+      shot.releaseY
     );
+
 
     return;
 
@@ -4532,7 +5173,8 @@ function updateShotDetector(now){
 
 
   /*
-    Duidelijk onder basket zonder make.
+    Bal duidelijk onder de basket,
+    zonder geldige ringkruising.
   */
 
   if(
@@ -4550,8 +5192,10 @@ function updateShotDetector(now){
 
     finishShot(
       "miss",
-      shot.shooter
+      shot.releaseX,
+      shot.releaseY
     );
+
 
     return;
 
@@ -4559,7 +5203,7 @@ function updateShotDetector(now){
 
 
   /*
-    Airball / bal tijdelijk kwijt.
+    Noodtimeout.
   */
 
   if(
@@ -4568,8 +5212,10 @@ function updateShotDetector(now){
 
     finishShot(
       "miss",
-      shot.shooter
+      shot.releaseX,
+      shot.releaseY
     );
+
 
     return;
 
@@ -4591,20 +5237,20 @@ function updateShotDetector(now){
 }
 
 
-/* =========================================================
-   RESULTS
-========================================================= */
+/* ======================================================
+   SHOT POSITION
+====================================================== */
 
-function shotLocation(shooter){
+function shotLocation(
+  releaseX,
+  releaseY
+){
 
-  const hoop =
+  const hoop=
     getHoopProcessing();
 
 
-  if(
-    !hoop ||
-    !shooter
-  ){
+  if(!hoop){
 
     return{
       x:.5,
@@ -4619,6 +5265,12 @@ function shotLocation(shooter){
     hoop.w/2;
 
 
+  /*
+    Dit is een 2D-benadering.
+    X = links/rechts t.o.v. ring.
+    Y = afstandsindruk op basis van schermpositie.
+  */
+
   return{
 
     x:
@@ -4627,11 +5279,10 @@ function shotLocation(shooter){
         .5+
 
         (
-          shooter.x+
-          shooter.w/2-
+          releaseX-
           hoopX
         )/
-        (PW*.85),
+        (PW*.82),
 
         .04,
         .96
@@ -4642,8 +5293,7 @@ function shotLocation(shooter){
       clamp(
 
         (
-          shooter.y+
-          shooter.h-
+          releaseY-
           hoop.y
         )/
         Math.max(
@@ -4651,8 +5301,8 @@ function shotLocation(shooter){
           PH-hoop.y
         ),
 
-        0,
-        1
+        .05,
+        .98
 
       )
 
@@ -4661,14 +5311,20 @@ function shotLocation(shooter){
 }
 
 
+/* ======================================================
+   FINISH SHOT
+====================================================== */
+
 function finishShot(
   result,
-  shooter
+  releaseX,
+  releaseY
 ){
 
-  const position =
+  const location=
     shotLocation(
-      shooter
+      releaseX,
+      releaseY
     );
 
 
@@ -4676,8 +5332,11 @@ function finishShot(
 
     result,
 
-    x:position.x,
-    y:position.y,
+    x:
+      location.x,
+
+    y:
+      location.y,
 
     time:
       new Date()
@@ -4686,12 +5345,13 @@ function finishShot(
   });
 
 
-  state.shot=null;
+  state.shot=
+    null;
 
 
   state.shotCooldownUntil=
     mediaTime()+
-    1200;
+    1100;
 
 
   $("shotState")
@@ -4703,6 +5363,7 @@ function finishShot(
 
   updateStats();
 
+
   showFeedback(
     result
   );
@@ -4711,7 +5372,9 @@ function finishShot(
   setTimeout(
     ()=>{
 
-      if(!state.shot){
+      if(
+        !state.shot
+      ){
 
         $("shotState")
           .textContent=
@@ -4720,25 +5383,59 @@ function finishShot(
       }
 
     },
-    1000
+    900
   );
 
 }
 
+
+/* ======================================================
+   MANUAL RESULT
+====================================================== */
 
 function manualResult(result){
 
+  let releaseX=
+    state.ballSelected
+    ? state.ball.x
+    : PW/2;
+
+
+  let releaseY=
+    state.ballSelected
+    ? state.ball.y
+    : PH*.75;
+
+
+  /*
+    Als een shot al actief was,
+    gebruik oorspronkelijke releasepositie.
+  */
+
+  if(state.shot){
+
+    releaseX=
+      state.shot.releaseX;
+
+
+    releaseY=
+      state.shot.releaseY;
+
+  }
+
+
   finishShot(
     result,
-    state.shooter
+    releaseX,
+    releaseY
   );
 
 }
 
 
-/* =========================================================
+/* ======================================================
    FEEDBACK
-========================================================= */
+====================================================== */
 
 function showFeedback(result){
 
@@ -4748,12 +5445,12 @@ function showFeedback(result){
 
   const makes=
     state.shots.filter(
-      shot =>
+      shot=>
         shot.result==="make"
     ).length;
 
 
-  const percentage =
+  const percentage=
     attempts
     ? Math.round(
         makes/
@@ -4763,7 +5460,7 @@ function showFeedback(result){
     : 0;
 
 
-  const feedback =
+  const feedback=
     $("feedback");
 
 
@@ -4806,7 +5503,7 @@ function showFeedback(result){
   );
 
 
-  state.feedbackTimer =
+  state.feedbackTimer=
     setTimeout(
       ()=>{
 
@@ -4821,9 +5518,9 @@ function showFeedback(result){
 }
 
 
-/* =========================================================
-   OVERLAY
-========================================================= */
+/* ======================================================
+   OVERLAY BOX
+====================================================== */
 
 function drawNormalizedBox(
   box,
@@ -4834,8 +5531,10 @@ function drawNormalizedBox(
   octx.strokeStyle=
     colour;
 
+
   octx.lineWidth=
     width;
+
 
   octx.strokeRect(
 
@@ -4856,6 +5555,10 @@ function drawNormalizedBox(
 }
 
 
+/* ======================================================
+   DRAW OVERLAY
+====================================================== */
+
 function drawOverlay(){
 
   octx.clearRect(
@@ -4865,18 +5568,21 @@ function drawOverlay(){
   );
 
 
-  const sx =
-    overlay.width/PW;
-
-  const sy =
-    overlay.height/PH;
+  const scaleX=
+    overlay.width/
+    PW;
 
 
-  /*
-    RING
-  */
+  const scaleY=
+    overlay.height/
+    PH;
 
-  if(state.hoop){
+
+  /* RING */
+
+  if(
+    state.hoop
+  ){
 
     drawNormalizedBox(
       state.hoop,
@@ -4887,7 +5593,9 @@ function drawOverlay(){
   }
 
 
-  const candidate =
+  /* RING CANDIDATE */
+
+  const candidate=
     currentHoopCandidate();
 
 
@@ -4905,9 +5613,7 @@ function drawOverlay(){
   }
 
 
-  /*
-    EERSTE MANUELE RINGTIK
-  */
+  /* MANUELE RINGTIK */
 
   if(
     state.selectMode==="hoop"
@@ -4915,10 +5621,12 @@ function drawOverlay(){
     state.manualHoopPoints.length===1
   ){
 
-    const point =
+    const point=
       state.manualHoopPoints[0];
 
+
     octx.beginPath();
+
 
     octx.arc(
       point.x,
@@ -4928,66 +5636,47 @@ function drawOverlay(){
       Math.PI*2
     );
 
+
     octx.fillStyle=
       "#38bdf8";
+
 
     octx.fill();
 
   }
 
 
-  /*
-    PERSONEN
-  */
-
-  for(
-    const person of
-    state.persons
-  ){
-
-    octx.strokeStyle=
-      "rgba(56,189,248,.32)";
-
-    octx.lineWidth=2;
-
-    octx.strokeRect(
-
-      person.x*sx,
-
-      person.y*sy,
-
-      person.w*sx,
-
-      person.h*sy
-
-    );
-
-  }
-
-
-  /*
-    BALTRAJECT
-  */
+  /* BALBAAN */
 
   if(
     state.trail.length>1
   ){
 
+    const recent=
+      state.trail.slice(
+        -35
+      );
+
+
     octx.beginPath();
 
-    const recent =
-      state.trail.slice(-35);
 
     recent.forEach(
       (point,index)=>{
 
         const x=
-          point.x*sx;
+          point.x*
+          scaleX;
+
 
         const y=
-          point.y*sy;
+          point.y*
+          scaleY;
 
-        if(index===0){
+
+        if(
+          index===0
+        ){
 
           octx.moveTo(
             x,y
@@ -5006,40 +5695,52 @@ function drawOverlay(){
       }
     );
 
+
     octx.strokeStyle=
-      "rgba(34,197,94,.75)";
+      "rgba(34,197,94,.72)";
+
 
     octx.lineWidth=3;
+
 
     octx.stroke();
 
   }
 
 
-  /*
-    BAL
-  */
+  /* BAL */
 
-  if(state.ballSelected){
+  if(
+    state.ballSelected
+  ){
 
     const x=
-      state.ball.x*sx;
+      state.ball.x*
+      scaleX;
+
 
     const y=
-      state.ball.y*sy;
+      state.ball.y*
+      scaleY;
 
 
     const radius=
       Math.max(
+
         8,
+
         state.ball.radius*
         (
-          sx+sy
-        )/2
+          scaleX+
+          scaleY
+        )/
+        2
+
       );
 
 
     octx.beginPath();
+
 
     octx.arc(
       x,
@@ -5058,10 +5759,18 @@ function drawOverlay(){
 
     octx.lineWidth=5;
 
+
     octx.stroke();
 
 
+    /*
+      Middenstip helpt te zien
+      waar de tracker denkt dat
+      het balcentrum zit.
+    */
+
     octx.beginPath();
+
 
     octx.arc(
       x,
@@ -5071,10 +5780,12 @@ function drawOverlay(){
       Math.PI*2
     );
 
+
     octx.fillStyle=
       state.ball.real
       ? "#22c55e"
       : "#facc15";
+
 
     octx.fill();
 
@@ -5083,17 +5794,17 @@ function drawOverlay(){
 }
 
 
-/* =========================================================
-   LOOP
-========================================================= */
+/* ======================================================
+   MAIN LOOP
+====================================================== */
 
 function startLoop(){
 
-  const token =
+  const token=
     ++state.loopToken;
 
 
-  let lastTrackWall=0;
+  let lastTrackingWall=0;
 
 
   function loop(){
@@ -5102,11 +5813,13 @@ function startLoop(){
       token!==
       state.loopToken
     ){
+
       return;
+
     }
 
 
-    const wall =
+    const wall=
       performance.now();
 
 
@@ -5114,22 +5827,24 @@ function startLoop(){
       video.readyState>=2
     ){
 
-      detectAI();
-
-
       /*
-        Optical flow max circa 30fps.
+        Circa maximaal 30 tracking-analyses
+        per seconde.
+
+        Dat is veel lichter voor iPhone
+        dan 60 volledige OpenCV-runs.
       */
 
       if(
-        state.tracking
-        &&
-        !video.paused
-        &&
-        wall-lastTrackWall>=28
+        state.tracking &&
+        !video.paused &&
+        wall-
+        lastTrackingWall>=28
       ){
 
-        lastTrackWall=wall;
+        lastTrackingWall=
+          wall;
+
 
         try{
 
@@ -5140,17 +5855,24 @@ function startLoop(){
         catch(error){
 
           console.error(
-            "Trackingfout",
+            "Trackingfout:",
             error
           );
+
 
           $("trackingState")
             .textContent=
               "fout";
 
+
           $("trackingState")
             .className=
               "no";
+
+
+          setStatus(
+            "Trackingfout · kies bal opnieuw"
+          );
 
         }
 
@@ -5187,7 +5909,9 @@ function startLoop(){
 
       state.fpsFrames=0;
 
-      state.fpsLast=wall;
+
+      state.fpsLast=
+        wall;
 
     }
 
@@ -5206,37 +5930,62 @@ function startLoop(){
 }
 
 
-/* =========================================================
-   VIDEO CONTROLS
-========================================================= */
+/* ======================================================
+   VIDEO TIME
+====================================================== */
 
 function formatTime(seconds){
 
   if(
-    !Number.isFinite(seconds)
+    !Number.isFinite(
+      seconds
+    )
   ){
+
     return "0:00";
+
   }
+
 
   const minutes=
     Math.floor(
-      seconds/60
+      seconds/
+      60
     );
+
 
   const secs=
     Math.floor(
-      seconds%60
+      seconds%
+      60
     );
 
+
   return(
-    minutes+
-    ":"+
-    String(secs)
-      .padStart(2,"0")
+
+    minutes
+
+    +
+
+    ":"
+
+    +
+
+    String(
+      secs
+    ).padStart(
+      2,
+      "0"
+    )
+
   );
 
 }
 
+
+/* ======================================================
+   SEEK
+====================================================== */
 
 function updateSeek(){
 
@@ -5245,8 +5994,11 @@ function updateSeek(){
       video.duration
     )
   ){
+
     return;
+
   }
+
 
   $("seek")
     .value=
@@ -5255,6 +6007,7 @@ function updateSeek(){
         video.duration*
         1000
       );
+
 
   $("timeText")
     .textContent=
@@ -5265,9 +6018,9 @@ function updateSeek(){
 }
 
 
-/* =========================================================
+/* ======================================================
    STATS
-========================================================= */
+====================================================== */
 
 function updateStats(){
 
@@ -5277,7 +6030,7 @@ function updateStats(){
 
   const makes=
     state.shots.filter(
-      shot =>
+      shot=>
         shot.result==="make"
     ).length;
 
@@ -5286,15 +6039,17 @@ function updateStats(){
 
 
   for(
-    let i=
-      state.shots.length-1;
-    i>=0;
-    i--
+    let index=
+      state.shots.length-
+      1;
+    index>=0;
+    index--
   ){
 
     if(
-      state.shots[i]
-        .result==="make"
+      state.shots[
+        index
+      ].result==="make"
     ){
 
       streak++;
@@ -5323,11 +6078,13 @@ function updateStats(){
   $("percentage")
     .textContent=
       attempts
+
       ? Math.round(
           makes/
           attempts*
           100
         )+"%"
+
       : "0%";
 
 
@@ -5345,16 +6102,23 @@ function updateStats(){
     .slice(-15)
     .reverse()
     .forEach(
-      (shot,index)=>{
+      (
+        shot,
+        index
+      )=>{
 
-        const chip =
+        const chip=
           document.createElement(
             "div"
           );
 
 
         chip.className=
-          "chip "+
+
+          "chip "
+
+          +
+
           (
             shot.result==="make"
             ? "make"
@@ -5396,34 +6160,41 @@ function updateStats(){
 }
 
 
-/* =========================================================
+/* ======================================================
    SHOT CHART
-========================================================= */
+====================================================== */
 
 function drawShotChart(){
 
-  const W=
+  const width=
     shotChart.width;
 
-  const H=
+
+  const height=
     shotChart.height;
 
 
   cctx.clearRect(
-    0,0,W,H
+    0,0,
+    width,
+    height
   );
 
 
   cctx.fillStyle=
     "#bd7941";
 
+
   cctx.fillRect(
-    0,0,W,H
+    0,0,
+    width,
+    height
   );
 
 
   cctx.strokeStyle=
     "rgba(255,255,255,.82)";
+
 
   cctx.lineWidth=4;
 
@@ -5431,72 +6202,86 @@ function drawShotChart(){
   cctx.strokeRect(
     12,
     12,
-    W-24,
-    H-24
+    width-24,
+    height-24
   );
 
+
+  /*
+    Backboard
+  */
 
   cctx.beginPath();
 
+
   cctx.moveTo(
-    W/2-42,
+    width/2-42,
     38
   );
 
+
   cctx.lineTo(
-    W/2+42,
+    width/2+42,
     38
   );
+
 
   cctx.stroke();
 
 
+  /*
+    Ring
+  */
+
   cctx.beginPath();
 
+
   cctx.arc(
-    W/2,
+    width/2,
     60,
     11,
     0,
     Math.PI*2
   );
 
+
   cctx.stroke();
 
 
+  /*
+    Bucket
+  */
+
   cctx.strokeRect(
-    W/2-92,
+    width/2-92,
     12,
     184,
     180
   );
 
 
+  /*
+    Vrije worpboog
+  */
+
   cctx.beginPath();
 
+
   cctx.arc(
-    W/2,
+    width/2,
     192,
     62,
     0,
     Math.PI
   );
 
-  cctx.stroke();
-
-
-  cctx.beginPath();
-
-  cctx.arc(
-    W/2,
-    60,
-    290,
-    .14*Math.PI,
-    .86*Math.PI
-  );
 
   cctx.stroke();
 
+
+  /*
+    Schoten
+  */
 
   for(
     const shot of
@@ -5506,16 +6291,17 @@ function drawShotChart(){
     const x=
       25+
       shot.x*
-      (W-50);
+      (width-50);
 
 
     const y=
       60+
       shot.y*
-      (H-85);
+      (height-85);
 
 
     cctx.beginPath();
+
 
     cctx.arc(
       x,
@@ -5538,7 +6324,9 @@ function drawShotChart(){
     cctx.strokeStyle=
       "#fff";
 
+
     cctx.lineWidth=2;
+
 
     cctx.stroke();
 
@@ -5547,37 +6335,42 @@ function drawShotChart(){
 }
 
 
-/* =========================================================
-   POINTER EVENTS
-========================================================= */
+/* ======================================================
+   POINTER
+====================================================== */
 
 overlay.addEventListener(
   "pointerdown",
   event=>{
 
     if(
-      state.selectMode==="none"
+      state.selectMode===
+      "none"
     ){
+
       return;
+
     }
 
 
     event.preventDefault();
 
 
-    const point =
+    const point=
       pointerPosition(
         event
       );
 
 
     if(
-      state.selectMode==="hoop"
+      state.selectMode===
+      "hoop"
     ){
 
       addManualHoopPoint(
         point
       );
+
 
       return;
 
@@ -5585,7 +6378,8 @@ overlay.addEventListener(
 
 
     if(
-      state.selectMode==="ball"
+      state.selectMode===
+      "ball"
     ){
 
       selectBall(
@@ -5598,28 +6392,45 @@ overlay.addEventListener(
 );
 
 
-/* =========================================================
-   BUTTONS
-========================================================= */
+/* ======================================================
+   BUTTON EVENTS
+====================================================== */
 
 $("frontBtn")
 .addEventListener(
   "click",
-  ()=>startCamera("user")
+  ()=>{
+
+    startCamera(
+      "user"
+    );
+
+  }
 );
 
 
 $("rearBtn")
 .addEventListener(
   "click",
-  ()=>startCamera("environment")
+  ()=>{
+
+    startCamera(
+      "environment"
+    );
+
+  }
 );
 
 
 $("uploadBtn")
 .addEventListener(
   "click",
-  ()=>$("fileInput").click()
+  ()=>{
+
+    $("fileInput")
+      .click();
+
+  }
 );
 
 
@@ -5628,8 +6439,9 @@ $("fileInput")
   "change",
   event=>{
 
-    const file =
+    const file=
       event.target.files?.[0];
+
 
     if(file){
 
@@ -5688,14 +6500,26 @@ $("reselectBallBtn")
 $("makeBtn")
 .addEventListener(
   "click",
-  ()=>manualResult("make")
+  ()=>{
+
+    manualResult(
+      "make"
+    );
+
+  }
 );
 
 
 $("missBtn")
 .addEventListener(
   "click",
-  ()=>manualResult("miss")
+  ()=>{
+
+    manualResult(
+      "miss"
+    );
+
+  }
 );
 
 
@@ -5710,7 +6534,9 @@ $("resetBtn")
 
     state.shotCooldownUntil=0;
 
+
     updateStats();
+
 
     $("shotState")
       .textContent=
@@ -5720,16 +6546,24 @@ $("resetBtn")
 );
 
 
+/* ======================================================
+   PLAY BUTTON
+====================================================== */
+
 $("playBtn")
 .addEventListener(
   "click",
   ()=>{
 
-    if(video.paused){
+    if(
+      video.paused
+    ){
 
       video.playbackRate=1;
 
+
       video.play();
+
 
       $("playBtn")
         .textContent=
@@ -5741,6 +6575,7 @@ $("playBtn")
 
       video.pause();
 
+
       $("playBtn")
         .textContent=
           "▶";
@@ -5750,6 +6585,10 @@ $("playBtn")
   }
 );
 
+
+/* ======================================================
+   SEEK VIDEO
+====================================================== */
 
 $("seek")
 .addEventListener(
@@ -5762,7 +6601,9 @@ $("seek")
         video.duration
       )
     ){
+
       return;
+
     }
 
 
@@ -5779,18 +6620,27 @@ $("seek")
 
 
     /*
-      Na zoeken in video moet bal
-      opnieuw worden aangewezen:
-      optical flow kan niet door tijd springen.
+      Optical flow kan niet door een tijdsprong.
+      Daarom na scrubben opnieuw de bal kiezen.
     */
 
     resetBallTracking();
 
+
     updateUI();
+
+
+    $("instruction")
+      .textContent=
+        "Video verplaatst. Tik opnieuw op de basketbal voordat je verdergaat.";
 
   }
 );
 
+
+/* ======================================================
+   PLAY / PAUSE UI
+====================================================== */
 
 video.addEventListener(
   "play",
@@ -5828,9 +6678,9 @@ video.addEventListener(
 );
 
 
-/* =========================================================
+/* ======================================================
    INIT
-========================================================= */
+====================================================== */
 
 drawShotChart();
 
