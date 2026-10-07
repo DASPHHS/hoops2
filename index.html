@@ -4,20 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071018">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
-<title>Hoop – Basketball AI test</title>
+<title>Hoop – Live Basketball Tracker</title>
 
 <style>
 :root{
   --bg:#071018;
   --panel:#111c27;
+  --panel2:#192835;
   --text:#f8fafc;
   --muted:#94a3b8;
+  --orange:#ff7a00;
   --green:#22c55e;
+  --red:#ef4444;
   --blue:#38bdf8;
   --yellow:#facc15;
-  --orange:#ff7a00;
-  --red:#ef4444;
+  --border:rgba(255,255,255,.10);
 }
 
 *{box-sizing:border-box}
@@ -29,26 +32,77 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
 }
 
+button,input{font:inherit}
+
 .app{
-  width:min(900px,100%);
+  width:min(1100px,100%);
   margin:auto;
   padding:14px;
 }
 
-h1{
-  margin:0 0 4px;
-  font-size:30px;
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
 }
 
-.subtitle{
+h1{
+  margin:0;
+  font-size:clamp(26px,7vw,40px);
+}
+
+.sub{
   color:var(--muted);
-  margin-bottom:14px;
+  font-size:13px;
+}
+
+.badge{
+  padding:7px 10px;
+  border-radius:999px;
+  color:#86efac;
+  background:rgba(34,197,94,.12);
+  border:1px solid rgba(34,197,94,.25);
+  font-size:11px;
+  font-weight:900;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.stat{
+  padding:11px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+
+.stat strong{
+  display:block;
+  font-size:clamp(25px,7vw,42px);
+  line-height:1;
+}
+
+.stat span{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.main{
+  display:grid;
+  grid-template-columns:minmax(0,2fr) minmax(280px,.8fr);
+  gap:12px;
 }
 
 .card{
   background:var(--panel);
+  border:1px solid var(--border);
   border-radius:18px;
-  border:1px solid rgba(255,255,255,.1);
   overflow:hidden;
 }
 
@@ -58,18 +112,18 @@ h1{
 }
 
 .stage.mirrored video,
-.stage.mirrored #overlay{
+.stage.mirrored canvas{
   transform:scaleX(-1);
 }
 
 video{
-  width:100%;
   display:block;
+  width:100%;
+  max-height:72vh;
   background:#000;
-  max-height:70vh;
 }
 
-canvas#overlay{
+#overlay{
   position:absolute;
   inset:0;
   width:100%;
@@ -77,1229 +131,3296 @@ canvas#overlay{
   pointer-events:none;
 }
 
-.controls{
+#overlay.selecting{
+  pointer-events:auto;
+  touch-action:none;
+}
+
+.feedback{
+  position:absolute;
+  z-index:10;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%) scale(.9);
+  opacity:0;
+  min-width:min(80%,420px);
+  padding:18px 24px;
+  border-radius:20px;
+  text-align:center;
+  font-weight:900;
+  pointer-events:none;
+  transition:.15s;
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
+}
+
+.feedback.show{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1);
+}
+
+.feedback.make{
+  background:rgba(21,128,61,.93);
+  border:2px solid #86efac;
+}
+
+.feedback.miss{
+  background:rgba(185,28,28,.93);
+  border:2px solid #fca5a5;
+}
+
+.feedbackBig{
+  font-size:clamp(34px,10vw,64px);
+  line-height:1;
+}
+
+.feedbackSmall{
+  margin-top:8px;
+  font-size:clamp(17px,5vw,25px);
+}
+
+.footer{
+  display:flex;
+  justify-content:space-between;
+  padding:9px 12px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.controls{padding:13px}
+
+h2{
+  margin:3px 0 9px;
+  font-size:15px;
+}
+
+.section{margin-top:18px}
+
+.grid{
   display:grid;
-  gap:9px;
-  margin-top:12px;
+  gap:8px;
 }
 
 .two{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:9px;
+  gap:8px;
 }
 
 button{
-  min-height:52px;
-  border:0;
-  border-radius:13px;
-  background:#1d2d3b;
-  color:white;
-  font-size:16px;
-  font-weight:800;
+  min-height:49px;
+  border:1px solid var(--border);
+  border-radius:12px;
   padding:10px;
+  background:var(--panel2);
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+  touch-action:manipulation;
 }
 
-button.primary{
-  background:var(--orange);
+button.orange{
   color:#111;
+  background:var(--orange);
+  border-color:var(--orange);
 }
 
 button.green{
-  background:#166534;
+  color:#86efac;
+  background:rgba(34,197,94,.12);
+  border-color:rgba(34,197,94,.3);
 }
 
 button.blue{
-  background:#075985;
+  color:#7dd3fc;
+  background:rgba(56,189,248,.12);
+}
+
+button.yellow{
+  color:#fde047;
+  background:rgba(250,204,21,.12);
 }
 
 button.red{
-  background:#991b1b;
+  color:#fca5a5;
+  background:rgba(239,68,68,.12);
 }
 
 button:disabled{
   opacity:.4;
 }
 
-.status{
-  margin-top:12px;
+.info{
+  margin-top:10px;
+  padding:10px;
   background:#0b151f;
-  border-radius:14px;
-  padding:12px;
-}
-
-.statusrow{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  padding:4px 0;
-}
-
-.statusrow span{
-  color:var(--muted);
-}
-
-#message{
-  margin-top:12px;
-  padding:12px;
-  min-height:48px;
   border-radius:12px;
-  background:#0b151f;
-  line-height:1.4;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
 }
 
-.legend{
+.status{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:7px 10px;
+  padding-top:12px;
+  border-top:1px solid var(--border);
+  font-size:12px;
+}
+
+.status span{color:var(--muted)}
+
+.ok{color:#86efac}
+.warn{color:#fde047}
+.no{color:#fca5a5}
+
+.seek{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:8px;
+  align-items:center;
+  padding:9px 12px;
+  border-top:1px solid var(--border);
+}
+
+.seek input{width:100%}
+
+.chart{
+  margin-top:12px;
+  padding:12px;
+}
+
+#chart{
+  width:100%;
+  max-width:700px;
+  display:block;
+  margin:auto;
+  background:#bd7941;
+  border-radius:12px;
+}
+
+.log{
+  margin-top:8px;
   display:flex;
   flex-wrap:wrap;
-  gap:12px;
-  color:var(--muted);
-  font-size:13px;
-  margin-top:10px;
+  gap:6px;
 }
 
-.legend b:nth-child(1){color:var(--green)}
-.legend b:nth-child(2){color:var(--blue)}
-.legend b:nth-child(3){color:var(--yellow)}
-
-.progress{
-  height:8px;
-  margin-top:8px;
-  border-radius:99px;
-  overflow:hidden;
-  background:#263746;
+.chip{
+  padding:5px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
 }
 
-#progressBar{
-  width:0%;
-  height:100%;
-  background:var(--green);
-  transition:width .15s;
+.chip.make{
+  color:#86efac;
+  background:rgba(34,197,94,.15);
 }
 
-@media(max-width:600px){
-  h1{font-size:25px}
-  .two{grid-template-columns:1fr}
+.chip.miss{
+  color:#fca5a5;
+  background:rgba(239,68,68,.15);
+}
+
+@media(max-width:800px){
+  .main{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 </head>
 
 <body>
 
 <div class="app">
 
-<h1>🏀 Hoop AI Test</h1>
+<header>
+  <div>
+    <h1>🏀 Hoop</h1>
+    <div class="sub">Realtime basketball tracking</div>
+  </div>
+  <div class="badge">MOTION TRACKING</div>
+</header>
 
-<div class="subtitle">
-Deze pagina test alleen of de nieuwe AI de echte basketbal kan herkennen.
-</div>
+<section class="stats">
+  <div class="stat"><strong id="attempts">0</strong><span>schoten</span></div>
+  <div class="stat"><strong id="makes">0</strong><span>raak</span></div>
+  <div class="stat"><strong id="percentage">0%</strong><span>percentage</span></div>
+  <div class="stat"><strong id="streak">0</strong><span>streak</span></div>
+</section>
 
-<div class="card">
+<div class="main">
 
-  <div class="stage" id="stage">
+<section class="card">
 
-    <video
-      id="video"
-      muted
-      playsinline
-      controls>
-    </video>
+<div class="stage" id="stage">
 
-    <canvas id="overlay"></canvas>
+  <video id="video" muted playsinline></video>
 
+  <canvas id="overlay"></canvas>
+
+  <div id="feedback" class="feedback">
+    <div id="feedbackBig" class="feedbackBig"></div>
+    <div id="feedbackSmall" class="feedbackSmall"></div>
   </div>
 
 </div>
+
+<div class="footer">
+  <span id="statusText">Kies camera of testvideo</span>
+  <span id="fps">—</span>
+</div>
+
+<div id="videoControls" class="seek" hidden>
+  <button id="playBtn">▶</button>
+  <input id="seek" type="range" min="0" max="1000" value="0">
+  <span id="timeText">0:00</span>
+</div>
+
+</section>
+
+
+<aside class="card">
 
 <div class="controls">
 
-  <button
-    id="loadAI"
-    class="primary">
-    1. Laad basketbal-AI
+<h2>1. Kies beeld</h2>
+
+<div class="two">
+  <button id="frontBtn" class="orange">🤳 Voorcamera</button>
+  <button id="rearBtn" class="blue">📷 Achtercamera</button>
+</div>
+
+<div class="grid" style="margin-top:8px">
+  <button id="videoBtn">🎬 Testvideo</button>
+  <input id="fileInput" type="file" accept="video/*" hidden>
+</div>
+
+
+<div class="section">
+
+<h2>2. Stel de ring in</h2>
+
+<div class="grid">
+
+  <button id="autoHoopBtn" class="yellow" disabled>
+    🔎 Zoek ring
   </button>
 
-  <div class="progress">
-    <div id="progressBar"></div>
-  </div>
-
-  <div class="two">
-
-    <button
-      id="frontCamera"
-      class="blue"
-      disabled>
-      🤳 Voorcamera
-    </button>
-
-    <button
-      id="rearCamera"
-      class="blue"
-      disabled>
-      📷 Achtercamera
-    </button>
-
-  </div>
-
-  <button
-    id="videoButton"
-    disabled>
-    🎬 Testvideo kiezen
+  <button id="confirmHoopBtn" class="green" disabled>
+    ✓ Dit is de ring
   </button>
 
-  <input
-    id="fileInput"
-    type="file"
-    accept="video/*"
-    hidden>
-
-  <button
-    id="startButton"
-    class="green"
-    disabled>
-    ▶ Start detectie
+  <button id="nextHoopBtn" disabled>
+    → Andere kandidaat
   </button>
 
-  <button
-    id="stopButton"
-    class="red"
-    disabled>
-    ■ Stop detectie
+  <button id="manualHoopBtn" disabled>
+    👆 Handmatig – 2 tikken
   </button>
 
 </div>
 
-<div id="message">
-Druk eerst op <strong>Laad basketbal-AI</strong>.
 </div>
+
+
+<div class="section">
+
+<h2>3. Start</h2>
+
+<div class="grid">
+
+  <button id="startBtn" class="green" disabled>
+    ▶ START LIVE
+  </button>
+
+  <button id="stopBtn" disabled>
+    ■ Stop
+  </button>
+
+</div>
+
+</div>
+
+
+<div id="instruction" class="info">
+De basketbal hoef je niet meer aan te tikken.
+</div>
+
 
 <div class="status">
 
-  <div class="statusrow">
-    <span>AI</span>
-    <strong id="aiStatus">niet geladen</strong>
-  </div>
+  <span>Ring</span>
+  <strong id="ringState" class="no">niet ingesteld</strong>
 
-  <div class="statusrow">
-    <span>Laatste analyse</span>
-    <strong id="speedStatus">—</strong>
-  </div>
+  <span>Speler-AI</span>
+  <strong id="personState" class="warn">laden</strong>
 
-  <div class="statusrow">
-    <span>Basketbal</span>
-    <strong id="ballStatus">—</strong>
-  </div>
+  <span>Bewegingsmodel</span>
+  <strong id="motionState" class="no">uit</strong>
 
-  <div class="statusrow">
-    <span>Score AI</span>
-    <strong id="confidenceStatus">—</strong>
-  </div>
+  <span>Basketbal</span>
+  <strong id="ballState" class="no">zoeken</strong>
+
+  <span>Shot detector</span>
+  <strong id="shotState">WACHT</strong>
 
 </div>
 
-<div class="legend">
-  <b>■ groen = Basketball</b>
-  <b>■ blauw = Person</b>
-  <b>■ geel = Other Balls</b>
+
+<div class="section">
+
+<h2>Handmatige correctie</h2>
+
+<div class="two">
+  <button id="makeBtn" class="green">+ RAAK</button>
+  <button id="missBtn" class="red">+ MIS</button>
 </div>
 
 </div>
 
-<canvas
-  id="frameCanvas"
-  width="640"
-  height="360"
-  hidden>
-</canvas>
+</div>
+
+</aside>
+
+</div>
 
 
-<script type="module">
+<section class="card chart">
 
-import {
-  pipeline,
-  env,
-  RawImage
-} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1";
+<h2>Shot chart</h2>
 
+<canvas id="chart" width="700" height="500"></canvas>
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
+<div id="log" class="log"></div>
 
-const video =
-  document.getElementById("video");
+<div class="grid" style="margin-top:10px">
+  <button id="resetBtn">Nieuwe sessie</button>
+</div>
 
-const stage =
-  document.getElementById("stage");
+</section>
 
-const overlay =
-  document.getElementById("overlay");
-
-const ctx =
-  overlay.getContext("2d");
-
-const frameCanvas =
-  document.getElementById("frameCanvas");
-
-const frameCtx =
-  frameCanvas.getContext(
-    "2d",
-    {willReadFrequently:true}
-  );
-
-const loadAIButton =
-  document.getElementById("loadAI");
-
-const frontCameraButton =
-  document.getElementById("frontCamera");
-
-const rearCameraButton =
-  document.getElementById("rearCamera");
-
-const videoButton =
-  document.getElementById("videoButton");
-
-const fileInput =
-  document.getElementById("fileInput");
-
-const startButton =
-  document.getElementById("startButton");
-
-const stopButton =
-  document.getElementById("stopButton");
-
-const message =
-  document.getElementById("message");
-
-const aiStatus =
-  document.getElementById("aiStatus");
-
-const speedStatus =
-  document.getElementById("speedStatus");
-
-const ballStatus =
-  document.getElementById("ballStatus");
-
-const confidenceStatus =
-  document.getElementById("confidenceStatus");
-
-const progressBar =
-  document.getElementById("progressBar");
+</div>
 
 
-/* =====================================================
+<canvas id="analysis" hidden></canvas>
+
+<script>
+(() => {
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+const video = $("video");
+const stage = $("stage");
+
+const overlay = $("overlay");
+const octx = overlay.getContext("2d");
+
+const analysis = $("analysis");
+const actx = analysis.getContext("2d",{willReadFrequently:true});
+
+const chart = $("chart");
+const cctx = chart.getContext("2d");
+
+let AW = 320;
+let AH = 180;
+
+
+/* ======================================================
    STATE
-===================================================== */
+====================================================== */
 
-let detector = null;
+const state = {
 
-let stream = null;
+  source:null,
+  facing:null,
+  mirrored:false,
 
-let detectionRunning = false;
+  stream:null,
+  objectURL:null,
 
-let inferenceBusy = false;
+  loopActive:false,
+  live:false,
 
-let mirrored = false;
+  model:null,
+  aiBusy:false,
+  lastAI:-Infinity,
 
-let currentObjectURL = null;
+  persons:[],
+
+  hoop:null,
+  hoopCandidates:[],
+  hoopIndex:0,
+
+  mode:"none",
+  manualPoints:[],
+
+  bgR:null,
+  bgG:null,
+  bgB:null,
+
+  motionMask:null,
+  cleanMask:null,
+  visited:null,
+  queue:null,
+
+  backgroundFrames:0,
+  shockFrames:0,
+
+  blobTracks:[],
+  nextBlobId:1,
+
+  shot:null,
+  cooldownUntil:0,
+
+  shots:[],
+
+  lastMotionWall:0,
+
+  fpsFrames:0,
+  fpsLast:performance.now(),
+
+  feedbackTimer:null
+};
 
 
-/* =====================================================
-   TRANSFORMERS SETTINGS
-===================================================== */
-
-env.allowLocalModels = false;
-
-
-/* =====================================================
+/* ======================================================
    HELPERS
-===================================================== */
+====================================================== */
 
-function setMessage(text){
-  message.innerHTML = text;
-}
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 
+const distance = (a,b) =>
+  Math.hypot(a.x-b.x,a.y-b.y);
 
-function enableSourceButtons(){
+function nowMedia(){
 
-  frontCameraButton.disabled = false;
-  rearCameraButton.disabled = false;
-  videoButton.disabled = false;
-
-}
-
-
-function prepareOverlay(){
-
-  overlay.width =
-    video.videoWidth;
-
-  overlay.height =
-    video.videoHeight;
-
-}
-
-
-function clearOverlay(){
-
-  ctx.clearRect(
-    0,
-    0,
-    overlay.width,
-    overlay.height
-  );
-
-}
-
-
-function stopCurrentSource(){
-
-  detectionRunning = false;
-
-  if(stream){
-
-    stream
-      .getTracks()
-      .forEach(track => track.stop());
-
-    stream = null;
-
+  if(state.source==="file"){
+    return video.currentTime*1000;
   }
 
-  if(currentObjectURL){
+  return performance.now();
+}
+
+function setStatus(text){
+  $("statusText").textContent=text;
+}
+
+function setMirrored(value){
+
+  state.mirrored=Boolean(value);
+
+  stage.classList.toggle(
+    "mirrored",
+    state.mirrored
+  );
+}
+
+function updateUI(){
+
+  $("ringState").textContent =
+    state.hoop
+    ? "✓ ingesteld"
+    : "niet ingesteld";
+
+  $("ringState").className =
+    state.hoop
+    ? "ok"
+    : "no";
+
+  $("autoHoopBtn").disabled =
+    !state.source;
+
+  $("manualHoopBtn").disabled =
+    !state.source;
+
+  $("startBtn").disabled =
+    !(state.source && state.hoop) || state.live;
+
+  $("stopBtn").disabled =
+    !state.live;
+}
+
+
+/* ======================================================
+   VIDEO / CAMERA
+====================================================== */
+
+function stopSource(){
+
+  state.loopActive=false;
+  state.live=false;
+
+  if(state.stream){
+
+    state.stream
+      .getTracks()
+      .forEach(t=>t.stop());
+
+    state.stream=null;
+  }
+
+  if(state.objectURL){
 
     URL.revokeObjectURL(
-      currentObjectURL
+      state.objectURL
     );
 
-    currentObjectURL = null;
-
+    state.objectURL=null;
   }
 
   video.pause();
-
-  video.srcObject = null;
-
+  video.srcObject=null;
   video.removeAttribute("src");
-
-  clearOverlay();
-
 }
-
 
 function waitForVideo(){
 
-  return new Promise(resolve => {
+  return new Promise((resolve,reject)=>{
 
-    if(
-      video.videoWidth &&
-      video.videoHeight
-    ){
+    if(video.readyState>=2 && video.videoWidth){
       resolve();
       return;
     }
 
-    video.addEventListener(
-      "loadedmetadata",
-      () => resolve(),
-      {once:true}
-    );
+    const ok=()=>{
+      cleanup();
+      resolve();
+    };
 
+    const fail=()=>{
+      cleanup();
+      reject(
+        new Error("Video kon niet worden geladen.")
+      );
+    };
+
+    const cleanup=()=>{
+      video.removeEventListener("loadeddata",ok);
+      video.removeEventListener("error",fail);
+    };
+
+    video.addEventListener("loadeddata",ok,{once:true});
+    video.addEventListener("error",fail,{once:true});
   });
-
 }
 
+function prepareAnalysis(){
 
-/* =====================================================
-   LOAD AI
-===================================================== */
+  overlay.width=video.videoWidth;
+  overlay.height=video.videoHeight;
 
-loadAIButton.addEventListener(
-  "click",
-  async () => {
+  AW=320;
 
-    loadAIButton.disabled = true;
+  AH=Math.max(
+    180,
+    Math.round(
+      AW*
+      video.videoHeight/
+      video.videoWidth
+    )
+  );
 
-    aiStatus.textContent =
-      "laden…";
+  analysis.width=AW;
+  analysis.height=AH;
 
-    setMessage(
-      "Het nieuwe AI-model wordt geladen. " +
-      "De eerste keer kan dit even duren. Laat deze pagina openstaan."
-    );
+  const size=AW*AH;
 
+  state.bgR=new Float32Array(size);
+  state.bgG=new Float32Array(size);
+  state.bgB=new Float32Array(size);
 
-    try{
+  state.motionMask=new Uint8Array(size);
+  state.cleanMask=new Uint8Array(size);
+  state.visited=new Uint8Array(size);
+  state.queue=new Int32Array(size);
+}
 
-      detector =
-        await pipeline(
-          "object-detection",
+function resetCalibration(){
 
-          "onnx-community/dfine_s_obj365-ONNX",
+  state.hoop=null;
+  state.hoopCandidates=[];
+  state.hoopIndex=0;
 
-          {
-            progress_callback: progress => {
+  state.mode="none";
+  state.manualPoints=[];
 
-              if(
-                typeof progress.progress === "number"
-              ){
+  overlay.classList.remove("selecting");
 
-                progressBar.style.width =
-                  Math.round(
-                    progress.progress
-                  ) + "%";
+  $("confirmHoopBtn").disabled=true;
+  $("nextHoopBtn").disabled=true;
 
-              }
+  updateUI();
+}
 
-            }
-          }
-        );
+function resetMotion(){
 
+  state.backgroundFrames=0;
+  state.shockFrames=0;
 
-      progressBar.style.width =
-        "100%";
+  state.blobTracks=[];
+  state.shot=null;
 
+  state.cooldownUntil=0;
 
-      aiStatus.textContent =
-        "✓ klaar";
+  $("motionState").textContent="kalibreren";
+  $("motionState").className="warn";
 
+  $("ballState").textContent="zoeken";
+  $("ballState").className="no";
 
-      enableSourceButtons();
-
-
-      setMessage(
-        "<strong>AI klaar.</strong> " +
-        "Kies nu bij voorkeur eerst jouw testvideo."
-      );
-
-    }
-
-    catch(error){
-
-      console.error(error);
-
-
-      aiStatus.textContent =
-        "fout";
-
-
-      loadAIButton.disabled = false;
-
-
-      setMessage(
-        "<strong>AI kon niet laden.</strong><br>" +
-        error.message
-      );
-
-    }
-
-  }
-);
-
-
-/* =====================================================
-   CAMERA
-===================================================== */
+  $("shotState").textContent="WACHT";
+}
 
 async function startCamera(facing){
 
-  stopCurrentSource();
-
+  stopSource();
+  resetCalibration();
 
   try{
 
-    mirrored =
-      facing === "user";
+    state.facing=facing;
+    state.source="camera";
 
-
-    stage.classList.toggle(
-      "mirrored",
-      mirrored
+    setMirrored(
+      facing==="user"
     );
 
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
 
-    stream =
-      await navigator.mediaDevices
-        .getUserMedia({
+        audio:false,
 
-          audio:false,
+        video:{
+          facingMode:{ideal:facing},
+          width:{ideal:1280},
+          height:{ideal:720},
+          frameRate:{ideal:60,max:60}
+        }
 
-          video:{
+      });
 
-            facingMode:{
-              ideal:facing
-            },
+    state.stream=stream;
 
-            width:{
-              ideal:1280
-            },
-
-            height:{
-              ideal:720
-            },
-
-            frameRate:{
-              ideal:30,
-              max:60
-            }
-
-          }
-
-        });
-
-
-    video.controls = false;
-
-    video.srcObject =
-      stream;
-
+    video.srcObject=stream;
+    video.muted=true;
+    video.playsInline=true;
 
     await video.play();
-
     await waitForVideo();
 
+    prepareAnalysis();
 
-    prepareOverlay();
+    state.loopActive=true;
 
+    $("videoControls").hidden=true;
 
-    startButton.disabled = false;
-
-
-    setMessage(
-      "Camera actief. Zorg dat persoon en bal duidelijk zichtbaar zijn en druk op <strong>Start detectie</strong>."
+    setStatus(
+      "Camera actief · stel nu de ring in"
     );
 
-  }
+    loadPersonAI();
 
-  catch(error){
+    updateUI();
+
+    requestAnimationFrame(loop);
+
+  }catch(error){
 
     console.error(error);
 
-
-    setMessage(
-      "<strong>Camera kon niet starten.</strong><br>" +
-      error.message
+    setStatus(
+      "Camera fout: "+error.message
     );
-
   }
-
 }
 
+async function loadVideo(file){
 
-frontCameraButton.addEventListener(
-  "click",
-  () => startCamera("user")
-);
-
-
-rearCameraButton.addEventListener(
-  "click",
-  () => startCamera("environment")
-);
-
-
-/* =====================================================
-   VIDEO FILE
-===================================================== */
-
-videoButton.addEventListener(
-  "click",
-  () => fileInput.click()
-);
-
-
-fileInput.addEventListener(
-  "change",
-  async event => {
-
-    const file =
-      event.target.files?.[0];
-
-
-    if(!file){
-      return;
-    }
-
-
-    stopCurrentSource();
-
-
-    mirrored = false;
-
-    stage.classList.remove(
-      "mirrored"
-    );
-
-
-    currentObjectURL =
-      URL.createObjectURL(file);
-
-
-    video.controls = true;
-
-    video.src =
-      currentObjectURL;
-
-
-    video.muted = true;
-
-    video.playsInline = true;
-
-
-    await waitForVideo();
-
-
-    prepareOverlay();
-
-
-    video.currentTime = 0;
-
-
-    startButton.disabled = false;
-
-
-    setMessage(
-      "Video geladen. Druk op <strong>Start detectie</strong>. " +
-      "De video blijft op normale snelheid lopen."
-    );
-
-  }
-);
-
-
-/* =====================================================
-   FRAME PREPARATION
-===================================================== */
-
-function copyCurrentFrame(){
-
-  const sourceWidth =
-    video.videoWidth;
-
-  const sourceHeight =
-    video.videoHeight;
-
-
-  /*
-    We geven de AI maximaal 640 pixels breed.
-
-    Dit vermindert rekenwerk op een telefoon
-    zonder het beeld extreem klein te maken.
-  */
-
-  const width =
-    Math.min(
-      640,
-      sourceWidth
-    );
-
-
-  const height =
-    Math.round(
-      width *
-      sourceHeight /
-      sourceWidth
-    );
-
-
-  frameCanvas.width =
-    width;
-
-
-  frameCanvas.height =
-    height;
-
-
-  frameCtx.drawImage(
-    video,
-    0,
-    0,
-    width,
-    height
-  );
-
-
-  return {
-    width,
-    height
-  };
-
-}
-
-
-/* =====================================================
-   DRAW DETECTIONS
-===================================================== */
-
-function drawDetection(
-  detection,
-  frameWidth,
-  frameHeight
-){
-
-  const label =
-    String(
-      detection.label || ""
-    );
-
-
-  const normalizedLabel =
-    label.toLowerCase();
-
-
-  let color = null;
-
-
-  if(
-    normalizedLabel === "basketball"
-  ){
-
-    color =
-      "#22c55e";
-
-  }
-
-  else if(
-    normalizedLabel === "person"
-  ){
-
-    color =
-      "#38bdf8";
-
-  }
-
-  else if(
-    normalizedLabel === "other balls"
-  ){
-
-    color =
-      "#facc15";
-
-  }
-
-  else{
-
-    return;
-
-  }
-
-
-  const box =
-    detection.box;
-
-
-  const scaleX =
-    overlay.width /
-    frameWidth;
-
-
-  const scaleY =
-    overlay.height /
-    frameHeight;
-
-
-  const x =
-    box.xmin *
-    scaleX;
-
-
-  const y =
-    box.ymin *
-    scaleY;
-
-
-  const width =
-    (
-      box.xmax -
-      box.xmin
-    ) *
-    scaleX;
-
-
-  const height =
-    (
-      box.ymax -
-      box.ymin
-    ) *
-    scaleY;
-
-
-  ctx.strokeStyle =
-    color;
-
-
-  ctx.lineWidth =
-    normalizedLabel === "basketball"
-    ? 6
-    : 3;
-
-
-  ctx.strokeRect(
-    x,
-    y,
-    width,
-    height
-  );
-
-
-  const percentage =
-    Math.round(
-      detection.score * 100
-    );
-
-
-  const text =
-    label.toUpperCase() +
-    " " +
-    percentage +
-    "%";
-
-
-  ctx.font =
-    "bold 18px Arial";
-
-
-  const textWidth =
-    ctx.measureText(text).width;
-
-
-  ctx.fillStyle =
-    color;
-
-
-  ctx.fillRect(
-    x,
-    Math.max(0,y-27),
-    textWidth+12,
-    27
-  );
-
-
-  ctx.fillStyle =
-    "#071018";
-
-
-  ctx.fillText(
-    text,
-    x+6,
-    Math.max(19,y-7)
-  );
-
-}
-
-
-/* =====================================================
-   AI LOOP
-===================================================== */
-
-async function runDetection(){
-
-  if(
-    !detectionRunning ||
-    !detector
-  ){
-    return;
-  }
-
-
-  if(
-    inferenceBusy ||
-    video.readyState < 2
-  ){
-
-    requestAnimationFrame(
-      runDetection
-    );
-
-    return;
-  }
-
-
-  inferenceBusy = true;
-
+  stopSource();
+  resetCalibration();
 
   try{
 
-    const {
-      width,
-      height
-    } =
-      copyCurrentFrame();
+    state.source="file";
+    state.facing=null;
+
+    setMirrored(false);
+
+    state.objectURL=
+      URL.createObjectURL(file);
+
+    video.src=state.objectURL;
+
+    video.muted=true;
+    video.playsInline=true;
+
+    video.load();
+
+    await waitForVideo();
+
+    video.currentTime=0;
+    video.playbackRate=1;
+    video.pause();
+
+    prepareAnalysis();
+
+    state.loopActive=true;
+
+    $("videoControls").hidden=false;
+
+    setStatus(
+      "Testvideo geladen · stel de ring in"
+    );
+
+    loadPersonAI();
+
+    updateUI();
+
+    requestAnimationFrame(loop);
+
+  }catch(error){
+
+    console.error(error);
+
+    setStatus(
+      "Video fout: "+error.message
+    );
+  }
+}
 
 
-    const rawImage =
-      RawImage.fromCanvas(
-        frameCanvas
+/* ======================================================
+   PERSON AI
+====================================================== */
+
+async function loadPersonAI(){
+
+  if(state.model){
+    return;
+  }
+
+  try{
+
+    await tf.setBackend("webgl");
+    await tf.ready();
+
+    state.model=
+      await cocoSsd.load({
+        base:"lite_mobilenet_v2"
+      });
+
+    $("personState").textContent="✓ actief";
+    $("personState").className="ok";
+
+  }catch(error){
+
+    console.warn(error);
+
+    $("personState").textContent="niet beschikbaar";
+    $("personState").className="no";
+  }
+}
+
+async function detectPeople(now){
+
+  if(
+    !state.model ||
+    state.aiBusy ||
+    performance.now()-state.lastAI<450
+  ){
+    return;
+  }
+
+  state.aiBusy=true;
+  state.lastAI=performance.now();
+
+  try{
+
+    const detections=
+      await state.model.detect(
+        video,
+        10,
+        .28
       );
 
+    const sx=AW/video.videoWidth;
+    const sy=AH/video.videoHeight;
 
-    const start =
-      performance.now();
+    state.persons=
+      detections
+        .filter(
+          d=>d.class==="person"
+        )
+        .map(
+          d=>({
+            x:d.bbox[0]*sx,
+            y:d.bbox[1]*sy,
+            w:d.bbox[2]*sx,
+            h:d.bbox[3]*sy,
+            score:d.score,
+            t:now
+          })
+        );
+
+  }catch(error){
+    console.warn(error);
+  }
+
+  state.aiBusy=false;
+}
+
+function getShooter(){
+
+  const now=nowMedia();
+
+  const fresh=
+    state.persons.filter(
+      p=>now-p.t<1200
+    );
+
+  if(!fresh.length){
+    return null;
+  }
+
+  /*
+    In jouw setting staat één leerling
+    vooraan te schieten.
+    De grootste persoon is daarom
+    meestal de relevante schutter.
+  */
+
+  fresh.sort(
+    (a,b)=>
+      b.w*b.h-
+      a.w*a.h
+  );
+
+  return fresh[0];
+}
+
+
+/* ======================================================
+   RING
+====================================================== */
+
+function rgbToHSV(r,g,b){
+
+  r/=255; g/=255; b/=255;
+
+  const max=Math.max(r,g,b);
+  const min=Math.min(r,g,b);
+
+  const d=max-min;
+
+  let h=0;
+
+  if(d!==0){
+
+    if(max===r){
+      h=60*(((g-b)/d)%6);
+    }else if(max===g){
+      h=60*((b-r)/d+2);
+    }else{
+      h=60*((r-g)/d+4);
+    }
+  }
+
+  if(h<0)h+=360;
+
+  return{
+    h,
+    s:max===0?0:d/max,
+    v:max
+  };
+}
+
+function hoopColour(r,g,b){
+
+  const hsv=rgbToHSV(r,g,b);
+
+  return(
+    (
+      (hsv.h<50 || hsv.h>345) &&
+      hsv.s>.28 &&
+      hsv.v>.18
+    )
+    ||
+    (
+      r>65 &&
+      r>g*1.1 &&
+      r>b*1.15
+    )
+  );
+}
+
+function autoFindHoop(){
+
+  if(video.readyState<2){
+    return;
+  }
+
+  if(state.source==="camera"){
+    video.pause();
+  }
+
+  actx.drawImage(
+    video,
+    0,0,
+    AW,AH
+  );
+
+  const img=
+    actx.getImageData(
+      0,0,
+      AW,AH
+    );
+
+  const size=AW*AH;
+
+  const mask=
+    new Uint8Array(size);
+
+  const visited=
+    new Uint8Array(size);
+
+  const queue=
+    new Int32Array(size);
+
+  for(let i=0;i<size;i++){
+
+    const d=i*4;
+
+    if(
+      hoopColour(
+        img.data[d],
+        img.data[d+1],
+        img.data[d+2]
+      )
+    ){
+      mask[i]=1;
+    }
+  }
+
+  const found=[];
+
+  for(let y=0;y<AH;y++){
+
+    for(let x=0;x<AW;x++){
+
+      const start=y*AW+x;
+
+      if(!mask[start] || visited[start]){
+        continue;
+      }
+
+      let qs=0,qe=0;
+
+      queue[qe++]=start;
+      visited[start]=1;
+
+      let area=0;
+
+      let minX=x,maxX=x;
+      let minY=y,maxY=y;
+
+      while(qs<qe){
+
+        const index=queue[qs++];
+
+        const cy=Math.floor(index/AW);
+        const cx=index-cy*AW;
+
+        area++;
+
+        minX=Math.min(minX,cx);
+        maxX=Math.max(maxX,cx);
+
+        minY=Math.min(minY,cy);
+        maxY=Math.max(maxY,cy);
+
+        const neighbours=[
+          index-1,
+          index+1,
+          index-AW,
+          index+AW
+        ];
+
+        for(const n of neighbours){
+
+          if(
+            n<0 ||
+            n>=size ||
+            visited[n] ||
+            !mask[n]
+          ){
+            continue;
+          }
+
+          const ny=Math.floor(n/AW);
+          const nx=n-ny*AW;
+
+          if(Math.abs(nx-cx)>1){
+            continue;
+          }
+
+          visited[n]=1;
+          queue[qe++]=n;
+        }
+      }
+
+      if(area<6){
+        continue;
+      }
+
+      const w=maxX-minX+1;
+      const h=maxY-minY+1;
+
+      const aspect=w/h;
+
+      if(
+        w<6 ||
+        h<2 ||
+        aspect<1.25 ||
+        aspect>11 ||
+        w>AW*.4 ||
+        h>AH*.3
+      ){
+        continue;
+      }
+
+      const score=
+        Math.log(area+1)+
+        Math.max(
+          0,
+          4-Math.abs(aspect-3)
+        );
+
+      found.push({
+        x:clamp(minX-w*.2,0,AW)/AW,
+        y:clamp(minY-h*.55,0,AH)/AH,
+        w:clamp(w*1.4,4,AW)/AW,
+        h:clamp(h*2.1,4,AH)/AH,
+        score
+      });
+    }
+  }
+
+  found.sort(
+    (a,b)=>b.score-a.score
+  );
+
+  state.hoopCandidates=
+    found.slice(0,6);
+
+  state.hoopIndex=0;
+
+  if(!state.hoopCandidates.length){
+
+    $("confirmHoopBtn").disabled=true;
+    $("nextHoopBtn").disabled=true;
+
+    setStatus(
+      "Ring niet gevonden · gebruik handmatig"
+    );
+
+  }else{
+
+    $("confirmHoopBtn").disabled=false;
+
+    $("nextHoopBtn").disabled=
+      state.hoopCandidates.length<2;
+
+    setStatus(
+      "Geel kader: is dit de ring?"
+    );
+  }
+
+  drawOverlay();
+}
+
+function currentHoopCandidate(){
+
+  return(
+    state.hoopCandidates[
+      state.hoopIndex
+    ] || null
+  );
+}
+
+function nextHoop(){
+
+  if(!state.hoopCandidates.length){
+    return;
+  }
+
+  state.hoopIndex=
+    (
+      state.hoopIndex+1
+    )%
+    state.hoopCandidates.length;
+
+  drawOverlay();
+}
+
+function confirmHoop(){
+
+  const candidate=
+    currentHoopCandidate();
+
+  if(!candidate){
+    return;
+  }
+
+  state.hoop={...candidate};
+
+  state.hoopCandidates=[];
+
+  $("confirmHoopBtn").disabled=true;
+  $("nextHoopBtn").disabled=true;
+
+  if(state.source==="camera"){
+    video.play().catch(()=>{});
+  }
+
+  setStatus(
+    "✓ Ring ingesteld · klaar om te starten"
+  );
+
+  $("instruction").textContent=
+    "Je hoeft de bal NIET te selecteren. De app zoekt straks automatisch naar het snelle bewegende object dat bij de schutter vertrekt.";
+
+  updateUI();
+}
+
+function startManualHoop(){
+
+  if(state.source==="camera"){
+    video.pause();
+  }
+
+  state.hoop=null;
+  state.hoopCandidates=[];
+  state.manualPoints=[];
+
+  state.mode="manualHoop";
+
+  overlay.classList.add(
+    "selecting"
+  );
+
+  $("instruction").textContent=
+    "Tik één keer op de LINKERRAND van de ring.";
+
+  setStatus(
+    "Handmatig: tik links op de ring"
+  );
+}
+
+function manualHoopPoint(point){
+
+  state.manualPoints.push(point);
+
+  if(state.manualPoints.length===1){
+
+    $("instruction").textContent=
+      "Tik nu één keer op de RECHTERRAND van dezelfde ring.";
+
+    setStatus(
+      "Handmatig: tik rechts op de ring"
+    );
+
+    drawOverlay();
+
+    return;
+  }
+
+  const a=state.manualPoints[0];
+  const b=state.manualPoints[1];
+
+  const left=Math.min(a.x,b.x);
+  const right=Math.max(a.x,b.x);
+
+  const width=
+    Math.max(
+      14,
+      right-left
+    );
+
+  const cy=(a.y+b.y)/2;
+
+  const height=
+    Math.max(
+      8,
+      width*.27
+    );
+
+  state.hoop={
+    x:clamp(left-width*.04,0,overlay.width)/overlay.width,
+    y:clamp(cy-height/2,0,overlay.height)/overlay.height,
+    w:clamp(width*1.08,5,overlay.width)/overlay.width,
+    h:height/overlay.height
+  };
+
+  state.manualPoints=[];
+  state.mode="none";
+
+  overlay.classList.remove(
+    "selecting"
+  );
+
+  if(state.source==="camera"){
+    video.play().catch(()=>{});
+  }
+
+  setStatus(
+    "✓ Ring ingesteld · klaar om te starten"
+  );
+
+  $("instruction").textContent=
+    "De basketbal wordt automatisch gezocht via beweging.";
+
+  updateUI();
+}
+
+
+/* ======================================================
+   POINTER
+====================================================== */
+
+function pointerPosition(event){
+
+  const rect=
+    overlay.getBoundingClientRect();
+
+  let x=
+    (
+      event.clientX-
+      rect.left
+    )*
+    overlay.width/
+    rect.width;
+
+  const y=
+    (
+      event.clientY-
+      rect.top
+    )*
+    overlay.height/
+    rect.height;
+
+  if(state.mirrored){
+    x=overlay.width-x;
+  }
+
+  return{x,y};
+}
+
+overlay.addEventListener(
+  "pointerdown",
+  event=>{
+
+    if(state.mode!=="manualHoop"){
+      return;
+    }
+
+    event.preventDefault();
+
+    manualHoopPoint(
+      pointerPosition(event)
+    );
+  }
+);
+
+
+/* ======================================================
+   BACKGROUND / MOTION MODEL
+====================================================== */
+
+function initialiseBackground(){
+
+  actx.drawImage(
+    video,
+    0,0,
+    AW,AH
+  );
+
+  const frame=
+    actx.getImageData(
+      0,0,
+      AW,AH
+    ).data;
+
+  const size=AW*AH;
+
+  for(let i=0;i<size;i++){
+
+    const d=i*4;
+
+    state.bgR[i]=frame[d];
+    state.bgG[i]=frame[d+1];
+    state.bgB[i]=frame[d+2];
+  }
+
+  state.backgroundFrames=0;
+
+  state.motionMask.fill(0);
+  state.cleanMask.fill(0);
+
+  state.blobTracks=[];
+
+  $("motionState").textContent=
+    "kalibreren";
+
+  $("motionState").className=
+    "warn";
+}
+
+function motionComponents(){
+
+  actx.drawImage(
+    video,
+    0,0,
+    AW,AH
+  );
+
+  const image=
+    actx.getImageData(
+      0,0,
+      AW,AH
+    );
+
+  const data=image.data;
+
+  const size=AW*AH;
+
+  let movingPixels=0;
+
+  const warming=
+    state.backgroundFrames<12;
+
+  for(let i=0;i<size;i++){
+
+    const d=i*4;
+
+    const r=data[d];
+    const g=data[d+1];
+    const b=data[d+2];
+
+    const diff=
+      (
+        Math.abs(r-state.bgR[i])+
+        Math.abs(g-state.bgG[i])+
+        Math.abs(b-state.bgB[i])
+      )/3;
+
+    let foreground=
+      diff>29;
+
+    /*
+      Tijdens eerste frames leren we de scène.
+    */
+    if(warming){
+      foreground=false;
+    }
+
+    state.motionMask[i]=
+      foreground?1:0;
+
+    if(foreground){
+      movingPixels++;
+    }
+
+    /*
+      Stilstaande pixels snel opnemen in achtergrond.
+      Bewegende pixels nauwelijks.
+    */
+    const rate=
+      warming
+      ? .16
+      : (
+          diff<20
+          ? .035
+          : .0012
+        );
+
+    state.bgR[i]+=
+      (r-state.bgR[i])*rate;
+
+    state.bgG[i]+=
+      (g-state.bgG[i])*rate;
+
+    state.bgB[i]+=
+      (b-state.bgB[i])*rate;
+  }
+
+  state.backgroundFrames++;
+
+  if(state.backgroundFrames===12){
+
+    $("motionState").textContent=
+      "✓ actief";
+
+    $("motionState").className=
+      "ok";
+
+    setStatus(
+      "🔴 LIVE · wachten op schot"
+    );
+  }
+
+
+  /*
+    Als bijna het hele beeld verandert,
+    is waarschijnlijk de telefoon bewogen.
+  */
+
+  const motionRatio=
+    movingPixels/size;
+
+  if(
+    !warming &&
+    motionRatio>.38
+  ){
+
+    state.shockFrames++;
+
+  }else{
+
+    state.shockFrames=0;
+  }
+
+  if(state.shockFrames>=2){
+
+    initialiseBackground();
+
+    setStatus(
+      "Camera bewoog · bewegingsmodel opnieuw kalibreren"
+    );
+
+    return[];
+  }
+
+
+  /*
+    Eenvoudige ruisfilter:
+    alleen pixels met minstens één bewegende buur.
+  */
+
+  state.cleanMask.fill(0);
+
+  for(let y=1;y<AH-1;y++){
+
+    for(let x=1;x<AW-1;x++){
+
+      const i=y*AW+x;
+
+      if(!state.motionMask[i]){
+        continue;
+      }
+
+      let neighbours=0;
+
+      for(let yy=-1;yy<=1;yy++){
+
+        for(let xx=-1;xx<=1;xx++){
+
+          if(
+            state.motionMask[
+              (y+yy)*AW+
+              (x+xx)
+            ]
+          ){
+            neighbours++;
+          }
+        }
+      }
+
+      if(neighbours>=2){
+        state.cleanMask[i]=1;
+      }
+    }
+  }
+
+
+  state.visited.fill(0);
+
+  const components=[];
+
+  for(let y=1;y<AH-1;y++){
+
+    for(let x=1;x<AW-1;x++){
+
+      const start=y*AW+x;
+
+      if(
+        !state.cleanMask[start] ||
+        state.visited[start]
+      ){
+        continue;
+      }
+
+      let qs=0,qe=0;
+
+      state.queue[qe++]=start;
+      state.visited[start]=1;
+
+      let area=0;
+      let sumX=0,sumY=0;
+
+      let minX=x,maxX=x;
+      let minY=y,maxY=y;
+
+      while(qs<qe){
+
+        const index=
+          state.queue[qs++];
+
+        const cy=
+          Math.floor(index/AW);
+
+        const cx=
+          index-cy*AW;
+
+        area++;
+
+        sumX+=cx;
+        sumY+=cy;
+
+        minX=Math.min(minX,cx);
+        maxX=Math.max(maxX,cx);
+
+        minY=Math.min(minY,cy);
+        maxY=Math.max(maxY,cy);
+
+        for(let yy=-1;yy<=1;yy++){
+
+          for(let xx=-1;xx<=1;xx++){
+
+            if(xx===0 && yy===0){
+              continue;
+            }
+
+            const nx=cx+xx;
+            const ny=cy+yy;
+
+            if(
+              nx<1 ||
+              nx>=AW-1 ||
+              ny<1 ||
+              ny>=AH-1
+            ){
+              continue;
+            }
+
+            const n=ny*AW+nx;
+
+            if(
+              state.cleanMask[n] &&
+              !state.visited[n]
+            ){
+
+              state.visited[n]=1;
+              state.queue[qe++]=n;
+            }
+          }
+        }
+      }
+
+      const w=maxX-minX+1;
+      const h=maxY-minY+1;
+
+      /*
+        Bal = klein object.
+        Motion blur mag hem wel langwerpig maken.
+      */
+
+      if(
+        area<2 ||
+        area>220 ||
+        w>45 ||
+        h>45
+      ){
+        continue;
+      }
+
+      const aspect=w/h;
+
+      if(
+        aspect<.12 ||
+        aspect>8
+      ){
+        continue;
+      }
+
+      components.push({
+        x:sumX/area,
+        y:sumY/area,
+        area,
+        w,
+        h
+      });
+    }
+  }
+
+  return components;
+}
+
+
+/* ======================================================
+   SMALL MOTION TRACKS
+====================================================== */
+
+function updateBlobTracks(components,now){
+
+  const used=
+    new Set();
+
+  /*
+    Bestaande tracks eerst koppelen
+    aan nieuwe bewegingscomponenten.
+  */
+
+  for(const track of state.blobTracks){
+
+    const dt=
+      Math.max(
+        .015,
+        (now-track.t)/1000
+      );
+
+    const predicted={
+      x:track.x+track.vx*dt,
+      y:track.y+track.vy*dt
+    };
+
+    let bestIndex=-1;
+    let bestScore=Infinity;
+
+    for(let i=0;i<components.length;i++){
+
+      if(used.has(i)){
+        continue;
+      }
+
+      const c=components[i];
+
+      const d=
+        distance(
+          c,
+          predicted
+        );
+
+      if(d>38){
+        continue;
+      }
+
+      const sizePenalty=
+        Math.abs(
+          Math.log(
+            Math.max(1,c.area)/
+            Math.max(1,track.area)
+          )
+        )*
+        4;
+
+      const score=
+        d+
+        sizePenalty;
+
+      if(score<bestScore){
+
+        bestScore=score;
+        bestIndex=i;
+      }
+    }
+
+    if(bestIndex>=0){
+
+      const c=
+        components[bestIndex];
+
+      used.add(bestIndex);
+
+      const newVX=
+        (c.x-track.x)/dt;
+
+      const newVY=
+        (c.y-track.y)/dt;
+
+      track.vx=
+        track.vx*.55+
+        newVX*.45;
+
+      track.vy=
+        track.vy*.55+
+        newVY*.45;
+
+      track.x=c.x;
+      track.y=c.y;
+
+      track.area=c.area;
+      track.w=c.w;
+      track.h=c.h;
+
+      track.t=now;
+      track.age++;
+      track.missed=0;
+
+    }else{
+
+      track.missed++;
+    }
+  }
+
+
+  /*
+    Nieuwe kleine bewegingen worden nieuwe tracks.
+  */
+
+  for(let i=0;i<components.length;i++){
+
+    if(used.has(i)){
+      continue;
+    }
+
+    const c=components[i];
+
+    state.blobTracks.push({
+
+      id:state.nextBlobId++,
+
+      x:c.x,
+      y:c.y,
+
+      vx:0,
+      vy:0,
+
+      area:c.area,
+      w:c.w,
+      h:c.h,
+
+      t:now,
+
+      age:1,
+      missed:0
+    });
+  }
+
+
+  state.blobTracks=
+    state.blobTracks.filter(
+      track=>
+        track.missed<=3 &&
+        now-track.t<260
+    );
+}
+
+
+/* ======================================================
+   BALL / SHOT DETECTION
+====================================================== */
+
+function hoopAnalysis(){
+
+  if(!state.hoop){
+    return null;
+  }
+
+  return{
+    x:state.hoop.x*AW,
+    y:state.hoop.y*AH,
+    w:state.hoop.w*AW,
+    h:state.hoop.h*AH
+  };
+}
+
+function directionCos(
+  vx,vy,
+  tx,ty
+){
+
+  const a=Math.hypot(vx,vy);
+  const b=Math.hypot(tx,ty);
+
+  if(a<1 || b<1){
+    return 0;
+  }
+
+  return(
+    vx*tx+
+    vy*ty
+  )/(a*b);
+}
+
+function findShotSeed(now){
+
+  if(
+    state.shot ||
+    now<state.cooldownUntil ||
+    state.backgroundFrames<12
+  ){
+    return;
+  }
+
+  const shooter=
+    getShooter();
+
+  const hoop=
+    hoopAnalysis();
+
+  if(!shooter || !hoop){
+    return;
+  }
+
+  const hoopCenter={
+    x:hoop.x+hoop.w/2,
+    y:hoop.y+hoop.h/2
+  };
+
+  let best=null;
+  let bestScore=-Infinity;
+
+  for(const track of state.blobTracks){
+
+    if(
+      track.age<2 ||
+      track.missed>0
+    ){
+      continue;
+    }
+
+    const speed=
+      Math.hypot(
+        track.vx,
+        track.vy
+      );
+
+    /*
+      Bal moet snel bewegen.
+    */
+
+    if(speed<52){
+      continue;
+    }
+
+    /*
+      Opwaartse beweging.
+    */
+
+    if(track.vy>-17){
+      continue;
+    }
 
 
     /*
-      Lage threshold is bewust gekozen.
-
-      Een snel bewegende basketbal
-      is klein en onscherp.
+      Moet uit de buurt van het
+      bovenlichaam van de schutter komen.
     */
 
-    const detections =
-      await detector(
-        rawImage,
+    const nearShooter=
+      track.x>
+        shooter.x-
+        shooter.w*.65
+      &&
+      track.x<
+        shooter.x+
+        shooter.w*1.65
+      &&
+      track.y>
+        shooter.y-
+        shooter.h*.35
+      &&
+      track.y<
+        shooter.y+
+        shooter.h*.72;
+
+    if(!nearShooter){
+      continue;
+    }
+
+
+    /*
+      Beweging moet globaal richting ring gaan.
+    */
+
+    const towards=
+      directionCos(
+
+        track.vx,
+        track.vy,
+
+        hoopCenter.x-track.x,
+        hoopCenter.y-track.y
+
+      );
+
+    if(towards<.18){
+      continue;
+    }
+
+
+    /*
+      Grote bewegingsdelen zijn
+      vrijwel zeker armen/lichaam.
+    */
+
+    if(
+      track.area>150 ||
+      track.w>32 ||
+      track.h>32
+    ){
+      continue;
+    }
+
+
+    const score=
+      speed*.012+
+      towards*4-
+      track.area*.004;
+
+    if(score>bestScore){
+
+      bestScore=score;
+      best=track;
+    }
+  }
+
+  if(!best){
+    return;
+  }
+
+
+  state.shot={
+
+    phase:"candidate",
+
+    sourceId:best.id,
+
+    started:now,
+
+    x:best.x,
+    y:best.y,
+
+    vx:best.vx,
+    vy:best.vy,
+
+    startX:best.x,
+    startY:best.y,
+
+    startDistance:
+      distance(
+        best,
+        hoopCenter
+      ),
+
+    minY:best.y,
+
+    lost:0,
+
+    wasAbove:false,
+
+    releaseShooter:{
+      ...shooter
+    },
+
+    history:[
+      {
+        x:best.x,
+        y:best.y,
+        t:now,
+        real:true
+      }
+    ]
+  };
+
+
+  $("ballState").textContent=
+    "kandidaat";
+
+  $("ballState").className=
+    "warn";
+
+  $("shotState").textContent=
+    "CONTROLEREN";
+}
+
+function findBallObservation(
+  shot,
+  now
+){
+
+  const dt=
+    Math.max(
+      .015,
+      (
+        now-
+        shot.history[
+          shot.history.length-1
+        ].t
+      )/1000
+    );
+
+  const predicted={
+    x:shot.x+shot.vx*dt,
+    y:shot.y+shot.vy*dt
+  };
+
+
+  /*
+    Eerst dezelfde motion-track.
+  */
+
+  let candidate=
+    state.blobTracks.find(
+      track=>
+        track.id===shot.sourceId &&
+        track.missed===0
+    );
+
+
+  /*
+    Indien verloren:
+    zoek een andere kleine track
+    vlakbij voorspelde positie.
+  */
+
+  if(
+    !candidate ||
+    distance(
+      candidate,
+      predicted
+    )>40
+  ){
+
+    candidate=null;
+
+    let bestD=Infinity;
+
+    for(const track of state.blobTracks){
+
+      if(track.missed>0){
+        continue;
+      }
+
+      if(
+        track.area>180 ||
+        track.w>38 ||
+        track.h>38
+      ){
+        continue;
+      }
+
+      const d=
+        distance(
+          track,
+          predicted
+        );
+
+      const gate=
+        clamp(
+          22+
+          Math.hypot(
+            shot.vx,
+            shot.vy
+          )*
+          dt*
+          .35,
+          24,
+          52
+        );
+
+      if(
+        d<gate &&
+        d<bestD
+      ){
+
+        bestD=d;
+        candidate=track;
+      }
+    }
+  }
+
+  return candidate;
+}
+
+function updateShot(now){
+
+  if(!state.shot){
+    return;
+  }
+
+  const shot=state.shot;
+  const hoop=hoopAnalysis();
+
+  if(!hoop){
+    return;
+  }
+
+  const previous=
+    shot.history[
+      shot.history.length-1
+    ];
+
+  const dt=
+    Math.max(
+      .015,
+      (now-previous.t)/1000
+    );
+
+  const observation=
+    findBallObservation(
+      shot,
+      now
+    );
+
+  let real=false;
+
+  if(observation){
+
+    const newVX=
+      (observation.x-shot.x)/dt;
+
+    const newVY=
+      (observation.y-shot.y)/dt;
+
+    shot.vx=
+      shot.vx*.55+
+      newVX*.45;
+
+    shot.vy=
+      shot.vy*.55+
+      newVY*.45;
+
+    shot.x=observation.x;
+    shot.y=observation.y;
+
+    shot.sourceId=
+      observation.id;
+
+    shot.lost=0;
+
+    real=true;
+
+  }else{
+
+    /*
+      Kort voorspellen wanneer de bal
+      één of enkele frames verdwijnt.
+    */
+
+    shot.x+=shot.vx*dt;
+    shot.y+=shot.vy*dt;
+
+    shot.lost++;
+  }
+
+  shot.minY=
+    Math.min(
+      shot.minY,
+      shot.y
+    );
+
+  shot.history.push({
+    x:shot.x,
+    y:shot.y,
+    t:now,
+    real
+  });
+
+  if(shot.history.length>40){
+    shot.history.shift();
+  }
+
+
+  const center={
+    x:hoop.x+hoop.w/2,
+    y:hoop.y+hoop.h/2
+  };
+
+  const elapsed=
+    now-shot.started;
+
+
+  /*
+    Eerst bewijzen dat dit echt een
+    wegvliegende bal is en geen arm/hand.
+  */
+
+  if(shot.phase==="candidate"){
+
+    const travel=
+      distance(
         {
-          threshold:0.10
+          x:shot.startX,
+          y:shot.startY
+        },
+        shot
+      );
+
+    const rise=
+      shot.startY-
+      shot.minY;
+
+    const progress=
+      shot.startDistance-
+      distance(
+        shot,
+        center
+      );
+
+    if(
+      elapsed>120 &&
+      travel>8 &&
+      rise>4 &&
+      progress>3
+    ){
+
+      shot.phase="flight";
+
+      $("ballState").textContent=
+        "🏀 gevolgd";
+
+      $("ballState").className=
+        "ok";
+
+      $("shotState").textContent=
+        "SCHOT";
+    }
+
+    if(
+      elapsed>650 ||
+      shot.lost>5
+    ){
+
+      state.shot=null;
+
+      $("ballState").textContent=
+        "zoeken";
+
+      $("ballState").className=
+        "no";
+
+      $("shotState").textContent=
+        "WACHT";
+    }
+
+    return;
+  }
+
+
+  if(shot.phase!=="flight"){
+    return;
+  }
+
+
+  const plane=
+    hoop.y+
+    hoop.h/2;
+
+
+  if(
+    shot.y<
+    plane-
+    Math.max(
+      2,
+      hoop.h*.18
+    )
+  ){
+
+    shot.wasAbove=true;
+  }
+
+
+  /*
+    RAAK:
+    bal kruist het ringvlak
+    van boven naar beneden.
+  */
+
+  if(
+    shot.wasAbove &&
+    previous.y<=plane &&
+    shot.y>plane
+  ){
+
+    const dy=
+      shot.y-
+      previous.y;
+
+    if(dy>0){
+
+      const fraction=
+        (
+          plane-
+          previous.y
+        )/
+        dy;
+
+      const crossingX=
+        previous.x+
+        (
+          shot.x-
+          previous.x
+        )*
+        fraction;
+
+      const tolerance=
+        Math.max(
+          2,
+          hoop.w*.14
+        );
+
+      if(
+        crossingX>=
+          hoop.x-
+          tolerance
+        &&
+        crossingX<=
+          hoop.x+
+          hoop.w+
+          tolerance
+      ){
+
+        finishShot(
+          "make",
+          shot.releaseShooter
+        );
+
+        return;
+      }
+    }
+  }
+
+
+  /*
+    MIS:
+    bal was boven ring en komt
+    daarna duidelijk onder ringhoogte
+    zonder door de ring te gaan.
+  */
+
+  const outside=
+
+    shot.x<
+      hoop.x-
+      hoop.w*.35
+
+    ||
+
+    shot.x>
+      hoop.x+
+      hoop.w*1.35;
+
+
+  if(
+    shot.wasAbove &&
+    shot.vy>0 &&
+    shot.y>
+      plane+
+      Math.max(
+        7,
+        hoop.h*1.7
+      )
+    &&
+    outside
+  ){
+
+    finishShot(
+      "miss",
+      shot.releaseShooter
+    );
+
+    return;
+  }
+
+
+  if(
+    shot.wasAbove &&
+    shot.vy>0 &&
+    shot.y>
+      plane+
+      Math.max(
+        12,
+        hoop.h*3
+      )
+  ){
+
+    finishShot(
+      "miss",
+      shot.releaseShooter
+    );
+
+    return;
+  }
+
+
+  /*
+    Als de bal bij de ring verdwijnt
+    krijgt de tracker kort tijd om hem
+    opnieuw te vinden.
+  */
+
+  if(
+    shot.lost>12 &&
+    elapsed>1000
+  ){
+
+    finishShot(
+      "miss",
+      shot.releaseShooter
+    );
+
+    return;
+  }
+
+
+  if(elapsed>3500){
+
+    finishShot(
+      "miss",
+      shot.releaseShooter
+    );
+  }
+}
+
+
+/* ======================================================
+   RESULT
+====================================================== */
+
+function shotLocation(shooter){
+
+  const hoop=hoopAnalysis();
+
+  if(!hoop || !shooter){
+
+    return{x:.5,y:.8};
+  }
+
+  const hoopX=
+    hoop.x+
+    hoop.w/2;
+
+  return{
+    x:clamp(
+      .5+
+      (
+        shooter.x+
+        shooter.w/2-
+        hoopX
+      )/
+      (AW*.85),
+      .04,
+      .96
+    ),
+
+    y:clamp(
+      (
+        shooter.y+
+        shooter.h-
+        hoop.y
+      )/
+      Math.max(
+        20,
+        AH-hoop.y
+      ),
+      0,
+      1
+    )
+  };
+}
+
+function finishShot(result,shooter){
+
+  const location=
+    shotLocation(shooter);
+
+  state.shots.push({
+    result,
+    x:location.x,
+    y:location.y,
+    time:new Date().toISOString()
+  });
+
+  state.shot=null;
+
+  state.cooldownUntil=
+    nowMedia()+900;
+
+  $("ballState").textContent=
+    "zoeken";
+
+  $("ballState").className=
+    "no";
+
+  $("shotState").textContent=
+    result==="make"
+    ? "RAAK"
+    : "MIS";
+
+  updateStats();
+
+  showFeedback(result);
+
+  setTimeout(
+    ()=>{
+
+      if(!state.shot){
+
+        $("shotState").textContent=
+          "WACHT";
+      }
+
+    },
+    900
+  );
+}
+
+function manualResult(result){
+
+  finishShot(
+    result,
+    getShooter()
+  );
+}
+
+function showFeedback(result){
+
+  const box=$("feedback");
+
+  const attempts=
+    state.shots.length;
+
+  const makes=
+    state.shots.filter(
+      s=>s.result==="make"
+    ).length;
+
+  const pct=
+    attempts
+    ? Math.round(
+        makes/attempts*100
+      )
+    : 0;
+
+  box.className=
+    "feedback "+
+    (
+      result==="make"
+      ? "make"
+      : "miss"
+    );
+
+  $("feedbackBig").textContent=
+    result==="make"
+    ? "✅ RAAK"
+    : "❌ MIS";
+
+  $("feedbackSmall").textContent=
+    `${makes} / ${attempts} · ${pct}%`;
+
+  void box.offsetWidth;
+
+  box.classList.add("show");
+
+  clearTimeout(
+    state.feedbackTimer
+  );
+
+  state.feedbackTimer=
+    setTimeout(
+      ()=>{
+        box.classList.remove("show");
+      },
+      1300
+    );
+}
+
+
+/* ======================================================
+   LIVE START / STOP
+====================================================== */
+
+function startLive(){
+
+  if(!state.hoop){
+    return;
+  }
+
+  state.live=true;
+
+  video.playbackRate=1;
+
+  video.play().catch(()=>{});
+
+  initialiseBackground();
+
+  state.shot=null;
+  state.cooldownUntil=0;
+
+  $("instruction").textContent=
+    "LIVE: de app zoekt nu automatisch naar een kleine snelle beweging die vanuit de schutter richting de ring gaat.";
+
+  setStatus(
+    "Bewegingsmodel kalibreren… houd telefoon stil"
+  );
+
+  updateUI();
+}
+
+function stopLive(){
+
+  state.live=false;
+
+  $("motionState").textContent=
+    "uit";
+
+  $("motionState").className=
+    "no";
+
+  $("ballState").textContent=
+    "zoeken";
+
+  $("shotState").textContent=
+    "WACHT";
+
+  if(state.source==="file"){
+    video.pause();
+  }
+
+  setStatus(
+    "Tracking gestopt"
+  );
+
+  updateUI();
+}
+
+
+/* ======================================================
+   DRAW OVERLAY
+====================================================== */
+
+function drawNormalizedBox(
+  box,
+  color,
+  width
+){
+
+  octx.strokeStyle=color;
+  octx.lineWidth=width;
+
+  octx.strokeRect(
+    box.x*overlay.width,
+    box.y*overlay.height,
+    box.w*overlay.width,
+    box.h*overlay.height
+  );
+}
+
+function drawOverlay(){
+
+  octx.clearRect(
+    0,0,
+    overlay.width,
+    overlay.height
+  );
+
+  const sx=
+    overlay.width/AW;
+
+  const sy=
+    overlay.height/AH;
+
+
+  /*
+    Ring.
+  */
+
+  if(state.hoop){
+
+    drawNormalizedBox(
+      state.hoop,
+      "#ff7a00",
+      5
+    );
+  }
+
+
+  /*
+    Automatische ringkandidaat.
+  */
+
+  const candidate=
+    currentHoopCandidate();
+
+  if(
+    candidate &&
+    !state.hoop
+  ){
+
+    drawNormalizedBox(
+      candidate,
+      "#fde047",
+      6
+    );
+  }
+
+
+  /*
+    Eerste handmatige ringtik.
+  */
+
+  if(
+    state.mode==="manualHoop" &&
+    state.manualPoints.length===1
+  ){
+
+    const p=state.manualPoints[0];
+
+    octx.beginPath();
+
+    octx.arc(
+      p.x,
+      p.y,
+      12,
+      0,
+      Math.PI*2
+    );
+
+    octx.fillStyle="#38bdf8";
+
+    octx.fill();
+  }
+
+
+  /*
+    Schutter/personen.
+  */
+
+  for(const person of state.persons){
+
+    octx.strokeStyle=
+      "rgba(56,189,248,.45)";
+
+    octx.lineWidth=2;
+
+    octx.strokeRect(
+      person.x*sx,
+      person.y*sy,
+      person.w*sx,
+      person.h*sy
+    );
+  }
+
+
+  /*
+    Alleen de BALTRACK tonen
+    zodra we een overtuigende kandidaat hebben.
+  */
+
+  if(state.shot){
+
+    const history=
+      state.shot.history;
+
+    if(history.length>1){
+
+      octx.beginPath();
+
+      history.forEach(
+        (p,index)=>{
+
+          const x=p.x*sx;
+          const y=p.y*sy;
+
+          if(index===0){
+            octx.moveTo(x,y);
+          }else{
+            octx.lineTo(x,y);
+          }
         }
       );
 
+      octx.strokeStyle="#22c55e";
+      octx.lineWidth=4;
 
-    const elapsed =
-      Math.round(
-        performance.now() -
-        start
-      );
-
-
-    speedStatus.textContent =
-      elapsed + " ms";
-
-
-    clearOverlay();
-
-
-    const basketballs =
-      detections.filter(
-        detection =>
-          String(
-            detection.label
-          ).toLowerCase()
-          ===
-          "basketball"
-      );
-
-
-    const otherBalls =
-      detections.filter(
-        detection =>
-          String(
-            detection.label
-          ).toLowerCase()
-          ===
-          "other balls"
-      );
-
-
-    /*
-      Alleen relevante objecten tekenen.
-    */
-
-    for(
-      const detection of detections
-    ){
-
-      drawDetection(
-        detection,
-        width,
-        height
-      );
-
+      octx.stroke();
     }
 
 
-    if(
-      basketballs.length
-    ){
+    octx.beginPath();
 
-      const best =
-        basketballs.sort(
-          (a,b) =>
-            b.score-a.score
-        )[0];
-
-
-      ballStatus.textContent =
-        "✓ GEVONDEN";
-
-
-      ballStatus.style.color =
-        "#86efac";
-
-
-      confidenceStatus.textContent =
-        Math.round(
-          best.score*100
-        ) + "%";
-
-
-      setMessage(
-        "<strong style='color:#86efac'>🏀 Basketbal gevonden.</strong> " +
-        "Kijk of het groene vak ook tijdens de vlucht op de echte bal blijft."
-      );
-
-    }
-
-    else if(
-      otherBalls.length
-    ){
-
-      const best =
-        otherBalls.sort(
-          (a,b) =>
-            b.score-a.score
-        )[0];
-
-
-      ballStatus.textContent =
-        "bal gezien, type onzeker";
-
-
-      ballStatus.style.color =
-        "#fde047";
-
-
-      confidenceStatus.textContent =
-        Math.round(
-          best.score*100
-        ) + "%";
-
-
-      setMessage(
-        "De AI ziet wel een bal, maar noemt hem <strong>Other Balls</strong>. " +
-        "Dat is belangrijke testinformatie."
-      );
-
-    }
-
-    else{
-
-      ballStatus.textContent =
-        "niet gevonden";
-
-
-      ballStatus.style.color =
-        "#fca5a5";
-
-
-      confidenceStatus.textContent =
-        "—";
-
-    }
-
-  }
-
-  catch(error){
-
-    console.error(error);
-
-
-    setMessage(
-      "<strong>Detectiefout:</strong> " +
-      error.message
+    octx.arc(
+      state.shot.x*sx,
+      state.shot.y*sy,
+      11,
+      0,
+      Math.PI*2
     );
 
+    octx.strokeStyle=
+      state.shot.phase==="flight"
+      ? "#22c55e"
+      : "#fde047";
+
+    octx.lineWidth=5;
+
+    octx.stroke();
   }
-
-  finally{
-
-    inferenceBusy = false;
-
-  }
-
-
-  /*
-    Niet kunstmatig vertragen.
-
-    Nieuwe analyse start zodra de vorige klaar is.
-    Video/camera zelf blijft realtime lopen.
-  */
-
-  if(
-    detectionRunning
-  ){
-
-    setTimeout(
-      runDetection,
-      10
-    );
-
-  }
-
 }
 
 
-/* =====================================================
-   START / STOP
-===================================================== */
+/* ======================================================
+   MAIN LOOP
+====================================================== */
 
-startButton.addEventListener(
-  "click",
-  async () => {
+function loop(){
 
-    if(
-      !detector
-    ){
-      return;
-    }
+  if(!state.loopActive){
+    return;
+  }
 
+  const wall=
+    performance.now();
 
-    detectionRunning = true;
-
-
-    startButton.disabled =
-      true;
+  const now=
+    nowMedia();
 
 
-    stopButton.disabled =
-      false;
+  if(video.readyState>=2){
 
+    detectPeople(now);
 
     /*
-      Video blijft 1×.
+      Motionanalyse ongeveer 30fps.
     */
 
-    video.playbackRate =
-      1;
+    if(
+      state.live &&
+      !video.paused &&
+      wall-state.lastMotionWall>=30
+    ){
+
+      state.lastMotionWall=wall;
+
+      const components=
+        motionComponents();
+
+      if(state.backgroundFrames>=12){
+
+        updateBlobTracks(
+          components,
+          now
+        );
+
+        if(!state.shot){
+
+          findShotSeed(now);
+
+        }else{
+
+          updateShot(now);
+        }
+      }
+    }
+
+    drawOverlay();
+  }
 
 
-    try{
-      await video.play();
-    }catch{}
+  if(state.source==="file"){
+
+    updateSeek();
+  }
 
 
-    setMessage(
-      "<strong>AI detectie actief.</strong> " +
-      "Groen moet de basketbal volgen."
+  state.fpsFrames++;
+
+  if(
+    wall-
+    state.fpsLast>=1000
+  ){
+
+    $("fps").textContent=
+      state.fpsFrames+
+      " fps";
+
+    state.fpsFrames=0;
+    state.fpsLast=wall;
+  }
+
+
+  requestAnimationFrame(loop);
+}
+
+
+/* ======================================================
+   VIDEO SEEK
+====================================================== */
+
+function formatTime(seconds){
+
+  if(!Number.isFinite(seconds)){
+    return"0:00";
+  }
+
+  const m=
+    Math.floor(
+      seconds/60
     );
 
+  const s=
+    Math.floor(
+      seconds%60
+    );
 
-    runDetection();
+  return(
+    m+
+    ":"+
+    String(s).padStart(2,"0")
+  );
+}
 
+function updateSeek(){
+
+  if(
+    !Number.isFinite(
+      video.duration
+    )
+  ){
+    return;
+  }
+
+  $("seek").value=
+    Math.round(
+      video.currentTime/
+      video.duration*
+      1000
+    );
+
+  $("timeText").textContent=
+    formatTime(
+      video.currentTime
+    );
+}
+
+
+/* ======================================================
+   STATS / CHART
+====================================================== */
+
+function updateStats(){
+
+  const attempts=
+    state.shots.length;
+
+  const makes=
+    state.shots.filter(
+      s=>s.result==="make"
+    ).length;
+
+  let streak=0;
+
+  for(
+    let i=state.shots.length-1;
+    i>=0;
+    i--
+  ){
+
+    if(
+      state.shots[i].result==="make"
+    ){
+
+      streak++;
+
+    }else{
+
+      break;
+    }
+  }
+
+  $("attempts").textContent=
+    attempts;
+
+  $("makes").textContent=
+    makes;
+
+  $("percentage").textContent=
+    attempts
+    ? Math.round(
+        makes/attempts*100
+      )+"%"
+    : "0%";
+
+  $("streak").textContent=
+    streak;
+
+
+  $("log").innerHTML="";
+
+  state.shots
+    .slice(-15)
+    .reverse()
+    .forEach(
+      (shot,index)=>{
+
+        const el=
+          document.createElement("div");
+
+        el.className=
+          "chip "+
+          (
+            shot.result==="make"
+            ? "make"
+            : "miss"
+          );
+
+        el.textContent=
+          (
+            shot.result==="make"
+            ? "✓ raak"
+            : "✕ mis"
+          )
+          +
+          " · #"
+          +
+          (
+            state.shots.length-
+            index
+          );
+
+        $("log").appendChild(el);
+      }
+    );
+
+  drawChart();
+}
+
+function drawChart(){
+
+  const W=chart.width;
+  const H=chart.height;
+
+  cctx.clearRect(0,0,W,H);
+
+  cctx.fillStyle="#bd7941";
+  cctx.fillRect(0,0,W,H);
+
+  cctx.strokeStyle=
+    "rgba(255,255,255,.82)";
+
+  cctx.lineWidth=4;
+
+  cctx.strokeRect(
+    12,12,
+    W-24,H-24
+  );
+
+  cctx.beginPath();
+
+  cctx.moveTo(
+    W/2-42,38
+  );
+
+  cctx.lineTo(
+    W/2+42,38
+  );
+
+  cctx.stroke();
+
+  cctx.beginPath();
+
+  cctx.arc(
+    W/2,
+    60,
+    11,
+    0,
+    Math.PI*2
+  );
+
+  cctx.stroke();
+
+  cctx.strokeRect(
+    W/2-92,
+    12,
+    184,
+    180
+  );
+
+  cctx.beginPath();
+
+  cctx.arc(
+    W/2,
+    192,
+    62,
+    0,
+    Math.PI
+  );
+
+  cctx.stroke();
+
+  for(const shot of state.shots){
+
+    const x=
+      25+
+      shot.x*(W-50);
+
+    const y=
+      60+
+      shot.y*(H-85);
+
+    cctx.beginPath();
+
+    cctx.arc(
+      x,y,
+      10,
+      0,
+      Math.PI*2
+    );
+
+    cctx.fillStyle=
+      shot.result==="make"
+      ? "#22c55e"
+      : "#ef4444";
+
+    cctx.fill();
+
+    cctx.strokeStyle="#fff";
+    cctx.lineWidth=2;
+    cctx.stroke();
+  }
+}
+
+
+/* ======================================================
+   EVENTS
+====================================================== */
+
+$("frontBtn").onclick=
+  ()=>startCamera("user");
+
+$("rearBtn").onclick=
+  ()=>startCamera("environment");
+
+$("videoBtn").onclick=
+  ()=>$("fileInput").click();
+
+$("fileInput").onchange=
+  event=>{
+
+    const file=
+      event.target.files?.[0];
+
+    if(file){
+      loadVideo(file);
+    }
+  };
+
+$("autoHoopBtn").onclick=
+  autoFindHoop;
+
+$("nextHoopBtn").onclick=
+  nextHoop;
+
+$("confirmHoopBtn").onclick=
+  confirmHoop;
+
+$("manualHoopBtn").onclick=
+  startManualHoop;
+
+$("startBtn").onclick=
+  startLive;
+
+$("stopBtn").onclick=
+  stopLive;
+
+$("makeBtn").onclick=
+  ()=>manualResult("make");
+
+$("missBtn").onclick=
+  ()=>manualResult("miss");
+
+$("resetBtn").onclick=
+  ()=>{
+
+    state.shots=[];
+
+    state.shot=null;
+
+    updateStats();
+
+    $("shotState").textContent=
+      "WACHT";
+  };
+
+
+$("playBtn").onclick=
+  ()=>{
+
+    if(video.paused){
+
+      video.playbackRate=1;
+      video.play();
+
+      $("playBtn").textContent="⏸";
+
+    }else{
+
+      video.pause();
+
+      $("playBtn").textContent="▶";
+    }
+  };
+
+
+$("seek").oninput=
+  ()=>{
+
+    if(
+      state.source==="file" &&
+      Number.isFinite(video.duration)
+    ){
+
+      video.currentTime=
+        Number($("seek").value)/
+        1000*
+        video.duration;
+    }
+  };
+
+
+video.addEventListener(
+  "play",
+  ()=>{
+
+    if(state.source==="file"){
+      $("playBtn").textContent="⏸";
+    }
+  }
+);
+
+video.addEventListener(
+  "pause",
+  ()=>{
+
+    if(state.source==="file"){
+      $("playBtn").textContent="▶";
+    }
   }
 );
 
 
-stopButton.addEventListener(
-  "click",
-  () => {
+drawChart();
+updateStats();
+updateUI();
 
-    detectionRunning =
-      false;
-
-
-    startButton.disabled =
-      false;
-
-
-    stopButton.disabled =
-      true;
-
-
-    setMessage(
-      "Detectie gestopt."
-    );
-
-  }
-);
-
+})();
 </script>
 
 </body>
