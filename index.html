@@ -1,208 +1,7728 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
+
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,viewport-fit=cover"
+>
+
+<meta name="theme-color" content="#071018">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Shot Tracker">
-<meta name="theme-color" content="#0b0d10">
-<title>Shot Tracker</title>
+
+<title>Hoop – Basketball Shot Tracker</title>
+
 <style>
-:root{--bg:#0b0d10;--fg:#f2f4f7;--mut:#8b94a1;--card:rgba(15,18,22,.82);--acc:#ff7a1a;--ok:#2ecc71;--bad:#ff4d4f;--ring:#ffd23f}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:15px -apple-system,system-ui,sans-serif;overflow:hidden;touch-action:manipulation}
-body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-#wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-#stage{position:relative;width:320px;height:180px;background:#000}
-video,canvas#o{position:absolute;inset:0;width:100%;height:100%}
-#hud{position:absolute;top:calc(env(safe-area-inset-top) + 8px);left:8px;right:8px;display:flex;gap:8px;pointer-events:none;flex-wrap:wrap}
-.c{background:var(--card);border-radius:12px;padding:6px 12px;backdrop-filter:blur(8px);text-align:center;min-width:68px}
-.c b{display:block;font-size:24px;line-height:1.1}.c small{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
-#msg{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + 64px);text-align:center;pointer-events:none}
-#msg span{display:inline-block;background:var(--card);border-radius:10px;padding:6px 12px;font-size:13px;max-width:92%}
-#bar{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 8px);display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:0 8px}
-button{background:var(--card);color:var(--fg);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px 14px;font:600 14px inherit;backdrop-filter:blur(8px)}
-button.p{background:var(--acc);border-color:var(--acc);color:#111}button.on{outline:2px solid var(--ring)}
-#panel{position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:8px;width:min(330px,60vw);background:var(--card);border-radius:14px;padding:10px;backdrop-filter:blur(10px);display:none;max-height:calc(100% - 140px);overflow:auto}
-#panel canvas{width:100%;display:block;border-radius:8px;background:#161a20}
-#list{font-size:12px;color:var(--mut);margin-top:6px;line-height:1.5}
-.g{color:var(--ok)}.r{color:var(--bad)}
+
+:root{
+  --bg:#071018;
+  --panel:#111c27;
+  --panel2:#192835;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+
+  --orange:#ff7a00;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#38bdf8;
+  --yellow:#facc15;
+
+  --border:rgba(255,255,255,.10);
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+button,
+input{
+  font:inherit;
+}
+
+.app{
+  width:min(1200px,100%);
+  margin:auto;
+  padding:14px;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+h1{
+  margin:0;
+  font-size:clamp(24px,5vw,38px);
+}
+
+.sub{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.badge{
+  padding:7px 10px;
+
+  border-radius:999px;
+  border:1px solid rgba(34,197,94,.25);
+
+  color:#86efac;
+  background:rgba(34,197,94,.12);
+
+  font-size:11px;
+  font-weight:800;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.stat{
+  padding:12px;
+
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+
+.stat strong{
+  display:block;
+  font-size:clamp(25px,7vw,42px);
+  line-height:1;
+}
+
+.stat span{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.main{
+  display:grid;
+  grid-template-columns:minmax(0,2fr) minmax(280px,.85fr);
+  gap:12px;
+}
+
+.card{
+  overflow:hidden;
+
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+}
+
+.stage{
+  position:relative;
+  width:100%;
+  background:#000;
+}
+
+video{
+  display:block;
+  width:100%;
+  height:auto;
+
+  background:#000;
+}
+
+#overlay{
+  position:absolute;
+  inset:0;
+
+  width:100%;
+  height:100%;
+
+  pointer-events:none;
+}
+
+#overlay.calibrating{
+  pointer-events:auto;
+  touch-action:none;
+  cursor:crosshair;
+}
+
+.footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+
+  padding:10px 12px;
+
+  color:var(--muted);
+  font-size:12px;
+}
+
+.live{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.dot{
+  width:9px;
+  height:9px;
+
+  border-radius:50%;
+  background:#64748b;
+}
+
+.dot.on{
+  background:var(--green);
+  box-shadow:0 0 9px rgba(34,197,94,.7);
+}
+
+.controls{
+  padding:13px;
+}
+
+.controls h2,
+.chart-card h2{
+  margin:2px 0 10px;
+  font-size:15px;
+}
+
+.grid{
+  display:grid;
+  gap:8px;
+}
+
+button{
+  min-height:46px;
+  padding:10px 12px;
+
+  cursor:pointer;
+
+  color:#fff;
+  background:var(--panel2);
+
+  border:1px solid var(--border);
+  border-radius:12px;
+
+  font-weight:750;
+}
+
+button.primary{
+  color:#111;
+  background:var(--orange);
+  border-color:var(--orange);
+}
+
+button.green{
+  color:#86efac;
+  background:rgba(34,197,94,.12);
+  border-color:rgba(34,197,94,.30);
+}
+
+button.red{
+  color:#fca5a5;
+  background:rgba(239,68,68,.12);
+  border-color:rgba(239,68,68,.30);
+}
+
+button:disabled{
+  opacity:.42;
+  cursor:not-allowed;
+}
+
+.hint{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+
+.status{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:7px 10px;
+
+  margin-top:14px;
+  padding-top:12px;
+
+  border-top:1px solid var(--border);
+
+  font-size:12px;
+}
+
+.status span{
+  color:var(--muted);
+}
+
+.ok{
+  color:#86efac;
+}
+
+.warn{
+  color:#fde047;
+}
+
+.no{
+  color:#fca5a5;
+}
+
+.monitor{
+  margin-top:14px;
+  padding:10px;
+
+  background:#0b151f;
+  border-radius:12px;
+
+  font-size:12px;
+}
+
+.monitor div{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin:5px 0;
+}
+
+.manual{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.seek{
+  display:grid;
+  grid-template-columns:auto auto 1fr auto;
+  align-items:center;
+  gap:8px;
+
+  padding:10px 12px;
+
+  border-top:1px solid var(--border);
+}
+
+.seek input{
+  width:100%;
+}
+
+.chart-card{
+  margin-top:12px;
+  padding:12px;
+}
+
+#shotChart{
+  display:block;
+
+  width:100%;
+  max-width:720px;
+
+  margin:auto;
+
+  background:#bd7941;
+  border-radius:12px;
+}
+
+.log{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+
+  margin-top:10px;
+}
+
+.chip{
+  padding:5px 8px;
+  border-radius:999px;
+
+  font-size:11px;
+  font-weight:800;
+}
+
+.chip.make{
+  color:#86efac;
+  background:rgba(34,197,94,.15);
+}
+
+.chip.miss{
+  color:#fca5a5;
+  background:rgba(239,68,68,.14);
+}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+
+  margin-top:10px;
+}
+
+.actions button{
+  min-height:40px;
+  font-size:12px;
+}
+
+@media(max-width:800px){
+
+  .main{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+}
+
 </style>
-</head>
-<body>
-<div id="wrap"><div id="stage"><video id="v" playsinline muted autoplay></video><canvas id="o"></canvas></div></div>
-<div id="hud">
-  <div class="c"><b id="sm" class="g">0</b><small>Raak</small></div>
-  <div class="c"><b id="sx" class="r">0</b><small>Mis</small></div>
-  <div class="c"><b id="sp">–</b><small>FG%</small></div>
-  <div class="c"><b id="s3">0/0</b><small>3-punts</small></div>
-</div>
-<div id="panel"><canvas id="court" width="300" height="290"></canvas><div id="list"></div></div>
-<div id="msg"><span id="say">Tik op Start om de camera te openen.</span></div>
-<div id="bar">
-  <button class="p" id="start">Start</button>
-  <button id="setrim">Ring instellen</button>
-  <button id="map">Kaart</button>
-  <button id="snd" class="on">Geluid</button>
-  <button id="exp">Export</button>
-  <button id="flip">Laatste omdraaien</button>
-  <button id="undo">Ongedaan</button>
-  <button id="reset">Reset</button>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
-<script>
-const $=id=>document.getElementById(id);
-const v=$('v'),o=$('o'),ctx=o.getContext('2d'),cm=$('court'),cc=cm.getContext('2d');
-const say=t=>$('say').textContent=t;
-let wl,snd=true,model,running=false,stream=null,rim=null,mode=null,taps=[],vw=0,vh=0;
-let shots=[];try{shots=JSON.parse(localStorage.getItem('shots')||'[]')}catch(e){}
-const save=()=>{try{localStorage.setItem('shots',JSON.stringify(shots))}catch(e){}};
 
-/* ---------- layout ---------- */
-function fit(){if(!vw)return;const s=Math.min(innerWidth/vw,innerHeight/vh),st=$('stage');st.style.width=vw*s+'px';st.style.height=vh*s+'px'}
-addEventListener('resize',fit);
-
-/* ---------- camera + model ---------- */
-$('start').onclick=async()=>{
-  try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}
-  if(running){running=false;wl&&wl.release().catch(()=>{});stream&&stream.getTracks().forEach(t=>t.stop());$('start').textContent='Start';say('Gestopt.');return}
-  try{
-    say('Camera starten…');
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}},audio:false});
-    v.srcObject=stream;await v.play();
-    vw=v.videoWidth;vh=v.videoHeight;o.width=vw;o.height=vh;fit();
-    if(!model){say('Model laden (eenmalig, even geduld)…');model=await cocoSsd.load({base:'lite_mobilenet_v2'})}
-    running=true;$('start').textContent='Stop';
-    try{wl=await navigator.wakeLock.request('screen')}catch(e){}
-    loadRim();
-    say(rim?'Ring van vorige keer geladen. Controleer of hij klopt, anders opnieuw instellen.':'Tik op "Ring instellen" en markeer de linker- en rechterrand van de ring.');
-  }catch(e){say('Fout: '+e.message)}
-};
-
-/* ---------- ring kalibratie ---------- */
-$('setrim').onclick=()=>{mode='rim';taps=[];$('setrim').classList.add('on');say('Tik op de LINKERrand van de ring.')};
-o.addEventListener('pointerdown',e=>{
-  if(mode!=='rim')return;
-  const r=o.getBoundingClientRect();taps.push({x:(e.clientX-r.left)/r.width*vw,y:(e.clientY-r.top)/r.height*vh});
-  if(taps.length===1)say('Tik nu op de RECHTERrand van de ring.');
-  else{const[a,b]=taps;rim={x:(a.x+b.x)/2,y:(a.y+b.y)/2,w:Math.max(8,Math.abs(b.x-a.x))};mode=null;$('setrim').classList.remove('on');saveRim();say('Ring ingesteld. Schiet maar!')}
-});
-
-function saveRim(){try{localStorage.setItem('rim',JSON.stringify({x:rim.x/vw,y:rim.y/vh,w:rim.w/vw}))}catch(e){}}
-function loadRim(){try{const q=JSON.parse(localStorage.getItem('rim')||'null');if(q)rim={x:q.x*vw,y:q.y*vh,w:q.w*vw}}catch(e){}}
-
-/* ---------- detectielus ---------- */
-const bh=[],ph=[];let st='idle',prev=null,lastSeen=0,aboveT=0,cool=0,shooter=null;
-async function loop(){
-  if(running&&v.readyState>=2){
-    const t=performance.now();
-    let d=[];try{d=await model.detect(v,15,0.2)}catch(e){}
-    const ball=d.filter(x=>x.class==='sports ball'&&(!rim||(x.bbox[2]>rim.w*.28&&x.bbox[2]<rim.w*1.1))).sort((a,b)=>b.score-a.score)[0];
-    const ppl=d.filter(x=>x.class==='person').map(x=>x.bbox);
-    process(t,ball,ppl);draw(ball,ppl);
-  }
-  requestAnimationFrame(loop);
-}
-loop();
-
-function process(t,b,ppl){
-  ph.push({t,p:ppl});while(ph.length&&t-ph[0].t>2500)ph.shift();
-  while(bh.length&&t-bh[0].t>2500)bh.shift();
-  if(!rim||t<cool)return;
-  const R=rim.w;
-  if(b){
-    const c={x:b.bbox[0]+b.bbox[2]/2,y:b.bbox[1]+b.bbox[3]/2,t};
-    if(prev&&t-lastSeen>700)prev=null;
-    bh.push(c);
-    if(st==='idle'&&c.y<rim.y-R*1.2){st='above';aboveT=t;shooter=pick(t,c)}
-    if(st==='above'&&prev&&prev.y<rim.y&&c.y>=rim.y){
-      const k=(rim.y-prev.y)/(c.y-prev.y),x=prev.x+(c.x-prev.x)*k;
-      if(Math.abs(x-rim.x)<R*.5)finish(true);else if(Math.abs(x-rim.x)<R*3)finish(false);
-    }
-    prev=c;lastSeen=t;
-  }else if(st==='above'&&prev&&t-lastSeen>500&&Math.abs(prev.x-rim.x)<R*.6&&prev.y>rim.y-R*1.5){
-    finish(true); // bal verdwijnt in het net
-  }
-  if(st==='above'&&t-aboveT>3500){st='idle';prev=null}
-}
-
-/* schutter = persoon dichtst bij de bal op het moment van het loslaten */
-function pick(t,c){
-  const rel=bh.find(e=>t-e.t<1300)||c;
-  const f=ph.reduce((a,e)=>Math.abs(e.t-rel.t)<Math.abs(a.t-rel.t)?e:a,ph[0]||{t:0,p:[]});
-  let best=null,bd=1e9;
-  for(const b of f.p){const d=Math.abs(b[0]+b[2]/2-rel.x);if(d<bd){bd=d;best=b}}
-  return best;
-}
-
-/* positie op het veld t.o.v. de ring (meters), camera achter de schutter */
-function locate(bx){
-  const f=.73*Math.max(vw,vh),Dr=f*.45/rim.w,Dp=f*1.8/bx[3];
-  const lat=((bx[0]+bx[2]/2)-vw/2)*Dp/f-(rim.x-vw/2)*Dr/f;
-  return{x:lat,y:Math.max(0,Dr-Dp)};
-}
-
-function finish(made){
-  let L=shooter?locate(shooter):null;
-  const dist=L?Math.hypot(L.x,L.y):null;
-  shots.push({m:made,x:L?+L.x.toFixed(2):null,y:L?+L.y.toFixed(2):null,d:dist?+dist.toFixed(1):null,t3:dist!==null&&dist>=6.75});
-  save();render();beep(made);cool=performance.now()+1500;st='idle';prev=null;shooter=null;
-  say(made?'RAAK!':'Mis');
-}
-
-let ac;function beep(m){
-  try{if(navigator.vibrate)navigator.vibrate(m?60:[30,40,30]);
-  if(!snd)return;ac=ac||new(window.AudioContext||window.webkitAudioContext)();
-  const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=m?880:220;o.type='sine';g.gain.value=.15;
-  o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+(m?.18:.3));}catch(e){}
-}
-
-/* ---------- tekenen ---------- */
-function draw(ball,ppl){
-  ctx.clearRect(0,0,vw,vh);ctx.lineWidth=Math.max(2,vw/400);
-  ppl.forEach(b=>{ctx.strokeStyle='rgba(80,160,255,.6)';ctx.strokeRect(...b)});
-  if(rim){
-    ctx.strokeStyle='#ffd23f';ctx.beginPath();ctx.ellipse(rim.x,rim.y,rim.w/2,rim.w/6,0,0,7);ctx.stroke();
-    ctx.setLineDash([8,8]);ctx.strokeStyle='rgba(255,210,63,.35)';ctx.beginPath();ctx.moveTo(0,rim.y-rim.w*1.2);ctx.lineTo(vw,rim.y-rim.w*1.2);ctx.stroke();ctx.setLineDash([]);
-  }
-  taps.forEach(p=>{ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.arc(p.x,p.y,8,0,7);ctx.fill()});
-  ctx.strokeStyle='rgba(255,122,26,.6)';ctx.beginPath();bh.slice(-12).forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
-  if(ball){ctx.strokeStyle='#ff7a1a';ctx.lineWidth*=1.5;ctx.strokeRect(...ball.bbox)}
-}
-
-/* ---------- statistieken + veldkaart ---------- */
-function render(){
-  const m=shots.filter(s=>s.m).length,n=shots.length,t=shots.filter(s=>s.t3),t3m=t.filter(s=>s.m).length;
-  $('sm').textContent=m;$('sx').textContent=n-m;$('sp').textContent=n?Math.round(m/n*100)+'%':'–';$('s3').textContent=t3m+'/'+t.length;
-  court();
-  $('list').innerHTML=shots.slice(-8).reverse().map((s,i)=>`<div class="${s.m?'g':'r'}">#${n-i} ${s.m?'Raak':'Mis'}${s.d!=null?' · '+s.d+' m':''}${s.t3?' · 3-punts':''}</div>`).join('');
-}
-function court(){
-  const S=20,X=150,RY=250,w=cm.width,h=cm.height,Y=m=>RY-m*S;
-  cc.clearRect(0,0,w,h);cc.strokeStyle='#4a5461';cc.lineWidth=1.5;
-  cc.strokeRect(X-2.45*S,Y(5.8-1.575),4.9*S,5.8*S); // verfvak
-  cc.beginPath();cc.arc(X,Y(4.225),1.8*S,0,7);cc.stroke(); // vrijworpcirkel
-  const a=Math.asin(1.41/6.75);
-  cc.beginPath();cc.moveTo(X-6.6*S,Y(-1.575));cc.lineTo(X-6.6*S,Y(1.41));cc.arc(X,RY,6.75*S,Math.PI+a,2*Math.PI-a);cc.lineTo(X+6.6*S,Y(-1.575));cc.stroke(); // 3-puntslijn
-  cc.beginPath();cc.moveTo(0,Y(-1.575));cc.lineTo(w,Y(-1.575));cc.stroke();
-  cc.strokeStyle='#ffd23f';cc.beginPath();cc.arc(X,RY,.23*S,0,7);cc.stroke();
-  shots.forEach(s=>{if(s.x==null)return;const px=X+Math.max(-7.4,Math.min(7.4,s.x))*S,py=Y(Math.min(11,s.y));
-    cc.fillStyle=s.m?'#2ecc71':'#ff4d4f';cc.beginPath();cc.arc(px,py,5,0,7);cc.fill()});
-}
-$('map').onclick=()=>{const p=$('panel');p.style.display=p.style.display==='block'?'none':'block';render()};
-$('snd').onclick=e=>{snd=!snd;e.target.classList.toggle('on',snd)};
-$('exp').onclick=()=>{
-  const csv='nr,resultaat,afstand_m,x_m,y_m,driepunter\n'+shots.map((s,i)=>[i+1,s.m?'raak':'mis',s.d??'',s.x??'',s.y??'',s.t3?1:0].join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='schoten-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
-};
-$('undo').onclick=()=>{shots.pop();save();render()};
-$('flip').onclick=()=>{const s=shots[shots.length-1];if(s){s.m=!s.m;save();render()}};
-$('reset').onclick=()=>{if(confirm('Alle schoten wissen?')){shots=[];save();render()}};
-render();
+<script
+  src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js">
 </script>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js">
+</script>
+
+</head>
+
+
+<body>
+
+<div class="app">
+
+
+<header>
+
+  <div>
+
+    <h1>🏀 Hoop</h1>
+
+    <div class="sub">
+      Basketball shot tracker
+    </div>
+
+  </div>
+
+  <div class="badge">
+    ON-DEVICE AI
+  </div>
+
+</header>
+
+
+<section class="stats">
+
+  <div class="stat">
+    <strong id="attempts">0</strong>
+    <span>schoten</span>
+  </div>
+
+  <div class="stat">
+    <strong id="makes">0</strong>
+    <span>raak</span>
+  </div>
+
+  <div class="stat">
+    <strong id="percentage">0%</strong>
+    <span>percentage</span>
+  </div>
+
+  <div class="stat">
+    <strong id="streak">0</strong>
+    <span>streak</span>
+  </div>
+
+</section>
+
+
+<div class="main">
+
+
+<section class="card">
+
+  <div class="stage">
+
+    <video
+      id="video"
+      muted
+      playsinline>
+    </video>
+
+    <canvas id="overlay"></canvas>
+
+  </div>
+
+
+  <div class="footer">
+
+    <div class="live">
+
+      <div
+        id="liveDot"
+        class="dot">
+      </div>
+
+      <span id="statusText">
+        Kies camera of testvideo
+      </span>
+
+    </div>
+
+    <span id="fpsText"></span>
+
+  </div>
+
+
+  <div
+    id="videoControls"
+    class="seek"
+    hidden>
+
+    <button
+      id="backBtn"
+      type="button">
+      −0,5s
+    </button>
+
+    <button
+      id="playBtn"
+      type="button">
+      ▶
+    </button>
+
+    <input
+      id="seek"
+      type="range"
+      min="0"
+      max="1000"
+      value="0"
+    >
+
+    <span id="videoTime">
+      0:00
+    </span>
+
+  </div>
+
+</section>
+
+
+<aside class="card">
+
+<div class="controls">
+
+
+<h2>1. Bron</h2>
+
+<div class="grid">
+
+  <button
+    id="cameraBtn"
+    class="primary"
+    type="button">
+    📷 Gebruik camera
+  </button>
+
+  <button
+    id="uploadBtn"
+    type="button">
+    🎬 Upload testfilmpje
+  </button>
+
+  <input
+    id="fileInput"
+    type="file"
+    accept="video/*"
+    hidden
+  >
+
+</div>
+
+
+<h2 style="margin-top:18px;">
+2. Kalibreren
+</h2>
+
+<div class="grid">
+
+  <button
+    id="hoopBtn"
+    disabled
+    type="button">
+    Markeer de ring
+  </button>
+
+  <button
+    id="ballBtn"
+    disabled
+    type="button">
+    Tik op basketbal
+  </button>
+
+  <button
+    id="analyseBtn"
+    class="green"
+    disabled
+    type="button">
+    Start analyse
+  </button>
+
+</div>
+
+
+<p
+  id="instruction"
+  class="hint">
+  Open eerst de camera of een testfilmpje.
+</p>
+
+
+<div class="status">
+
+  <span>Bron</span>
+  <strong
+    id="sourceState"
+    class="no">
+    geen
+  </strong>
+
+  <span>Ring</span>
+  <strong
+    id="hoopState"
+    class="no">
+    niet ingesteld
+  </strong>
+
+  <span>Basketbalprofiel</span>
+  <strong
+    id="ballState"
+    class="no">
+    niet ingesteld
+  </strong>
+
+  <span>AI-objectdetectie</span>
+  <strong
+    id="aiState"
+    class="warn">
+    niet geladen
+  </strong>
+
+  <span>Schutter</span>
+  <strong
+    id="playerState"
+    class="no">
+    zoeken
+  </strong>
+
+</div>
+
+
+<div class="monitor">
+
+  <div>
+    <span>Baltracking</span>
+    <strong id="trackingQuality">
+      —
+    </strong>
+  </div>
+
+  <div>
+    <span>Trackingbron</span>
+    <strong id="trackingSource">
+      —
+    </strong>
+  </div>
+
+  <div>
+    <span>Shot detector</span>
+    <strong id="shotPhase">
+      WACHT
+    </strong>
+  </div>
+
+  <div>
+    <span>Laatste beslissing</span>
+    <strong id="decision">
+      —
+    </strong>
+  </div>
+
+</div>
+
+
+<h2 style="margin-top:18px;">
+Correctie
+</h2>
+
+<div class="manual">
+
+  <button
+    id="manualMake"
+    class="green"
+    type="button">
+    + RAAK
+  </button>
+
+  <button
+    id="manualMiss"
+    class="red"
+    type="button">
+    + MIS
+  </button>
+
+</div>
+
+
+<p class="hint">
+Gebruik correctie alleen wanneer de automatische tracker een poging mist of verkeerd beoordeelt.
+</p>
+
+</div>
+
+</aside>
+
+</div>
+
+
+<section class="card chart-card">
+
+<h2>Shot chart</h2>
+
+<canvas
+  id="shotChart"
+  width="700"
+  height="500">
+</canvas>
+
+
+<div
+  id="shotLog"
+  class="log">
+</div>
+
+
+<div class="actions">
+
+  <button
+    id="undoBtn"
+    type="button">
+    ↶ Laatste verwijderen
+  </button>
+
+  <button
+    id="resetBtn"
+    type="button">
+    Nieuwe sessie
+  </button>
+
+  <button
+    id="csvBtn"
+    type="button">
+    ↓ CSV
+  </button>
+
+</div>
+
+
+<p class="hint">
+De shotlocatie is momenteel een cameragebaseerde schatting.
+De schotdetectie zelf werkt onafhankelijk van de kleur van de basketbal.
+</p>
+
+</section>
+
+
+</div>
+
+
+<canvas
+  id="analysis"
+  hidden>
+</canvas>
+
+
+<script>
+
+(() => {
+
+"use strict";
+
+
+/* ===================================================
+   ELEMENTS
+=================================================== */
+
+const $ = id =>
+  document.getElementById(id);
+
+
+const video =
+  $("video");
+
+
+const overlay =
+  $("overlay");
+
+
+const octx =
+  overlay.getContext("2d");
+
+
+const analysis =
+  $("analysis");
+
+
+const actx =
+  analysis.getContext(
+    "2d",
+    {
+      willReadFrequently:true
+    }
+  );
+
+
+const shotChart =
+  $("shotChart");
+
+
+const cctx =
+  shotChart.getContext("2d");
+
+
+let AW = 360;
+let AH = 203;
+
+
+/* ===================================================
+   STATE
+=================================================== */
+
+const state = {
+
+  source:null,
+
+  stream:null,
+  objectURL:null,
+
+  running:false,
+  analysing:false,
+
+  model:null,
+
+  aiBusy:false,
+  lastAIWall:-Infinity,
+
+  persons:[],
+  aiBalls:[],
+
+  hoop:null,
+
+  mode:"none",
+
+  pointerStart:null,
+  hoopDraft:null,
+
+  ballProfile:null,
+
+  ballSeed:null,
+
+  track:null,
+  ball:null,
+
+  history:[],
+
+  lastBallSeen:-Infinity,
+
+  expectedDiameter:null,
+
+  currentOwner:null,
+  possessionStarted:null,
+  lastPossession:null,
+
+  shotPhase:"idle",
+  shot:null,
+
+  cooldownUntil:0,
+  requireNewPossession:false,
+
+  shots:[],
+
+  fpsCount:0,
+  fpsLast:performance.now(),
+
+  seeking:false,
+
+  lastGlobalSearchWall:-Infinity
+
+};
+
+
+const buffers = {
+
+  mask:null,
+  visited:null,
+  queue:null
+
+};
+
+
+/* ===================================================
+   BASIC HELPERS
+=================================================== */
+
+const clamp = (
+  value,
+  minimum,
+  maximum
+) =>
+  Math.max(
+    minimum,
+    Math.min(
+      maximum,
+      value
+    )
+  );
+
+
+const distance = (
+  a,
+  b
+) =>
+  Math.hypot(
+    a.x-b.x,
+    a.y-b.y
+  );
+
+
+function wallTime(){
+
+  return performance.now();
+
+}
+
+
+function mediaTime(){
+
+  if(
+    state.source==="file"
+  ){
+
+    return(
+      video.currentTime*
+      1000
+    );
+
+  }
+
+
+  return performance.now();
+
+}
+
+
+function setStatus(text){
+
+  $("statusText")
+    .textContent=text;
+
+}
+
+
+/* ===================================================
+   UI
+=================================================== */
+
+function updateUI(){
+
+  $("sourceState")
+    .textContent=
+
+      state.source==="camera"
+      ? "camera"
+
+      : state.source==="file"
+        ? "video"
+
+        : "geen";
+
+
+  $("sourceState")
+    .className=
+
+      state.source
+      ? "ok"
+      : "no";
+
+
+  $("hoopState")
+    .textContent=
+
+      state.hoop
+      ? "✓ ingesteld"
+      : "niet ingesteld";
+
+
+  $("hoopState")
+    .className=
+
+      state.hoop
+      ? "ok"
+      : "no";
+
+
+  $("ballState")
+    .textContent=
+
+      state.ballProfile
+      ? "✓ geleerd"
+      : "niet ingesteld";
+
+
+  $("ballState")
+    .className=
+
+      state.ballProfile
+      ? "ok"
+      : "no";
+
+
+  $("aiState")
+    .textContent=
+
+      state.model
+      ? "✓ actief"
+      : "laden / niet actief";
+
+
+  $("aiState")
+    .className=
+
+      state.model
+      ? "ok"
+      : "warn";
+
+
+  const sourceReady =
+    Boolean(
+      state.source
+    );
+
+
+  $("hoopBtn")
+    .disabled=
+      !sourceReady;
+
+
+  $("ballBtn")
+    .disabled=
+      !sourceReady;
+
+
+  $("analyseBtn")
+    .disabled=
+      !(
+        sourceReady &&
+        state.hoop &&
+        state.ballProfile
+      );
+
+}
+
+
+function setShotPhase(phase){
+
+  state.shotPhase=
+    phase;
+
+
+  const labels={
+
+    idle:
+      "WACHT",
+
+    candidate:
+      "CONTROLEREN",
+
+    flight:
+      "SCHOT",
+
+    cooldown:
+      "HERSTEL"
+
+  };
+
+
+  $("shotPhase")
+    .textContent=
+
+      labels[phase] ||
+      phase;
+
+}
+
+
+/* ===================================================
+   SOURCE
+=================================================== */
+
+function stopCurrentSource(){
+
+  state.running=false;
+  state.analysing=false;
+
+
+  if(
+    state.stream
+  ){
+
+    state.stream
+      .getTracks()
+      .forEach(
+        track=>
+          track.stop()
+      );
+
+
+    state.stream=null;
+
+  }
+
+
+  if(
+    state.objectURL
+  ){
+
+    URL.revokeObjectURL(
+      state.objectURL
+    );
+
+
+    state.objectURL=null;
+
+  }
+
+
+  video.pause();
+
+  video.srcObject=null;
+
+  video.removeAttribute(
+    "src"
+  );
+
+
+  try{
+
+    video.load();
+
+  }
+
+  catch(e){
+
+    console.warn(e);
+
+  }
+
+}
+
+
+function waitForVideo(){
+
+  return new Promise(
+    (
+      resolve,
+      reject
+    )=>{
+
+      if(
+        video.readyState>=2 &&
+        video.videoWidth &&
+        video.videoHeight
+      ){
+
+        resolve();
+        return;
+
+      }
+
+
+      const success=()=>{
+
+        cleanup();
+        resolve();
+
+      };
+
+
+      const failure=()=>{
+
+        cleanup();
+
+        reject(
+          new Error(
+            "Video kan niet door deze browser worden gelezen."
+          )
+        );
+
+      };
+
+
+      const cleanup=()=>{
+
+        video.removeEventListener(
+          "loadeddata",
+          success
+        );
+
+        video.removeEventListener(
+          "error",
+          failure
+        );
+
+      };
+
+
+      video.addEventListener(
+        "loadeddata",
+        success,
+        {
+          once:true
+        }
+      );
+
+
+      video.addEventListener(
+        "error",
+        failure,
+        {
+          once:true
+        }
+      );
+
+    }
+  );
+
+}
+
+
+function prepareCanvases(){
+
+  overlay.width=
+    video.videoWidth;
+
+
+  overlay.height=
+    video.videoHeight;
+
+
+  AW=360;
+
+
+  AH=
+    Math.max(
+      180,
+      Math.round(
+        AW*
+        video.videoHeight/
+        video.videoWidth
+      )
+    );
+
+
+  analysis.width=
+    AW;
+
+
+  analysis.height=
+    AH;
+
+
+  const size=
+    AW*
+    AH;
+
+
+  buffers.mask=
+    new Uint8Array(
+      size
+    );
+
+
+  buffers.visited=
+    new Uint8Array(
+      size
+    );
+
+
+  buffers.queue=
+    new Int32Array(
+      size
+    );
+
+}
+
+
+async function useCamera(){
+
+  stopCurrentSource();
+
+  resetCalibration();
+
+  resetTracking(
+    false
+  );
+
+
+  try{
+
+    if(
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ){
+
+      throw new Error(
+        "Camera is niet beschikbaar. Open de site via HTTPS."
+      );
+
+    }
+
+
+    setStatus(
+      "Camera openen…"
+    );
+
+
+    const stream=
+      await navigator.mediaDevices.getUserMedia({
+
+        audio:false,
+
+        video:{
+
+          facingMode:{
+            ideal:"environment"
+          },
+
+          width:{
+            ideal:1920
+          },
+
+          height:{
+            ideal:1080
+          },
+
+          frameRate:{
+            ideal:60,
+            max:60
+          }
+
+        }
+
+      });
+
+
+    state.stream=
+      stream;
+
+
+    state.source=
+      "camera";
+
+
+    video.srcObject=
+      stream;
+
+
+    video.muted=true;
+
+    video.playsInline=true;
+
+
+    await video.play();
+
+    await waitForVideo();
+
+
+    prepareCanvases();
+
+
+    state.running=true;
+
+    state.analysing=true;
+
+
+    $("videoControls")
+      .hidden=true;
+
+
+    $("liveDot")
+      .classList
+      .add("on");
+
+
+    if(
+      video.videoHeight>
+      video.videoWidth
+    ){
+
+      setStatus(
+        "⚠️ Draai de telefoon horizontaal"
+      );
+
+    }
+
+    else{
+
+      setStatus(
+        "Camera actief · markeer de ring"
+      );
+
+    }
+
+
+    updateUI();
+
+    loadAI();
+
+    requestAnimationFrame(
+      loop
+    );
+
+  }
+
+  catch(error){
+
+    console.error(
+      error
+    );
+
+
+    setStatus(
+      "Camera fout: "+
+      error.message
+    );
+
+  }
+
+}
+
+
+async function loadVideoFile(file){
+
+  stopCurrentSource();
+
+  resetCalibration();
+
+  resetTracking(
+    false
+  );
+
+
+  try{
+
+    state.source=
+      "file";
+
+
+    state.objectURL=
+      URL.createObjectURL(
+        file
+      );
+
+
+    video.srcObject=
+      null;
+
+
+    video.src=
+      state.objectURL;
+
+
+    video.muted=
+      true;
+
+
+    video.playsInline=
+      true;
+
+
+    video.load();
+
+
+    await waitForVideo();
+
+
+    video.currentTime=
+      0;
+
+
+    video.pause();
+
+
+    prepareCanvases();
+
+
+    state.running=
+      true;
+
+
+    state.analysing=
+      false;
+
+
+    $("videoControls")
+      .hidden=false;
+
+
+    $("liveDot")
+      .classList
+      .add("on");
+
+
+    setStatus(
+      "Video geladen · zoek een duidelijk frame"
+    );
+
+
+    $("instruction")
+      .textContent=
+        "Pauzeer op een frame waarop ring en basketbal goed zichtbaar zijn.";
+
+
+    updateSeek();
+
+    updateUI();
+
+    loadAI();
+
+
+    requestAnimationFrame(
+      loop
+    );
+
+  }
+
+  catch(error){
+
+    console.error(
+      error
+    );
+
+
+    setStatus(
+      "Videofout: "+
+      error.message+
+      " · MP4/H.264 werkt meestal het betrouwbaarst."
+    );
+
+  }
+
+}
+
+
+/* ===================================================
+   AI
+=================================================== */
+
+async function loadAI(){
+
+  if(
+    state.model
+  ){
+
+    updateUI();
+    return;
+
+  }
+
+
+  try{
+
+    $("aiState")
+      .textContent=
+        "laden…";
+
+
+    await tf.setBackend(
+      "webgl"
+    );
+
+
+    await tf.ready();
+
+
+    state.model=
+      await cocoSsd.load({
+
+        base:
+          "lite_mobilenet_v2"
+
+      });
+
+
+    updateUI();
+
+  }
+
+  catch(error){
+
+    console.warn(
+      "AI kon niet laden",
+      error
+    );
+
+
+    $("aiState")
+      .textContent=
+        "alleen lokale tracker";
+
+
+    $("aiState")
+      .className=
+        "warn";
+
+  }
+
+}
+
+
+async function detectObjects(
+  mediaNow
+){
+
+  if(
+    !state.model ||
+    state.aiBusy
+  ){
+
+    return;
+
+  }
+
+
+  const nowWall=
+    wallTime();
+
+
+  if(
+    nowWall-
+    state.lastAIWall<
+    240
+  ){
+
+    return;
+
+  }
+
+
+  state.aiBusy=true;
+
+  state.lastAIWall=
+    nowWall;
+
+
+  try{
+
+    const predictions=
+      await state.model.detect(
+        video,
+        20,
+        .18
+      );
+
+
+    const sx=
+      AW/
+      video.videoWidth;
+
+
+    const sy=
+      AH/
+      video.videoHeight;
+
+
+    state.persons=
+      predictions
+
+      .filter(
+        p=>
+          p.class==="person" &&
+          p.score>.28
+      )
+
+      .map(
+        p=>({
+
+          x:
+            p.bbox[0]*sx,
+
+          y:
+            p.bbox[1]*sy,
+
+          w:
+            p.bbox[2]*sx,
+
+          h:
+            p.bbox[3]*sy,
+
+          score:
+            p.score,
+
+          t:
+            mediaNow
+
+        })
+      );
+
+
+    state.aiBalls=
+      predictions
+
+      .filter(
+        p=>
+          p.class==="sports ball" &&
+          p.score>.12
+      )
+
+      .map(
+        p=>({
+
+          x:
+            (
+              p.bbox[0]+
+              p.bbox[2]/2
+            )*
+            sx,
+
+          y:
+            (
+              p.bbox[1]+
+              p.bbox[3]/2
+            )*
+            sy,
+
+          w:
+            p.bbox[2]*sx,
+
+          h:
+            p.bbox[3]*sy,
+
+          score:
+            p.score,
+
+          confidence:
+            p.score,
+
+          source:
+            "AI",
+
+          t:
+            mediaNow
+
+        })
+      );
+
+  }
+
+  catch(error){
+
+    console.warn(
+      "Objectdetectie fout",
+      error
+    );
+
+  }
+
+  finally{
+
+    state.aiBusy=
+      false;
+
+  }
+
+}
+
+
+/* ===================================================
+   CALIBRATION
+=================================================== */
+
+function resetCalibration(){
+
+  state.hoop=null;
+
+  state.ballProfile=null;
+
+  state.ballSeed=null;
+
+  state.mode="none";
+
+  state.pointerStart=null;
+
+  state.hoopDraft=null;
+
+
+  overlay.classList.remove(
+    "calibrating"
+  );
+
+
+  updateUI();
+
+}
+
+
+function setMode(mode){
+
+  state.mode=
+    mode;
+
+
+  if(
+    mode==="none"
+  ){
+
+    overlay.classList.remove(
+      "calibrating"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    state.source==="file"
+  ){
+
+    video.pause();
+
+    $("playBtn")
+      .textContent=
+        "▶";
+
+  }
+
+
+  overlay.classList.add(
+    "calibrating"
+  );
+
+
+  if(
+    mode==="hoop"
+  ){
+
+    state.pointerStart=null;
+
+    state.hoopDraft=null;
+
+
+    $("instruction")
+      .textContent=
+        "Sleep een kleine rechthoek strak om alleen de ring.";
+
+  }
+
+
+  if(
+    mode==="ball"
+  ){
+
+    $("instruction")
+      .textContent=
+        "Tik midden op de basketbal. De bal hoeft niet oranje te zijn.";
+
+  }
+
+}
+
+
+function pointerPosition(event){
+
+  const rect=
+    overlay.getBoundingClientRect();
+
+
+  return{
+
+    x:
+      (
+        event.clientX-
+        rect.left
+      )*
+      overlay.width/
+      rect.width,
+
+    y:
+      (
+        event.clientY-
+        rect.top
+      )*
+      overlay.height/
+      rect.height
+
+  };
+
+}
+
+
+function overlayToAnalysis(point){
+
+  return{
+
+    x:
+      point.x/
+      overlay.width*
+      AW,
+
+    y:
+      point.y/
+      overlay.height*
+      AH
+
+  };
+
+}
+
+
+overlay.addEventListener(
+  "pointerdown",
+  event=>{
+
+    if(
+      state.mode==="none"
+    ){
+
+      return;
+
+    }
+
+
+    const point=
+      pointerPosition(
+        event
+      );
+
+
+    if(
+      state.mode==="hoop"
+    ){
+
+      state.pointerStart=
+        point;
+
+
+      state.hoopDraft={
+
+        x:
+          point.x,
+
+        y:
+          point.y,
+
+        w:0,
+        h:0
+
+      };
+
+
+      overlay.setPointerCapture(
+        event.pointerId
+      );
+
+    }
+
+
+    if(
+      state.mode==="ball"
+    ){
+
+      learnBallProfile(
+        point
+      );
+
+
+      setMode(
+        "none"
+      );
+
+    }
+
+  }
+);
+
+
+overlay.addEventListener(
+  "pointermove",
+  event=>{
+
+    if(
+      state.mode!=="hoop" ||
+      !state.pointerStart
+    ){
+
+      return;
+
+    }
+
+
+    const point=
+      pointerPosition(
+        event
+      );
+
+
+    state.hoopDraft={
+
+      x:
+        Math.min(
+          state.pointerStart.x,
+          point.x
+        ),
+
+      y:
+        Math.min(
+          state.pointerStart.y,
+          point.y
+        ),
+
+      w:
+        Math.abs(
+          point.x-
+          state.pointerStart.x
+        ),
+
+      h:
+        Math.abs(
+          point.y-
+          state.pointerStart.y
+        )
+
+    };
+
+  }
+);
+
+
+overlay.addEventListener(
+  "pointerup",
+  ()=>{
+
+    if(
+      state.mode!=="hoop" ||
+      !state.hoopDraft
+    ){
+
+      return;
+
+    }
+
+
+    const rectangle=
+      state.hoopDraft;
+
+
+    if(
+      rectangle.w>10 &&
+      rectangle.h>4
+    ){
+
+      state.hoop={
+
+        x:
+          rectangle.x/
+          overlay.width,
+
+        y:
+          rectangle.y/
+          overlay.height,
+
+        w:
+          rectangle.w/
+          overlay.width,
+
+        h:
+          rectangle.h/
+          overlay.height
+
+      };
+
+
+      setStatus(
+        "✓ Ring ingesteld"
+      );
+
+
+      $("instruction")
+        .textContent=
+          "Tik nu op de basketbal.";
+
+    }
+
+
+    state.pointerStart=null;
+
+    state.hoopDraft=null;
+
+
+    setMode(
+      "none"
+    );
+
+
+    updateUI();
+
+  }
+);
+
+
+/* ===================================================
+   COLOR PROFILE
+=================================================== */
+
+function rgbToHSV(
+  r,
+  g,
+  b
+){
+
+  r/=255;
+  g/=255;
+  b/=255;
+
+
+  const maximum=
+    Math.max(
+      r,g,b
+    );
+
+
+  const minimum=
+    Math.min(
+      r,g,b
+    );
+
+
+  const difference=
+    maximum-
+    minimum;
+
+
+  let hue=0;
+
+
+  if(
+    difference!==0
+  ){
+
+    if(
+      maximum===r
+    ){
+
+      hue=
+        60*
+        (
+          (
+            (
+              g-b
+            )/
+            difference
+          )%6
+        );
+
+    }
+
+    else if(
+      maximum===g
+    ){
+
+      hue=
+        60*
+        (
+          (
+            b-r
+          )/
+          difference+
+          2
+        );
+
+    }
+
+    else{
+
+      hue=
+        60*
+        (
+          (
+            r-g
+          )/
+          difference+
+          4
+        );
+
+    }
+
+  }
+
+
+  if(
+    hue<0
+  ){
+
+    hue+=360;
+
+  }
+
+
+  return{
+
+    h:
+      hue,
+
+    s:
+      maximum===0
+      ? 0
+      : difference/
+        maximum,
+
+    v:
+      maximum
+
+  };
+
+}
+
+
+function hueDistance(
+  a,
+  b
+){
+
+  const difference=
+    Math.abs(
+      a-b
+    );
+
+
+  return Math.min(
+    difference,
+    360-
+    difference
+  );
+
+}
+
+
+function buildRepresentatives(
+  samples,
+  maxCount=10
+){
+
+  if(
+    !samples.length
+  ){
+
+    return [];
+
+  }
+
+
+  const representatives=[];
+
+
+  const sorted=[
+    ...samples
+  ].sort(
+    (
+      a,
+      b
+    )=>
+      a.v-
+      b.v
+  );
+
+
+  const brightnessGroups=
+    Math.min(
+      5,
+      sorted.length
+    );
+
+
+  for(
+    let group=0;
+    group<brightnessGroups;
+    group++
+  ){
+
+    const start=
+      Math.floor(
+        group*
+        sorted.length/
+        brightnessGroups
+      );
+
+
+    const end=
+      Math.floor(
+        (
+          group+1
+        )*
+        sorted.length/
+        brightnessGroups
+      );
+
+
+    const bucket=
+      sorted.slice(
+        start,
+        end
+      );
+
+
+    if(
+      bucket.length
+    ){
+
+      representatives.push(
+        bucket[
+          Math.floor(
+            bucket.length/
+            2
+          )
+        ]
+      );
+
+    }
+
+  }
+
+
+  while(
+    representatives.length<
+    maxCount
+  ){
+
+    let best=null;
+    let bestDistance=-1;
+
+
+    for(
+      const sample of
+      samples
+    ){
+
+      let nearest=
+        Infinity;
+
+
+      for(
+        const chosen of
+        representatives
+      ){
+
+        const dr=
+          sample.r-
+          chosen.r;
+
+
+        const dg=
+          sample.g-
+          chosen.g;
+
+
+        const db=
+          sample.b-
+          chosen.b;
+
+
+        const rgbDistance=
+          Math.sqrt(
+            dr*dr+
+            dg*dg+
+            db*db
+          );
+
+
+        let huePart=0;
+
+
+        if(
+          sample.s>.15 &&
+          chosen.s>.15
+        ){
+
+          huePart=
+            hueDistance(
+              sample.h,
+              chosen.h
+            )/
+            180;
+
+        }
+
+
+        const total=
+          rgbDistance+
+          huePart*.35;
+
+
+        nearest=
+          Math.min(
+            nearest,
+            total
+          );
+
+      }
+
+
+      if(
+        nearest>
+        bestDistance
+      ){
+
+        bestDistance=
+          nearest;
+
+        best=
+          sample;
+
+      }
+
+    }
+
+
+    if(
+      !best ||
+      bestDistance<
+      .04
+    ){
+
+      break;
+
+    }
+
+
+    representatives.push(
+      best
+    );
+
+  }
+
+
+  return representatives.slice(
+    0,
+    maxCount
+  );
+
+}
+
+
+function learnBallProfile(
+  overlayPoint
+){
+
+  if(
+    video.readyState<2
+  ){
+
+    return;
+
+  }
+
+
+  actx.drawImage(
+    video,
+    0,0,
+    AW,AH
+  );
+
+
+  const point=
+    overlayToAnalysis(
+      overlayPoint
+    );
+
+
+  const radius=12;
+
+
+  const x0=
+    clamp(
+      Math.floor(
+        point.x-
+        radius
+      ),
+      0,
+      AW-1
+    );
+
+
+  const y0=
+    clamp(
+      Math.floor(
+        point.y-
+        radius
+      ),
+      0,
+      AH-1
+    );
+
+
+  const x1=
+    clamp(
+      Math.ceil(
+        point.x+
+        radius
+      ),
+      0,
+      AW-1
+    );
+
+
+  const y1=
+    clamp(
+      Math.ceil(
+        point.y+
+        radius
+      ),
+      0,
+      AH-1
+    );
+
+
+  const width=
+    x1-
+    x0+
+    1;
+
+
+  const height=
+    y1-
+    y0+
+    1;
+
+
+  const image=
+    actx.getImageData(
+      x0,
+      y0,
+      width,
+      height
+    );
+
+
+  const samples=[];
+
+
+  for(
+    let py=0;
+    py<height;
+    py++
+  ){
+
+    for(
+      let px=0;
+      px<width;
+      px++
+    ){
+
+      const dx=
+        px-
+        width/2;
+
+
+      const dy=
+        py-
+        height/2;
+
+
+      if(
+        Math.hypot(
+          dx,
+          dy
+        )>
+        radius*.82
+      ){
+
+        continue;
+
+      }
+
+
+      const index=
+        (
+          py*
+          width+
+          px
+        )*
+        4;
+
+
+      const r=
+        image.data[
+          index
+        ];
+
+
+      const g=
+        image.data[
+          index+1
+        ];
+
+
+      const b=
+        image.data[
+          index+2
+        ];
+
+
+      const hsv=
+        rgbToHSV(
+          r,
+          g,
+          b
+        );
+
+
+      samples.push({
+
+        r:
+          r/255,
+
+        g:
+          g/255,
+
+        b:
+          b/255,
+
+        h:
+          hsv.h,
+
+        s:
+          hsv.s,
+
+        v:
+          hsv.v
+
+      });
+
+    }
+
+  }
+
+
+  if(
+    samples.length<
+    20
+  ){
+
+    setStatus(
+      "Balprofiel kon niet worden gelezen"
+    );
+
+    return;
+
+  }
+
+
+  const representatives=
+    buildRepresentatives(
+      samples,
+      12
+    );
+
+
+  state.ballProfile={
+
+    reps:
+      representatives
+
+  };
+
+
+  state.ballSeed={
+
+    x:
+      point.x,
+
+    y:
+      point.y,
+
+    t:
+      mediaTime(),
+
+    diameter:
+      radius*
+      2
+
+  };
+
+
+  state.expectedDiameter=
+    radius*
+    2;
+
+
+  initialiseTrackFromSeed();
+
+
+  setStatus(
+    "✓ Basketbal geleerd"
+  );
+
+
+  $("instruction")
+    .textContent=
+      "De bal wordt gevolgd met AI + geleerd kleurprofiel + formaat + beweging.";
+
+
+  updateUI();
+
+}
+
+
+function initialiseTrackFromSeed(){
+
+  if(
+    !state.ballSeed
+  ){
+
+    return;
+
+  }
+
+
+  state.track={
+
+    x:
+      state.ballSeed.x,
+
+    y:
+      state.ballSeed.y,
+
+    vx:0,
+    vy:0,
+
+    t:
+      mediaTime(),
+
+    confidence:.95
+
+  };
+
+
+  state.ball={
+
+    x:
+      state.ballSeed.x,
+
+    y:
+      state.ballSeed.y,
+
+    w:
+      state.ballSeed.diameter,
+
+    h:
+      state.ballSeed.diameter,
+
+    real:true,
+
+    confidence:.95,
+
+    source:
+      "CAL"
+
+  };
+
+
+  state.lastBallSeen=
+    mediaTime();
+
+}
+
+
+/* ===================================================
+   PIXEL MATCH
+=================================================== */
+
+function ballPixelScore(
+  r,
+  g,
+  b
+){
+
+  if(
+    !state.ballProfile
+  ){
+
+    return 0;
+
+  }
+
+
+  const nr=
+    r/255;
+
+
+  const ng=
+    g/255;
+
+
+  const nb=
+    b/255;
+
+
+  const hsv=
+    rgbToHSV(
+      r,
+      g,
+      b
+    );
+
+
+  let best=0;
+
+
+  for(
+    const ref of
+    state.ballProfile.reps
+  ){
+
+    let score;
+
+
+    if(
+      hsv.s>.18 &&
+      ref.s>.18
+    ){
+
+      const hue=
+        hueDistance(
+          hsv.h,
+          ref.h
+        )/
+        180;
+
+
+      const saturation=
+        Math.abs(
+          hsv.s-
+          ref.s
+        );
+
+
+      const brightness=
+        Math.abs(
+          hsv.v-
+          ref.v
+        );
+
+
+      score=
+        1-
+        (
+          hue*1.15+
+          saturation*.43+
+          brightness*.34
+        );
+
+    }
+
+    else{
+
+      const dr=
+        nr-
+        ref.r;
+
+
+      const dg=
+        ng-
+        ref.g;
+
+
+      const db=
+        nb-
+        ref.b;
+
+
+      const rgbDistance=
+        Math.sqrt(
+          dr*dr+
+          dg*dg+
+          db*db
+        );
+
+
+      score=
+        1-
+        rgbDistance/
+        1.05;
+
+    }
+
+
+    best=
+      Math.max(
+        best,
+        score
+      );
+
+  }
+
+
+  return clamp(
+    best,
+    0,
+    1
+  );
+
+}
+
+
+/* ===================================================
+   BALL TRACKING
+=================================================== */
+
+function predictBall(
+  now
+){
+
+  if(
+    !state.track
+  ){
+
+    return null;
+
+  }
+
+
+  if(
+    now-
+    state.track.t>
+    750
+  ){
+
+    return null;
+
+  }
+
+
+  const dt=
+    clamp(
+      (
+        now-
+        state.track.t
+      )/
+      1000,
+      0,
+      .35
+    );
+
+
+  return{
+
+    x:
+      state.track.x+
+      state.track.vx*
+      dt,
+
+    y:
+      state.track.y+
+      state.track.vy*
+      dt
+
+  };
+
+}
+
+
+function componentSearch(
+  imageData,
+  x0,
+  y0,
+  x1,
+  y1,
+  predicted,
+  requirePersonProximity
+){
+
+  buffers.mask.fill(0);
+
+  buffers.visited.fill(0);
+
+
+  const data=
+    imageData.data;
+
+
+  for(
+    let y=y0;
+    y<=y1;
+    y++
+  ){
+
+    for(
+      let x=x0;
+      x<=x1;
+      x++
+    ){
+
+      const pixel=
+        y*
+        AW+
+        x;
+
+
+      const dataIndex=
+        pixel*
+        4;
+
+
+      const score=
+        ballPixelScore(
+          data[
+            dataIndex
+          ],
+          data[
+            dataIndex+1
+          ],
+          data[
+            dataIndex+2
+          ]
+        );
+
+
+      if(
+        score>.69
+      ){
+
+        buffers.mask[
+          pixel
+        ]=1;
+
+      }
+
+    }
+
+  }
+
+
+  let best=null;
+
+  let bestScore=
+    -Infinity;
+
+
+  for(
+    let y=y0;
+    y<=y1;
+    y++
+  ){
+
+    for(
+      let x=x0;
+      x<=x1;
+      x++
+    ){
+
+      const start=
+        y*
+        AW+
+        x;
+
+
+      if(
+        !buffers.mask[start] ||
+        buffers.visited[start]
+      ){
+
+        continue;
+
+      }
+
+
+      let queueStart=0;
+      let queueEnd=0;
+
+
+      buffers.queue[
+        queueEnd++
+      ]=
+        start;
+
+
+      buffers.visited[
+        start
+      ]=1;
+
+
+      let area=0;
+
+      let sumX=0;
+      let sumY=0;
+
+
+      let minX=x;
+      let maxX=x;
+
+      let minY=y;
+      let maxY=y;
+
+
+      while(
+        queueStart<
+        queueEnd
+      ){
+
+        const index=
+          buffers.queue[
+            queueStart++
+          ];
+
+
+        const cy=
+          Math.floor(
+            index/
+            AW
+          );
+
+
+        const cx=
+          index-
+          cy*
+          AW;
+
+
+        area++;
+
+        sumX+=cx;
+        sumY+=cy;
+
+
+        minX=
+          Math.min(
+            minX,
+            cx
+          );
+
+
+        maxX=
+          Math.max(
+            maxX,
+            cx
+          );
+
+
+        minY=
+          Math.min(
+            minY,
+            cy
+          );
+
+
+        maxY=
+          Math.max(
+            maxY,
+            cy
+          );
+
+
+        const neighbors=[
+          index-1,
+          index+1,
+          index-AW,
+          index+AW
+        ];
+
+
+        for(
+          const neighbor of
+          neighbors
+        ){
+
+          if(
+            neighbor<0 ||
+            neighbor>=
+            AW*
+            AH
+          ){
+
+            continue;
+
+          }
+
+
+          const ny=
+            Math.floor(
+              neighbor/
+              AW
+            );
+
+
+          const nx=
+            neighbor-
+            ny*
+            AW;
+
+
+          if(
+            nx<x0 ||
+            nx>x1 ||
+            ny<y0 ||
+            ny>y1
+          ){
+
+            continue;
+
+          }
+
+
+          if(
+            buffers.mask[
+              neighbor
+            ] &&
+            !buffers.visited[
+              neighbor
+            ]
+          ){
+
+            buffers.visited[
+              neighbor
+            ]=1;
+
+
+            buffers.queue[
+              queueEnd++
+            ]=
+              neighbor;
+
+          }
+
+        }
+
+      }
+
+
+      if(
+        area<4 ||
+        area>1900
+      ){
+
+        continue;
+
+      }
+
+
+      const width=
+        maxX-
+        minX+
+        1;
+
+
+      const height=
+        maxY-
+        minY+
+        1;
+
+
+      const aspect=
+        width/
+        height;
+
+
+      /*
+        Motion blur maakt de bal ovaal.
+      */
+
+      if(
+        aspect<.24 ||
+        aspect>4.0
+      ){
+
+        continue;
+
+      }
+
+
+      const fill=
+        area/
+        (
+          width*
+          height
+        );
+
+
+      if(
+        fill<.10
+      ){
+
+        continue;
+
+      }
+
+
+      const cx=
+        sumX/
+        area;
+
+
+      const cy=
+        sumY/
+        area;
+
+
+      const diameter=
+        Math.max(
+          width,
+          height
+        );
+
+
+      let score=
+        Math.log(
+          area+
+          1
+        )*.72+
+        fill*
+        2.1;
+
+
+      if(
+        predicted
+      ){
+
+        score-=
+          distance(
+            {
+              x:cx,
+              y:cy
+            },
+            predicted
+          )/
+          11;
+
+      }
+
+
+      if(
+        state.expectedDiameter
+      ){
+
+        const ratio=
+          Math.max(
+
+            diameter/
+            state.expectedDiameter,
+
+            state.expectedDiameter/
+            Math.max(
+              diameter,
+              1
+            )
+
+          );
+
+
+        score-=
+          Math.log(
+            ratio
+          )*
+          1.55;
+
+      }
+
+
+      if(
+        requirePersonProximity
+      ){
+
+        let closest=
+          Infinity;
+
+
+        for(
+          const person of
+          state.persons
+        ){
+
+          const center={
+
+            x:
+              person.x+
+              person.w*.5,
+
+            y:
+              person.y+
+              person.h*.42
+
+          };
+
+
+          closest=
+            Math.min(
+              closest,
+              distance(
+                {
+                  x:cx,
+                  y:cy
+                },
+                center
+              )
+            );
+
+        }
+
+
+        if(
+          closest===
+          Infinity
+        ){
+
+          continue;
+
+        }
+
+
+        const personLimit=
+          AH*.35;
+
+
+        if(
+          closest>
+          personLimit
+        ){
+
+          continue;
+
+        }
+
+
+        score+=
+          (
+            1-
+            clamp(
+              closest/
+              personLimit,
+              0,
+              1
+            )
+          )*
+          2.2;
+
+      }
+
+
+      if(
+        score>
+        bestScore
+      ){
+
+        bestScore=
+          score;
+
+
+        best={
+
+          x:cx,
+          y:cy,
+
+          w:
+            width,
+
+          h:
+            height,
+
+          confidence:
+            clamp(
+              .40+
+              fill*.45,
+              .40,
+              .89
+            ),
+
+          source:
+            requirePersonProximity
+            ? "REACQUIRE"
+            : "COLOR"
+
+        };
+
+      }
+
+    }
+
+  }
+
+
+  return best;
+
+}
+
+
+function colourCandidate(
+  now
+){
+
+  if(
+    !state.ballProfile
+  ){
+
+    return null;
+
+  }
+
+
+  const predicted=
+    predictBall(
+      now
+    );
+
+
+  if(
+    !predicted ||
+    now-
+    state.lastBallSeen>
+    700
+  ){
+
+    return null;
+
+  }
+
+
+  const image=
+    actx.getImageData(
+      0,0,
+      AW,AH
+    );
+
+
+  const speed=
+    state.track
+    ? Math.hypot(
+        state.track.vx,
+        state.track.vy
+      )
+    : 0;
+
+
+  const radius=
+    clamp(
+      45+
+      speed*.085,
+      48,
+      130
+    );
+
+
+  const x0=
+    clamp(
+      Math.floor(
+        predicted.x-
+        radius
+      ),
+      0,
+      AW-1
+    );
+
+
+  const x1=
+    clamp(
+      Math.ceil(
+        predicted.x+
+        radius
+      ),
+      0,
+      AW-1
+    );
+
+
+  const y0=
+    clamp(
+      Math.floor(
+        predicted.y-
+        radius
+      ),
+      0,
+      AH-1
+    );
+
+
+  const y1=
+    clamp(
+      Math.ceil(
+        predicted.y+
+        radius
+      ),
+      0,
+      AH-1
+    );
+
+
+  return componentSearch(
+
+    image,
+
+    x0,
+    y0,
+    x1,
+    y1,
+
+    predicted,
+
+    false
+
+  );
+
+}
+
+
+/*
+  Wanneer bestaande tracking kwijt is:
+
+  NIET zomaar een oranje/bruin object accepteren.
+
+  Alleen af en toe full-frame zoeken en daarbij
+  eisen dat de kandidaat logisch bij een persoon ligt.
+
+  Dit is vooral bedoeld om bij een testvideo of
+  balverlies opnieuw te kunnen starten.
+*/
+
+function globalColourReacquire(
+  now
+){
+
+  if(
+    !state.ballProfile
+  ){
+
+    return null;
+
+  }
+
+
+  const nowWall=
+    wallTime();
+
+
+  if(
+    nowWall-
+    state.lastGlobalSearchWall<
+    280
+  ){
+
+    return null;
+
+  }
+
+
+  state.lastGlobalSearchWall=
+    nowWall;
+
+
+  if(
+    state.persons.length===
+    0
+  ){
+
+    return null;
+
+  }
+
+
+  const image=
+    actx.getImageData(
+      0,0,
+      AW,AH
+    );
+
+
+  return componentSearch(
+
+    image,
+
+    0,
+    0,
+    AW-1,
+    AH-1,
+
+    null,
+
+    true
+
+  );
+
+}
+
+
+function aiCandidate(
+  now
+){
+
+  const valid=
+    state.aiBalls.filter(
+      ball=>
+        now-
+        ball.t<
+        900
+    );
+
+
+  if(
+    !valid.length
+  ){
+
+    return null;
+
+  }
+
+
+  const predicted=
+    predictBall(
+      now
+    );
+
+
+  /*
+    Wanneer track bestaat:
+    kies AI-object dat logisch aansluit.
+  */
+
+  if(
+    predicted
+  ){
+
+    valid.sort(
+      (
+        a,
+        b
+      )=>
+
+        distance(
+          a,
+          predicted
+        )
+
+        -
+
+        distance(
+          b,
+          predicted
+        )
+    );
+
+
+    const best=
+      valid[0];
+
+
+    const speed=
+      state.track
+      ? Math.hypot(
+          state.track.vx,
+          state.track.vy
+        )
+      : 0;
+
+
+    const tolerance=
+      Math.max(
+        34,
+        AW*.095+
+        speed*.11
+      );
+
+
+    if(
+      distance(
+        best,
+        predicted
+      )<=
+      tolerance
+    ){
+
+      return best;
+
+    }
+
+
+    return null;
+
+  }
+
+
+  /*
+    Zonder track:
+    AI-ball dicht bij een speler krijgt prioriteit.
+  */
+
+  let best=null;
+
+  let bestScore=
+    -Infinity;
+
+
+  for(
+    const ball of
+    valid
+  ){
+
+    let personBonus=0;
+
+
+    for(
+      const person of
+      state.persons
+    ){
+
+      const personTarget={
+
+        x:
+          person.x+
+          person.w*.5,
+
+        y:
+          person.y+
+          person.h*.42
+
+      };
+
+
+      const d=
+        distance(
+          ball,
+          personTarget
+        );
+
+
+      const closeness=
+        1-
+        clamp(
+          d/
+          Math.max(
+            25,
+            person.h*.85
+          ),
+          0,
+          1
+        );
+
+
+      personBonus=
+        Math.max(
+          personBonus,
+          closeness
+        );
+
+    }
+
+
+    const score=
+      ball.score+
+      personBonus*.40;
+
+
+    if(
+      score>
+      bestScore
+    ){
+
+      bestScore=
+        score;
+
+      best=
+        ball;
+
+    }
+
+  }
+
+
+  return best;
+
+}
+
+
+function fuseCandidates(
+  colour,
+  ai,
+  reacquire,
+  now
+){
+
+  const candidates=
+    [
+      colour,
+      ai,
+      reacquire
+    ].filter(
+      Boolean
+    );
+
+
+  if(
+    !candidates.length
+  ){
+
+    return null;
+
+  }
+
+
+  if(
+    colour &&
+    ai &&
+    distance(
+      colour,
+      ai
+    )<
+    AW*.075
+  ){
+
+    return{
+
+      x:
+        colour.x*.65+
+        ai.x*.35,
+
+      y:
+        colour.y*.65+
+        ai.y*.35,
+
+      w:
+        Math.max(
+          colour.w,
+          ai.w
+        ),
+
+      h:
+        Math.max(
+          colour.h,
+          ai.h
+        ),
+
+      confidence:.96,
+
+      source:
+        "FUSED"
+
+    };
+
+  }
+
+
+  const predicted=
+    predictBall(
+      now
+    );
+
+
+  if(
+    predicted
+  ){
+
+    candidates.sort(
+      (
+        a,
+        b
+      )=>
+
+        distance(
+          a,
+          predicted
+        )
+
+        -
+
+        distance(
+          b,
+          predicted
+        )
+    );
+
+
+    return candidates[0];
+
+  }
+
+
+  /*
+    Geen track:
+    AI heeft voorkeur boven kleur-reacquire.
+  */
+
+  if(ai){
+    return ai;
+  }
+
+
+  return reacquire || colour;
+
+}
+
+
+function updateBall(
+  measurement,
+  now
+){
+
+  if(
+    !measurement
+  ){
+
+    /*
+      Alleen ZEER kort voorspellen.
+    */
+
+    if(
+      state.track &&
+      now-
+      state.track.t<
+      180
+    ){
+
+      const dt=
+        (
+          now-
+          state.track.t
+        )/
+        1000;
+
+
+      state.ball={
+
+        x:
+          state.track.x+
+          state.track.vx*
+          dt,
+
+        y:
+          state.track.y+
+          state.track.vy*
+          dt,
+
+        w:
+          state.expectedDiameter ||
+          8,
+
+        h:
+          state.expectedDiameter ||
+          8,
+
+        real:false,
+
+        confidence:.15,
+
+        source:
+          "PRED"
+
+      };
+
+    }
+
+    else{
+
+      state.ball=null;
+
+    }
+
+
+    updateTrackingUI();
+
+    return false;
+
+  }
+
+
+  if(
+    !state.track ||
+    now-
+    state.track.t>
+    800
+  ){
+
+    state.track={
+
+      x:
+        measurement.x,
+
+      y:
+        measurement.y,
+
+      vx:0,
+      vy:0,
+
+      t:now,
+
+      confidence:
+        measurement.confidence ||
+        .55
+
+    };
+
+  }
+
+  else{
+
+    const dt=
+      clamp(
+        (
+          now-
+          state.track.t
+        )/
+        1000,
+        .012,
+        .25
+      );
+
+
+    const predictedX=
+      state.track.x+
+      state.track.vx*
+      dt;
+
+
+    const predictedY=
+      state.track.y+
+      state.track.vy*
+      dt;
+
+
+    const residualX=
+      measurement.x-
+      predictedX;
+
+
+    const residualY=
+      measurement.y-
+      predictedY;
+
+
+    const alpha=.68;
+    const beta=.17;
+
+
+    state.track.x=
+      predictedX+
+      alpha*
+      residualX;
+
+
+    state.track.y=
+      predictedY+
+      alpha*
+      residualY;
+
+
+    state.track.vx+=
+      beta*
+      residualX/
+      dt;
+
+
+    state.track.vy+=
+      beta*
+      residualY/
+      dt;
+
+
+    state.track.t=
+      now;
+
+
+    state.track.confidence=
+      measurement.confidence ||
+      .6;
+
+  }
+
+
+  state.ball={
+
+    x:
+      state.track.x,
+
+    y:
+      state.track.y,
+
+    w:
+      measurement.w ||
+      state.expectedDiameter ||
+      8,
+
+    h:
+      measurement.h ||
+      state.expectedDiameter ||
+      8,
+
+    real:true,
+
+    confidence:
+      measurement.confidence ||
+      .6,
+
+    source:
+      measurement.source ||
+      "TRACK"
+
+  };
+
+
+  const diameter=
+    Math.max(
+      state.ball.w,
+      state.ball.h
+    );
+
+
+  if(
+    Number.isFinite(
+      diameter
+    ) &&
+    diameter>2
+  ){
+
+    if(
+      !state.expectedDiameter
+    ){
+
+      state.expectedDiameter=
+        diameter;
+
+    }
+
+    else{
+
+      state.expectedDiameter=
+        state.expectedDiameter*.95+
+        diameter*.05;
+
+    }
+
+  }
+
+
+  state.lastBallSeen=
+    now;
+
+
+  state.history.push({
+
+    x:
+      state.ball.x,
+
+    y:
+      state.ball.y,
+
+    t:now
+
+  });
+
+
+  while(
+
+    state.history.length>
+    50
+
+    ||
+
+    (
+      state.history.length &&
+      now-
+      state.history[0].t>
+      1900
+    )
+
+  ){
+
+    state.history.shift();
+
+  }
+
+
+  updateTrackingUI();
+
+  return true;
+
+}
+
+
+function updateTrackingUI(){
+
+  if(
+    !state.ball ||
+    !state.ball.real
+  ){
+
+    $("trackingQuality")
+      .textContent=
+        "ZWAK";
+
+
+    $("trackingQuality")
+      .className=
+        "no";
+
+
+    $("trackingSource")
+      .textContent=
+        state.ball?.source ||
+        "—";
+
+
+    return;
+
+  }
+
+
+  if(
+    state.ball.confidence>
+    .78
+  ){
+
+    $("trackingQuality")
+      .textContent=
+        "GOED";
+
+
+    $("trackingQuality")
+      .className=
+        "ok";
+
+  }
+
+  else{
+
+    $("trackingQuality")
+      .textContent=
+        "REDELIJK";
+
+
+    $("trackingQuality")
+      .className=
+        "warn";
+
+  }
+
+
+  $("trackingSource")
+    .textContent=
+      state.ball.source ||
+      "—";
+
+}
+
+
+/* ===================================================
+   VELOCITY
+=================================================== */
+
+function ballVelocity(){
+
+  const history=
+    state.history;
+
+
+  if(
+    history.length<
+    3
+  ){
+
+    return{
+
+      vx:0,
+      vy:0,
+      speed:0
+
+    };
+
+  }
+
+
+  const newest=
+    history[
+      history.length-
+      1
+    ];
+
+
+  let older=
+    history[0];
+
+
+  for(
+    let index=
+      history.length-
+      2;
+
+    index>=0;
+
+    index--
+  ){
+
+    if(
+      newest.t-
+      history[index].t>=
+      90
+    ){
+
+      older=
+        history[index];
+
+      break;
+
+    }
+
+  }
+
+
+  const dt=
+    Math.max(
+      .05,
+      (
+        newest.t-
+        older.t
+      )/
+      1000
+    );
+
+
+  const vx=
+    (
+      newest.x-
+      older.x
+    )/
+    dt;
+
+
+  const vy=
+    (
+      newest.y-
+      older.y
+    )/
+    dt;
+
+
+  return{
+
+    vx,
+    vy,
+
+    speed:
+      Math.hypot(
+        vx,
+        vy
+      )
+
+  };
+
+}
+
+
+/* ===================================================
+   PLAYER / POSSESSION
+=================================================== */
+
+function personCenter(
+  person
+){
+
+  return{
+
+    x:
+      person.x+
+      person.w/
+      2,
+
+    y:
+      person.y+
+      person.h/
+      2
+
+  };
+
+}
+
+
+function samePerson(
+  a,
+  b
+){
+
+  if(
+    !a ||
+    !b
+  ){
+
+    return false;
+
+  }
+
+
+  return(
+    distance(
+      personCenter(a),
+      personCenter(b)
+    )<
+    Math.max(
+      a.w,
+      b.w,
+      15
+    )*
+    1.4
+  );
+
+}
+
+
+function findOwner(
+  ball
+){
+
+  if(
+    !ball
+  ){
+
+    return null;
+
+  }
+
+
+  let best=null;
+
+  let bestDistance=
+    Infinity;
+
+
+  for(
+    const person of
+    state.persons
+  ){
+
+    const handZone={
+
+      x:
+        person.x+
+        person.w*.5,
+
+      y:
+        person.y+
+        person.h*.40
+
+    };
+
+
+    const d=
+      distance(
+        ball,
+        handZone
+      );
+
+
+    const expanded=
+
+      ball.x>=
+      person.x-
+      person.w*.22
+
+      &&
+
+      ball.x<=
+      person.x+
+      person.w*1.22
+
+      &&
+
+      ball.y>=
+      person.y-
+      person.h*.15
+
+      &&
+
+      ball.y<=
+      person.y+
+      person.h*.84;
+
+
+    if(
+
+      (
+        expanded ||
+        d<
+        person.h*.48
+      )
+
+      &&
+
+      d<
+      bestDistance
+
+    ){
+
+      best=
+        person;
+
+
+      bestDistance=
+        d;
+
+    }
+
+  }
+
+
+  return best;
+
+}
+
+
+function updatePossession(
+  now
+){
+
+  const owner=
+    findOwner(
+      state.ball
+    );
+
+
+  if(owner){
+
+    if(
+
+      !state.currentOwner
+
+      ||
+
+      !samePerson(
+        owner,
+        state.currentOwner
+      )
+
+    ){
+
+      state.possessionStarted=
+        now;
+
+    }
+
+
+    state.currentOwner=
+      owner;
+
+
+    state.lastPossession={
+
+      ...owner,
+
+      t:now
+
+    };
+
+
+    $("playerState")
+      .textContent=
+        "✓ balbezit";
+
+
+    $("playerState")
+      .className=
+        "ok";
+
+
+    /*
+      Na een schot moet eerst
+      aantoonbaar nieuw balbezit komen.
+    */
+
+    if(
+
+      state.requireNewPossession
+
+      &&
+
+      now>=
+      state.cooldownUntil
+
+    ){
+
+      state.requireNewPossession=
+        false;
+
+
+      state.shot=null;
+
+
+      setShotPhase(
+        "idle"
+      );
+
+    }
+
+  }
+
+  else{
+
+    state.currentOwner=
+      null;
+
+
+    if(
+
+      !state.lastPossession
+
+      ||
+
+      now-
+      state.lastPossession.t>
+      900
+
+    ){
+
+      $("playerState")
+        .textContent=
+          "zoeken";
+
+
+      $("playerState")
+        .className=
+          "no";
+
+    }
+
+  }
+
+
+  return owner;
+
+}
+
+
+/* ===================================================
+   HOOP
+=================================================== */
+
+function getHoop(){
+
+  if(
+    !state.hoop
+  ){
+
+    return null;
+
+  }
+
+
+  return{
+
+    x:
+      state.hoop.x*
+      AW,
+
+    y:
+      state.hoop.y*
+      AH,
+
+    w:
+      state.hoop.w*
+      AW,
+
+    h:
+      state.hoop.h*
+      AH
+
+  };
+
+}
+
+
+function hoopCenter(){
+
+  const hoop=
+    getHoop();
+
+
+  if(
+    !hoop
+  ){
+
+    return null;
+
+  }
+
+
+  return{
+
+    x:
+      hoop.x+
+      hoop.w/
+      2,
+
+    y:
+      hoop.y+
+      hoop.h/
+      2
+
+  };
+
+}
+
+
+/* ===================================================
+   SHOT GEOMETRY
+=================================================== */
+
+function vectorCos(
+  vx,
+  vy,
+  tx,
+  ty
+){
+
+  const movementLength=
+    Math.hypot(
+      vx,
+      vy
+    );
+
+
+  const targetLength=
+    Math.hypot(
+      tx,
+      ty
+    );
+
+
+  if(
+    movementLength<1 ||
+    targetLength<1
+  ){
+
+    return 0;
+
+  }
+
+
+  return(
+    vx*
+    tx+
+    vy*
+    ty
+  )/
+  (
+    movementLength*
+    targetLength
+  );
+
+}
+
+
+function projectedMissDistance(
+  ball,
+  velocity,
+  target
+){
+
+  const speedSquared=
+
+    velocity.vx*
+    velocity.vx
+
+    +
+
+    velocity.vy*
+    velocity.vy;
+
+
+  if(
+    speedSquared<1
+  ){
+
+    return Infinity;
+
+  }
+
+
+  const targetX=
+    target.x-
+    ball.x;
+
+
+  const targetY=
+    target.y-
+    ball.y;
+
+
+  const projection=
+    (
+      targetX*
+      velocity.vx
+
+      +
+
+      targetY*
+      velocity.vy
+    )/
+    speedSquared;
+
+
+  if(
+    projection<0
+  ){
+
+    return Infinity;
+
+  }
+
+
+  const projected={
+
+    x:
+      ball.x+
+      velocity.vx*
+      projection,
+
+    y:
+      ball.y+
+      velocity.vy*
+      projection
+
+  };
+
+
+  return distance(
+    projected,
+    target
+  );
+
+}
+
+
+/* ===================================================
+   SHOT DETECTOR
+=================================================== */
+
+function maybeStartShot(
+  owner,
+  now
+){
+
+  if(
+    state.shotPhase!=="idle"
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    state.requireNewPossession
+  ){
+
+    return;
+
+  }
+
+
+  /*
+    Zolang bal nog bij speler is:
+    nog geen release.
+  */
+
+  if(owner){
+
+    return;
+
+  }
+
+
+  if(
+    !state.lastPossession
+  ){
+
+    return;
+
+  }
+
+
+  /*
+    De bal moet vlak daarvoor
+    aantoonbaar bij de schutter zijn geweest.
+  */
+
+  if(
+    now-
+    state.lastPossession.t>
+    500
+  ){
+
+    return;
+
+  }
+
+
+  /*
+    Voorkom toevallige overlap.
+  */
+
+  if(
+
+    state.possessionStarted===null
+
+    ||
+
+    state.lastPossession.t-
+    state.possessionStarted<
+    130
+
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    !state.ball
+  ){
+
+    return;
+
+  }
+
+
+  const shooter=
+    state.lastPossession;
+
+
+  const velocity=
+    ballVelocity();
+
+
+  const hoop=
+    hoopCenter();
+
+
+  if(
+    !hoop
+  ){
+
+    return;
+
+  }
+
+
+  /*
+    DRIBBELFILTER
+
+    De bal mag bij release niet
+    laag bij de benen/vloer zitten.
+  */
+
+  if(
+    state.ball.y>
+    shooter.y+
+    shooter.h*.75
+  ){
+
+    return;
+
+  }
+
+
+  /*
+    Duidelijke opwaartse snelheid.
+  */
+
+  if(
+    velocity.vy>
+    -AH*.15
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    velocity.speed<
+    AW*.17
+  ){
+
+    return;
+
+  }
+
+
+  const direction=
+    vectorCos(
+
+      velocity.vx,
+      velocity.vy,
+
+      hoop.x-
+      state.ball.x,
+
+      hoop.y-
+      state.ball.y
+
+    );
+
+
+  /*
+    Moet redelijk richting basket bewegen.
+  */
+
+  if(
+    direction<
+    .42
+  ){
+
+    return;
+
+  }
+
+
+  /*
+    Projecteer baan.
+
+    Een duidelijke zijwaartse pass
+    valt hierdoor meestal af.
+  */
+
+  const missDistance=
+    projectedMissDistance(
+
+      state.ball,
+      velocity,
+      hoop
+
+    );
+
+
+  if(
+    missDistance>
+    AW*.31
+  ){
+
+    return;
+
+  }
+
+
+  state.shot={
+
+    startedAt:
+      now,
+
+    release:{
+
+      x:
+        state.ball.x,
+
+      y:
+        state.ball.y
+
+    },
+
+    origin:{
+
+      x:
+        shooter.x+
+        shooter.w/
+        2,
+
+      y:
+        shooter.y+
+        shooter.h
+
+    },
+
+    shooter:{
+      ...shooter
+    },
+
+    startDistance:
+      distance(
+        state.ball,
+        hoop
+      ),
+
+    minY:
+      state.ball.y,
+
+    wasAbove:false,
+
+    approached:false,
+
+    previous:{
+
+      x:
+        state.ball.x,
+
+      y:
+        state.ball.y,
+
+      t:now
+
+    },
+
+    /*
+      Een kruising van het ringvlak
+      is nog niet direct raak.
+
+      We bevestigen de score pas
+      wanneer de bal daarna ook
+      onder de ring in de netzone zit.
+    */
+
+    possibleMake:null
+
+  };
+
+
+  setShotPhase(
+    "candidate"
+  );
+
+
+  $("decision")
+    .textContent=
+      "vlucht controleren…";
+
+}
+
+
+function cancelShot(
+  reason
+){
+
+  state.shot=
+    null;
+
+
+  setShotPhase(
+    "idle"
+  );
+
+
+  $("decision")
+    .textContent=
+      "geen schot: "+
+      reason;
+
+}
+
+
+function updateCandidate(
+  owner,
+  now
+){
+
+  const shot=
+    state.shot;
+
+
+  if(
+    !shot
+  ){
+
+    return;
+
+  }
+
+
+  const elapsed=
+    now-
+    shot.startedAt;
+
+
+  /*
+    Een andere speler ontvangt hem direct:
+    pass.
+  */
+
+  if(
+    owner &&
+    elapsed>
+    90
+  ){
+
+    cancelShot(
+      "pass / bal ontvangen"
+    );
+
+    return;
+
+  }
+
+
+  shot.minY=
+    Math.min(
+      shot.minY,
+      state.ball.y
+    );
+
+
+  const hoop=
+    hoopCenter();
+
+
+  const currentDistance=
+    distance(
+      state.ball,
+      hoop
+    );
+
+
+  const progress=
+    shot.startDistance-
+    currentDistance;
+
+
+  const rise=
+    shot.release.y-
+    shot.minY;
+
+
+  const velocity=
+    ballVelocity();
+
+
+  const direction=
+    vectorCos(
+
+      velocity.vx,
+      velocity.vy,
+
+      hoop.x-
+      state.ball.x,
+
+      hoop.y-
+      state.ball.y
+
+    );
+
+
+  /*
+    Pas na meerdere frames bevestigen.
+  */
+
+  if(
+
+    elapsed>=
+    150
+
+    &&
+
+    rise>=
+    AH*.025
+
+    &&
+
+    progress>=
+    AW*.018
+
+    &&
+
+    direction>
+    .12
+
+  ){
+
+    setShotPhase(
+      "flight"
+    );
+
+
+    $("decision")
+      .textContent=
+        "🏀 schot bevestigd";
+
+
+    return;
+
+  }
+
+
+  if(
+    elapsed>
+    800
+  ){
+
+    cancelShot(
+      "geen overtuigende schotbaan"
+    );
+
+  }
+
+}
+
+
+function updateFlight(
+  owner,
+  now
+){
+
+  const shot=
+    state.shot;
+
+
+  const hoop=
+    getHoop();
+
+
+  if(
+    !shot ||
+    !hoop ||
+    !state.ball
+  ){
+
+    return;
+
+  }
+
+
+  const elapsed=
+    now-
+    shot.startedAt;
+
+
+  const plane=
+    hoop.y+
+    hoop.h/
+    2;
+
+
+  const center={
+
+    x:
+      hoop.x+
+      hoop.w/
+      2,
+
+    y:
+      plane
+
+  };
+
+
+  const rimDistance=
+    distance(
+      state.ball,
+      center
+    );
+
+
+  /*
+    Ball dichtbij basket geweest.
+  */
+
+  if(
+    rimDistance<
+    Math.max(
+      AW*.15,
+      hoop.w*
+      4.5
+    )
+  ){
+
+    shot.approached=
+      true;
+
+  }
+
+
+  /*
+    Andere speler ontvangt de bal
+    ver vóór de basket → waarschijnlijk pass.
+  */
+
+  if(
+
+    owner
+
+    &&
+
+    !shot.approached
+
+    &&
+
+    elapsed<
+    1600
+
+  ){
+
+    cancelShot(
+      "pass ontvangen"
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Is bal boven het ringvlak geweest?
+  */
+
+  if(
+    state.ball.y<
+    plane-
+    hoop.h*.18
+  ){
+
+    shot.wasAbove=
+      true;
+
+  }
+
+
+  const previous=
+    shot.previous;
+
+
+  /*
+    POTENTIËLE SCORE:
+    van boven naar beneden door ringvlak.
+  */
+
+  if(
+
+    shot.wasAbove
+
+    &&
+
+    previous.y<=
+    plane
+
+    &&
+
+    state.ball.y>
+    plane
+
+  ){
+
+    const deltaY=
+      state.ball.y-
+      previous.y;
+
+
+    if(
+      deltaY>0
+    ){
+
+      const fraction=
+        (
+          plane-
+          previous.y
+        )/
+        deltaY;
+
+
+      const crossingX=
+        previous.x+
+        (
+          state.ball.x-
+          previous.x
+        )*
+        fraction;
+
+
+      const horizontalTolerance=
+        hoop.w*.10;
+
+
+      if(
+
+        crossingX>=
+        hoop.x-
+        horizontalTolerance
+
+        &&
+
+        crossingX<=
+        hoop.x+
+        hoop.w+
+        horizontalTolerance
+
+      ){
+
+        /*
+          Niet meteen "RAAK".
+
+          Eerst controleren of bal
+          daarna daadwerkelijk onder
+          de ring in netzone komt.
+        */
+
+        shot.possibleMake={
+
+          time:now,
+
+          crossingX:
+            crossingX
+
+        };
+
+      }
+
+    }
+
+  }
+
+
+  /*
+    SCOREBEVESTIGING
+
+    Na ringkruising moet de bal
+    binnen korte tijd lager dan de ring
+    én horizontaal rond de netzone zitten.
+  */
+
+  if(
+    shot.possibleMake
+  ){
+
+    const sinceCross=
+      now-
+      shot.possibleMake.time;
+
+
+    const netLeft=
+      hoop.x-
+      hoop.w*.35;
+
+
+    const netRight=
+      hoop.x+
+      hoop.w*
+      1.35;
+
+
+    const belowEnough=
+      state.ball.y>
+      plane+
+      hoop.h*.65;
+
+
+    const inNetCorridor=
+
+      state.ball.x>=
+      netLeft
+
+      &&
+
+      state.ball.x<=
+      netRight;
+
+
+    if(
+
+      sinceCross>
+      20
+
+      &&
+
+      sinceCross<
+      450
+
+      &&
+
+      belowEnough
+
+      &&
+
+      inNetCorridor
+
+    ){
+
+      finishShot(
+        "make",
+        shot.origin
+      );
+
+
+      return;
+
+    }
+
+
+    if(
+      sinceCross>
+      500
+    ){
+
+      /*
+        Kruising zag er goed uit,
+        maar onder-ring bevestiging kwam niet.
+      */
+
+      shot.possibleMake=
+        null;
+
+    }
+
+  }
+
+
+  shot.previous={
+
+    x:
+      state.ball.x,
+
+    y:
+      state.ball.y,
+
+    t:now
+
+  };
+
+
+  const velocity=
+    ballVelocity();
+
+
+  /*
+    Duidelijke misser:
+    bal was boven ring maar daalt
+    onder de basket zonder scorebevestiging.
+  */
+
+  if(
+
+    shot.wasAbove
+
+    &&
+
+    !shot.possibleMake
+
+    &&
+
+    state.ball.y>
+    plane+
+    hoop.h*
+    3.0
+
+    &&
+
+    velocity.vy>
+    0
+
+  ){
+
+    finishShot(
+      "miss",
+      shot.origin
+    );
+
+
+    return;
+
+  }
+
+
+  if(
+    elapsed>
+    4500
+  ){
+
+    finishShot(
+      "miss",
+      shot.origin
+    );
+
+  }
+
+}
+
+
+function shotEngine(
+  realBall,
+  now
+){
+
+  /*
+    Timeout moet ook doorlopen
+    wanneer bal tijdelijk kwijt is.
+  */
+
+  if(
+    state.shot &&
+    (
+      state.shotPhase==="candidate" ||
+      state.shotPhase==="flight"
+    )
+  ){
+
+    const elapsed=
+      now-
+      state.shot.startedAt;
+
+
+    if(
+      !realBall
+    ){
+
+      /*
+        Kandidaten die vrijwel meteen verdwijnen
+        worden niet als schot geteld.
+      */
+
+      if(
+        state.shotPhase==="candidate" &&
+        now-
+        state.lastBallSeen>
+        650
+      ){
+
+        cancelShot(
+          "bal kwijt vóór bevestiging"
+        );
+
+        return;
+
+      }
+
+
+      /*
+        Bevestigd schot blijft maximaal
+        4,5 sec actief.
+      */
+
+      if(
+        state.shotPhase==="flight" &&
+        elapsed>
+        4500
+      ){
+
+        finishShot(
+          "miss",
+          state.shot.origin
+        );
+
+        return;
+
+      }
+
+    }
+
+  }
+
+
+  if(
+    !realBall ||
+    !state.ball ||
+    !state.hoop
+  ){
+
+    return;
+
+  }
+
+
+  const owner=
+    updatePossession(
+      now
+    );
+
+
+  if(
+    state.shotPhase==="cooldown"
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    state.shotPhase==="idle"
+  ){
+
+    maybeStartShot(
+      owner,
+      now
+    );
+
+
+    return;
+
+  }
+
+
+  if(
+    state.shotPhase==="candidate"
+  ){
+
+    updateCandidate(
+      owner,
+      now
+    );
+
+
+    return;
+
+  }
+
+
+  if(
+    state.shotPhase==="flight"
+  ){
+
+    updateFlight(
+      owner,
+      now
+    );
+
+  }
+
+}
+
+
+/* ===================================================
+   SHOT LOCATION
+=================================================== */
+
+function approximateShotLocation(
+  origin
+){
+
+  const hoop=
+    getHoop();
+
+
+  if(
+    !hoop ||
+    !origin
+  ){
+
+    return{
+
+      x:.5,
+      y:.8
+
+    };
+
+  }
+
+
+  const hoopX=
+    hoop.x+
+    hoop.w/
+    2;
+
+
+  const floorStart=
+    clamp(
+      hoop.y+
+      hoop.h*
+      1.3,
+      0,
+      AH-
+      20
+    );
+
+
+  const usableDepth=
+    Math.max(
+      20,
+      AH-
+      floorStart
+    );
+
+
+  return{
+
+    x:
+      clamp(
+        .5+
+        (
+          origin.x-
+          hoopX
+        )/
+        (AW*.86),
+        .03,
+        .97
+      ),
+
+    y:
+      clamp(
+        (
+          origin.y-
+          floorStart
+        )/
+        usableDepth,
+        0,
+        1
+      )
+
+  };
+
+}
+
+
+/* ===================================================
+   RESULT
+=================================================== */
+
+function finishShot(
+  result,
+  origin
+){
+
+  const location=
+    approximateShotLocation(
+      origin
+    );
+
+
+  state.shots.push({
+
+    result,
+
+    x:
+      location.x,
+
+    y:
+      location.y,
+
+    timestamp:
+      new Date()
+      .toISOString()
+
+  });
+
+
+  state.shot=
+    null;
+
+
+  setShotPhase(
+    "cooldown"
+  );
+
+
+  state.cooldownUntil=
+    mediaTime()+
+    450;
+
+
+  /*
+    Belangrijk tegen rebound-dubbeltelling.
+
+    Nieuw schot pas nadat bal
+    opnieuw bij speler is geweest.
+  */
+
+  state.requireNewPossession=
+    true;
+
+
+  state.currentOwner=
+    null;
+
+
+  state.possessionStarted=
+    null;
+
+
+  $("decision")
+    .textContent=
+
+      result==="make"
+
+      ? "✅ RAAK"
+
+      : "❌ MIS";
+
+
+  updateStats();
+
+}
+
+
+function manualShot(
+  result
+){
+
+  const person=
+    state.lastPossession;
+
+
+  const origin=
+
+    person
+
+    ? {
+
+        x:
+          person.x+
+          person.w/
+          2,
+
+        y:
+          person.y+
+          person.h
+
+      }
+
+    : {
+
+        x:
+          AW/
+          2,
+
+        y:
+          AH*
+          .8
+
+      };
+
+
+  state.shot=
+    null;
+
+
+  finishShot(
+    result,
+    origin
+  );
+
+}
+
+
+/* ===================================================
+   STATS
+=================================================== */
+
+function updateStats(){
+
+  const attempts=
+    state.shots.length;
+
+
+  const makes=
+    state.shots.filter(
+      shot=>
+        shot.result==="make"
+    ).length;
+
+
+  let streak=0;
+
+
+  for(
+    let index=
+      state.shots.length-
+      1;
+
+    index>=0;
+
+    index--
+  ){
+
+    if(
+      state.shots[index]
+        .result===
+      "make"
+    ){
+
+      streak++;
+
+    }
+
+    else{
+
+      break;
+
+    }
+
+  }
+
+
+  $("attempts")
+    .textContent=
+      attempts;
+
+
+  $("makes")
+    .textContent=
+      makes;
+
+
+  $("percentage")
+    .textContent=
+
+      attempts
+
+      ? Math.round(
+          makes/
+          attempts*
+          100
+        )+
+        "%"
+
+      : "0%";
+
+
+  $("streak")
+    .textContent=
+      streak;
+
+
+  $("shotLog")
+    .innerHTML=
+      "";
+
+
+  state.shots
+    .slice(-15)
+    .reverse()
+    .forEach(
+      (
+        shot,
+        index
+      )=>{
+
+        const chip=
+          document.createElement(
+            "div"
+          );
+
+
+        chip.className=
+
+          "chip "
+
+          +
+
+          (
+            shot.result==="make"
+
+            ? "make"
+
+            : "miss"
+          );
+
+
+        chip.textContent=
+
+          (
+            shot.result==="make"
+
+            ? "✓ raak"
+
+            : "✕ mis"
+          )
+
+          +
+
+          " · #"
+
+          +
+
+          (
+            state.shots.length-
+            index
+          );
+
+
+        $("shotLog")
+          .appendChild(
+            chip
+          );
+
+      }
+    );
+
+
+  drawShotChart();
+
+}
+
+
+/* ===================================================
+   SHOT CHART
+=================================================== */
+
+function drawShotChart(){
+
+  const width=
+    shotChart.width;
+
+
+  const height=
+    shotChart.height;
+
+
+  cctx.clearRect(
+    0,0,
+    width,
+    height
+  );
+
+
+  cctx.fillStyle=
+    "#bd7941";
+
+
+  cctx.fillRect(
+    0,0,
+    width,
+    height
+  );
+
+
+  cctx.strokeStyle=
+    "rgba(255,255,255,.80)";
+
+
+  cctx.lineWidth=4;
+
+
+  cctx.strokeRect(
+    12,
+    12,
+    width-24,
+    height-24
+  );
+
+
+  /*
+    Backboard
+  */
+
+  cctx.beginPath();
+
+  cctx.moveTo(
+    width/2-
+    42,
+    38
+  );
+
+  cctx.lineTo(
+    width/2+
+    42,
+    38
+  );
+
+  cctx.stroke();
+
+
+  /*
+    Ring
+  */
+
+  cctx.beginPath();
+
+  cctx.arc(
+    width/2,
+    60,
+    11,
+    0,
+    Math.PI*
+    2
+  );
+
+  cctx.stroke();
+
+
+  /*
+    Paint
+  */
+
+  cctx.strokeRect(
+    width/2-
+    92,
+    12,
+    184,
+    180
+  );
+
+
+  /*
+    Vrije worp
+  */
+
+  cctx.beginPath();
+
+  cctx.arc(
+    width/2,
+    192,
+    62,
+    0,
+    Math.PI
+  );
+
+  cctx.stroke();
+
+
+  /*
+    3-puntsindicatie
+  */
+
+  cctx.beginPath();
+
+  cctx.arc(
+    width/2,
+    60,
+    290,
+    .14*
+    Math.PI,
+    .86*
+    Math.PI
+  );
+
+  cctx.stroke();
+
+
+  for(
+    const shot of
+    state.shots
+  ){
+
+    const x=
+      25+
+      shot.x*
+      (width-
+      50);
+
+
+    const y=
+      60+
+      shot.y*
+      (height-
+      85);
+
+
+    cctx.beginPath();
+
+
+    cctx.arc(
+      x,
+      y,
+      10,
+      0,
+      Math.PI*
+      2
+    );
+
+
+    cctx.fillStyle=
+
+      shot.result==="make"
+
+      ? "#22c55e"
+
+      : "#ef4444";
+
+
+    cctx.fill();
+
+
+    cctx.strokeStyle=
+      "#fff";
+
+
+    cctx.lineWidth=2;
+
+
+    cctx.stroke();
+
+  }
+
+}
+
+
+/* ===================================================
+   OVERLAY
+=================================================== */
+
+function drawOverlay(){
+
+  octx.clearRect(
+    0,0,
+    overlay.width,
+    overlay.height
+  );
+
+
+  const sx=
+    overlay.width/
+    AW;
+
+
+  const sy=
+    overlay.height/
+    AH;
+
+
+  /*
+    Ring
+  */
+
+  if(
+    state.hoop
+  ){
+
+    const rectangle={
+
+      x:
+        state.hoop.x*
+        overlay.width,
+
+      y:
+        state.hoop.y*
+        overlay.height,
+
+      w:
+        state.hoop.w*
+        overlay.width,
+
+      h:
+        state.hoop.h*
+        overlay.height
+
+    };
+
+
+    octx.strokeStyle=
+      "#ff7a00";
+
+
+    octx.lineWidth=4;
+
+
+    octx.strokeRect(
+
+      rectangle.x,
+      rectangle.y,
+
+      rectangle.w,
+      rectangle.h
+
+    );
+
+
+    octx.fillStyle=
+      "#ff7a00";
+
+
+    octx.font=
+      "bold 18px Arial";
+
+
+    octx.fillText(
+      "RING",
+      rectangle.x,
+      Math.max(
+        20,
+        rectangle.y-
+        8
+      )
+    );
+
+  }
+
+
+  /*
+    Ring marking draft
+  */
+
+  if(
+    state.hoopDraft
+  ){
+
+    const rectangle=
+      state.hoopDraft;
+
+
+    octx.strokeStyle=
+      "#38bdf8";
+
+
+    octx.lineWidth=4;
+
+
+    octx.strokeRect(
+
+      rectangle.x,
+      rectangle.y,
+
+      rectangle.w,
+      rectangle.h
+
+    );
+
+  }
+
+
+  /*
+    Persons
+  */
+
+  for(
+    const person of
+    state.persons
+  ){
+
+    octx.strokeStyle=
+      "rgba(56,189,248,.38)";
+
+
+    octx.lineWidth=2;
+
+
+    octx.strokeRect(
+
+      person.x*
+      sx,
+
+      person.y*
+      sy,
+
+      person.w*
+      sx,
+
+      person.h*
+      sy
+
+    );
+
+  }
+
+
+  /*
+    Ball trajectory
+  */
+
+  const recent=
+    state.history.slice(
+      -18
+    );
+
+
+  if(
+    recent.length>
+    1
+  ){
+
+    octx.beginPath();
+
+
+    recent.forEach(
+      (
+        point,
+        index
+      )=>{
+
+        const x=
+          point.x*
+          sx;
+
+
+        const y=
+          point.y*
+          sy;
+
+
+        if(
+          index===0
+        ){
+
+          octx.moveTo(
+            x,
+            y
+          );
+
+        }
+
+        else{
+
+          octx.lineTo(
+            x,
+            y
+          );
+
+        }
+
+      }
+    );
+
+
+    octx.strokeStyle=
+      "rgba(34,197,94,.72)";
+
+
+    octx.lineWidth=3;
+
+
+    octx.stroke();
+
+  }
+
+
+  /*
+    Ball
+  */
+
+  if(
+    state.ball
+  ){
+
+    const x=
+      state.ball.x*
+      sx;
+
+
+    const y=
+      state.ball.y*
+      sy;
+
+
+    const radius=
+      Math.max(
+
+        8,
+
+        Math.max(
+          state.ball.w*
+          sx,
+
+          state.ball.h*
+          sy
+        )/
+        2
+
+      );
+
+
+    octx.beginPath();
+
+
+    octx.arc(
+      x,
+      y,
+      radius,
+      0,
+      Math.PI*
+      2
+    );
+
+
+    octx.strokeStyle=
+
+      state.ball.real
+
+      ? "#22c55e"
+
+      : "#facc15";
+
+
+    octx.lineWidth=4;
+
+
+    octx.stroke();
+
+
+    octx.fillStyle=
+      octx.strokeStyle;
+
+
+    octx.font=
+      "bold 15px Arial";
+
+
+    octx.fillText(
+
+      state.ball.source ||
+      "BALL",
+
+      x+
+      radius+
+      5,
+
+      y
+
+    );
+
+  }
+
+
+  /*
+    Shot origin
+  */
+
+  if(
+    state.shot &&
+    state.shot.origin
+  ){
+
+    octx.beginPath();
+
+
+    octx.arc(
+
+      state.shot.origin.x*
+      sx,
+
+      state.shot.origin.y*
+      sy,
+
+      11,
+
+      0,
+
+      Math.PI*
+      2
+
+    );
+
+
+    octx.fillStyle=
+      "rgba(255,122,0,.80)";
+
+
+    octx.fill();
+
+  }
+
+}
+
+
+/* ===================================================
+   TRACK RESET
+=================================================== */
+
+function resetTracking(
+  keepSeed=true
+){
+
+  state.track=null;
+
+  state.ball=null;
+
+  state.history=[];
+
+  state.lastBallSeen=
+    -Infinity;
+
+
+  state.currentOwner=
+    null;
+
+  state.possessionStarted=
+    null;
+
+  state.lastPossession=
+    null;
+
+
+  state.shot=
+    null;
+
+
+  state.requireNewPossession=
+    false;
+
+
+  state.cooldownUntil=
+    0;
+
+
+  setShotPhase(
+    "idle"
+  );
+
+
+  $("trackingQuality")
+    .textContent=
+      "—";
+
+
+  $("trackingSource")
+    .textContent=
+      "—";
+
+
+  $("playerState")
+    .textContent=
+      "zoeken";
+
+
+  $("playerState")
+    .className=
+      "no";
+
+
+  /*
+    Als video niet ver is verschoven,
+    kunnen we vanuit het gekalibreerde
+    punt opnieuw starten.
+  */
+
+  if(
+    keepSeed &&
+    state.ballSeed
+  ){
+
+    const timeDifference=
+      Math.abs(
+        mediaTime()-
+        state.ballSeed.t
+      );
+
+
+    if(
+      timeDifference<
+      250
+    ){
+
+      initialiseTrackFromSeed();
+
+    }
+
+  }
+
+}
+
+
+/* ===================================================
+   MAIN LOOP
+=================================================== */
+
+async function loop(){
+
+  if(
+    !state.running
+  ){
+
+    return;
+
+  }
+
+
+  const now=
+    mediaTime();
+
+
+  const shouldAnalyse=
+
+    state.source==="camera"
+
+    ||
+
+    (
+      state.source==="file" &&
+      state.analysing &&
+      !video.paused
+    );
+
+
+  if(
+    video.readyState>=2
+  ){
+
+    actx.drawImage(
+      video,
+      0,0,
+      AW,AH
+    );
+
+
+    if(
+      shouldAnalyse
+    ){
+
+      detectObjects(
+        now
+      );
+
+
+      const colour=
+        colourCandidate(
+          now
+        );
+
+
+      const ai=
+        aiCandidate(
+          now
+        );
+
+
+      /*
+        Full-frame reacquisition alleen
+        wanneer gewone track én AI
+        niets vinden.
+      */
+
+      let reacquire=null;
+
+
+      if(
+        !colour &&
+        !ai &&
+        (
+          !state.track ||
+          now-
+          state.lastBallSeen>
+          650
+        )
+      ){
+
+        reacquire=
+          globalColourReacquire(
+            now
+          );
+
+      }
+
+
+      const candidate=
+        fuseCandidates(
+
+          colour,
+
+          ai,
+
+          reacquire,
+
+          now
+
+        );
+
+
+      const realBall=
+        updateBall(
+          candidate,
+          now
+        );
+
+
+      /*
+        Shot engine ALTIJD aanroepen,
+        ook wanneer bal in dit frame
+        tijdelijk weg is.
+
+        Daarmee kunnen timeouts blijven werken.
+      */
+
+      shotEngine(
+        realBall,
+        now
+      );
+
+    }
+
+
+    drawOverlay();
+
+  }
+
+
+  if(
+    state.source==="file"
+  ){
+
+    updateSeek();
+
+  }
+
+
+  state.fpsCount++;
+
+
+  const nowWall=
+    performance.now();
+
+
+  if(
+    nowWall-
+    state.fpsLast>=
+    1000
+  ){
+
+    $("fpsText")
+      .textContent=
+        state.fpsCount+
+        " fps";
+
+
+    state.fpsCount=0;
+
+
+    state.fpsLast=
+      nowWall;
+
+  }
+
+
+  requestAnimationFrame(
+    loop
+  );
+
+}
+
+
+/* ===================================================
+   VIDEO CONTROLS
+=================================================== */
+
+function formatTime(
+  seconds
+){
+
+  if(
+    !Number.isFinite(
+      seconds
+    )
+  ){
+
+    return "0:00";
+
+  }
+
+
+  const minutes=
+    Math.floor(
+      seconds/
+      60
+    );
+
+
+  const secs=
+    Math.floor(
+      seconds%
+      60
+    );
+
+
+  return(
+    minutes+
+    ":"+
+    String(
+      secs
+    ).padStart(
+      2,
+      "0"
+    )
+  );
+
+}
+
+
+function updateSeek(){
+
+  if(
+
+    state.source!=="file"
+
+    ||
+
+    !Number.isFinite(
+      video.duration
+    )
+
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    !state.seeking
+  ){
+
+    $("seek")
+      .value=
+        Math.round(
+          video.currentTime/
+          video.duration*
+          1000
+        );
+
+  }
+
+
+  $("videoTime")
+    .textContent=
+
+      formatTime(
+        video.currentTime
+      )
+
+      +
+
+      " / "
+
+      +
+
+      formatTime(
+        video.duration
+      );
+
+}
+
+
+function startAnalysis(){
+
+  resetTracking(
+    true
+  );
+
+
+  state.analysing=
+    true;
+
+
+  if(
+    state.source==="file"
+  ){
+
+    /*
+      0.5× geeft de AI meer echte
+      verwerkingstijd per videoseconde.
+    */
+
+    video.playbackRate=
+      .5;
+
+
+    video.play();
+
+
+    $("playBtn")
+      .textContent=
+        "⏸";
+
+
+    setStatus(
+      "Videoanalyse actief · 0,5×"
+    );
+
+  }
+
+  else{
+
+    setStatus(
+      "Live analyse actief"
+    );
+
+  }
+
+}
+
+
+/* ===================================================
+   SESSION
+=================================================== */
+
+function resetSession(){
+
+  state.shots=[];
+
+
+  resetTracking(
+    true
+  );
+
+
+  $("decision")
+    .textContent=
+      "—";
+
+
+  updateStats();
+
+
+  setStatus(
+    "Nieuwe sessie"
+  );
+
+}
+
+
+function exportCSV(){
+
+  if(
+    !state.shots.length
+  ){
+
+    return;
+
+  }
+
+
+  const rows=[
+
+    [
+      "shot",
+      "result",
+      "relative_x",
+      "relative_distance",
+      "timestamp"
+    ]
+
+  ];
+
+
+  state.shots.forEach(
+    (
+      shot,
+      index
+    )=>{
+
+      rows.push([
+
+        index+1,
+
+        shot.result,
+
+        shot.x.toFixed(
+          4
+        ),
+
+        shot.y.toFixed(
+          4
+        ),
+
+        shot.timestamp
+
+      ]);
+
+    }
+  );
+
+
+  const csv=
+    rows
+      .map(
+        row=>
+          row.join(",")
+      )
+      .join("\n");
+
+
+  const blob=
+    new Blob(
+      [csv],
+      {
+        type:
+          "text/csv;charset=utf-8"
+      }
+    );
+
+
+  const url=
+    URL.createObjectURL(
+      blob
+    );
+
+
+  const anchor=
+    document.createElement(
+      "a"
+    );
+
+
+  anchor.href=
+    url;
+
+
+  anchor.download=
+
+    "hoop-session-"
+
+    +
+
+    new Date()
+      .toISOString()
+      .slice(
+        0,
+        19
+      )
+      .replace(
+        /[:T]/g,
+        "-"
+      )
+
+    +
+
+    ".csv";
+
+
+  anchor.click();
+
+
+  setTimeout(
+    ()=>
+      URL.revokeObjectURL(
+        url
+      ),
+    1000
+  );
+
+}
+
+
+/* ===================================================
+   EVENTS
+=================================================== */
+
+$("cameraBtn")
+.addEventListener(
+  "click",
+  useCamera
+);
+
+
+$("uploadBtn")
+.addEventListener(
+  "click",
+  ()=>{
+
+    $("fileInput")
+      .click();
+
+  }
+);
+
+
+$("fileInput")
+.addEventListener(
+  "change",
+  event=>{
+
+    const file=
+      event.target
+      .files?.[0];
+
+
+    if(file){
+
+      loadVideoFile(
+        file
+      );
+
+    }
+
+  }
+);
+
+
+$("hoopBtn")
+.addEventListener(
+  "click",
+  ()=>{
+
+    setMode(
+      "hoop"
+    );
+
+  }
+);
+
+
+$("ballBtn")
+.addEventListener(
+  "click",
+  ()=>{
+
+    setMode(
+      "ball"
+    );
+
+  }
+);
+
+
+$("analyseBtn")
+.addEventListener(
+  "click",
+  startAnalysis
+);
+
+
+$("playBtn")
+.addEventListener(
+  "click",
+  ()=>{
+
+    if(
+      state.source!=="file"
+    ){
+
+      return;
+
+    }
+
+
+    if(
+      video.paused
+    ){
+
+      state.analysing=
+        true;
+
+
+      video.play();
+
+
+      $("playBtn")
+        .textContent=
+          "⏸";
+
+    }
+
+    else{
+
+      video.pause();
+
+
+      $("playBtn")
+        .textContent=
+          "▶";
+
+    }
+
+  }
+);
+
+
+$("backBtn")
+.addEventListener(
+  "click",
+  ()=>{
+
+    if(
+      state.source!=="file"
+    ){
+
+      return;
+
+    }
+
+
+    video.pause();
+
+
+    video.currentTime=
+      Math.max(
+        0,
+        video.currentTime-
+        .5
+      );
+
+
+    $("playBtn")
+      .textContent=
+        "▶";
+
+  }
+);
+
+
+$("seek")
+.addEventListener(
+  "pointerdown",
+  ()=>{
+
+    state.seeking=
+      true;
+
+  }
+);
+
+
+$("seek")
+.addEventListener(
+  "input",
+  ()=>{
+
+    if(
+
+      state.source!=="file"
+
+      ||
+
+      !Number.isFinite(
+        video.duration
+      )
+
+    ){
+
+      return;
+
+    }
+
+
+    video.currentTime=
+
+      Number(
+        $("seek")
+          .value
+      )/
+      1000*
+      video.duration;
+
+  }
+);
+
+
+$("seek")
+.addEventListener(
+  "change",
+  ()=>{
+
+    state.seeking=
+      false;
+
+
+    resetTracking(
+      true
+    );
+
+  }
+);
+
+
+video.addEventListener(
+  "seeked",
+  ()=>{
+
+    if(
+      state.source==="file"
+    ){
+
+      resetTracking(
+        true
+      );
+
+    }
+
+  }
+);
+
+
+video.addEventListener(
+  "ended",
+  ()=>{
+
+    state.analysing=
+      false;
+
+
+    $("playBtn")
+      .textContent=
+        "▶";
+
+
+    setStatus(
+      "Videoanalyse klaar"
+    );
+
+  }
+);
+
+
+$("manualMake")
+.addEventListener(
+  "click",
+  ()=>{
+
+    manualShot(
+      "make"
+    );
+
+  }
+);
+
+
+$("manualMiss")
+.addEventListener(
+  "click",
+  ()=>{
+
+    manualShot(
+      "miss"
+    );
+
+  }
+);
+
+
+$("undoBtn")
+.addEventListener(
+  "click",
+  ()=>{
+
+    if(
+      state.shots.length
+    ){
+
+      state.shots.pop();
+
+      updateStats();
+
+    }
+
+  }
+);
+
+
+$("resetBtn")
+.addEventListener(
+  "click",
+  resetSession
+);
+
+
+$("csvBtn")
+.addEventListener(
+  "click",
+  exportCSV
+);
+
+
+/* ===================================================
+   START
+=================================================== */
+
+drawShotChart();
+
+updateStats();
+
+updateUI();
+
+setShotPhase(
+  "idle"
+);
+
+})();
+</script>
+
 </body>
 </html>
